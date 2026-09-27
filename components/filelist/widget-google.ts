@@ -4,21 +4,18 @@ import Tree from './tree.js';
 import type { GlobalToolbarsWindow } from "../bundle/menu.d";
 import type { GithubWindow } from "../bundle/github.d";
 import type { BuildWindow } from "../bundle/make.d";
-import type { SettingConfig, Settings } from "../bundle/settings.js";
+import type { SettingConfig } from "../bundle/settings.js";
 import { Signal, ISignal } from '@lumino/signaling';
 import type { DriveFile, FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from "./widget.d";
 
-const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & FilelistWindow & {
-	settingsManager: Settings;
-	GoogleDriveWidget: typeof GoogleDriveWidget;
-} = self as unknown as any;
+const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & FilelistWindow = self as unknown as any;
 
 export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 {
 	private rootFolderName: string | null = null;
-	private _errorOccurred = new Signal<this, WidgetErrorEventArgs>(this);
+	private _errorOccurred = new Signal<GoogleDriveWidget, WidgetErrorEventArgs>(this);
 
-	get errorOccurred(): ISignal<this, WidgetErrorEventArgs>
+	get errorOccurred(): ISignal<GoogleDriveWidget, WidgetErrorEventArgs>
 	{
 		return this._errorOccurred;
 	}
@@ -91,7 +88,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 	{
 		const q = encodeURIComponent(`'${parentDriveId}' in parents and trashed = false`);
 
-		const driveFiles: Array<{ id: string; name: string; mimeType: string; }> = await GoogleDriveWidget.fetchDriveFiles(q);
+		const driveFiles: DriveFile[] = await GoogleDriveWidget.fetchDriveFiles(q);
 
 
 		if(filelistSelf.filesRepo && !filelistSelf.filesRepo[database])

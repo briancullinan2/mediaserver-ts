@@ -16,9 +16,9 @@ const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & {
 export class HttpIndexWidget extends FileListWidget
 {
 	private rootFolderName: string | null = null;
-	private _errorOccurred = new Signal<this, WidgetErrorEventArgs>(this);
+	private _errorOccurred = new Signal<HttpIndexWidget, WidgetErrorEventArgs>(this);
 
-	get errorOccurred(): ISignal<this, WidgetErrorEventArgs>
+	get errorOccurred(): ISignal<HttpIndexWidget, WidgetErrorEventArgs>
 	{
 		return this._errorOccurred;
 	}

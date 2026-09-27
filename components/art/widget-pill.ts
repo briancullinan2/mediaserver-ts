@@ -13,7 +13,7 @@ export class PillSelectorWidget extends Widget
 	/**
 	 * Signal emitted when a pill category is selected
 	 */
-	public readonly categorySelected = new Signal<this, IPillSelectedArgs>(this);
+	public readonly categorySelected = new Signal<PillSelectorWidget, IPillSelectedArgs>(this);
 
 	private _categories: string[] = [];
 	private _activeCategory: string = '';

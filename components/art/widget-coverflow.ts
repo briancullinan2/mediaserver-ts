@@ -11,16 +11,14 @@ export interface CoverflowItem
 	rawMetadata?: Record<string, unknown>;
 }
 
-const widgetSelf = self as unknown as GithubWindow & {
-
-};
+const widgetSelf: GithubWindow = self as unknown as any;
 
 export class CoverflowWidget extends Widget
 {
 	/**
 	 * Signal emitted when an item gains focus/selection in the Cover Flow carousel.
 	 */
-	readonly itemSelected = new Signal<this, CoverflowItem>(this);
+	readonly itemSelected = new Signal<CoverflowWidget, CoverflowItem>(this);
 
 	private _items: CoverflowItem[] = [];
 	private _activeIndex: number = 0;

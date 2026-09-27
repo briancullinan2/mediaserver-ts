@@ -15,7 +15,7 @@ export class StyleSelectorWidget extends Widget
 	/**
 	 * Emitted when a user selects a style pill.
 	 */
-	readonly styleSelected = new Signal<this, StyleOption>(this);
+	readonly styleSelected = new Signal<StyleSelectorWidget, StyleOption>(this);
 
 	private _styles: StyleOption[] = [];
 	private _activeStyleId: string | null = null;

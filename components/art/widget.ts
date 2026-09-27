@@ -2,7 +2,7 @@ import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
-import type { DriveFile, FileListWindow, IErrorEvent, WidgetErrorEventArgs } from '../filelist/widget.d';
+import type { DriveFile, FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from '../filelist/widget.d';
 
 export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree' | 'music' | string;
 
@@ -15,10 +15,13 @@ export interface SourceProviderConfig
 	getWidget: (source: string) => Widget;
 }
 
-const widgetSelf = self as unknown as LuminoLayoutWindow & GlobalToolbarsWindow & FileListWindow & {
-	artWidget: ArtWidget;
+export interface ArtWindow
+{
 	ArtWidget: typeof ArtWidget;
-};
+	artWidget: ArtWidget;
+}
+
+const widgetSelf: ArtWindow & LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow = self as unknown as any;
 
 export class ArtWidget extends Widget
 {

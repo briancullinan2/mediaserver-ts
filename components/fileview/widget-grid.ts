@@ -1,15 +1,7 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
+import type { DriveFile } from '../filelist/widget.d';
 
-export interface DriveFile
-{
-	id: string;
-	name: string;
-	mimeType?: string;
-	size?: number;
-	modifiedTime?: string;
-	thumbnailLink?: string;
-}
 
 export type GridFlow = 'row-first' | 'column-first';
 export type IconSize = 'small' | 'medium' | 'large' | 'huge';

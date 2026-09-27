@@ -8,6 +8,9 @@ import type { FileListWidget, GameListWidget } from "./widget";
 import type { LuminoWindow } from '../bundle/lumino.d';
 import type { ApiWindow, WorkerWindow } from "../bundle/worker.d";
 import type { BuildWindow } from "../bundle/make.d";
+import type { Widget } from "@lumino/widgets";
+import type { Signal, ISignal } from '@lumino/signaling';
+
 import type { SearchListWidget } from "./widget-search";
 //import type { LocalD} from "./widget-local";
 import type { HttpIndexWidget } from "./widget-index";
@@ -36,7 +39,7 @@ export interface DirectoryPickerOptions
 }
 
 
-export interface FilelistWindow extends EditorUtilities, GlobalToolbars, SettingsWindow, GithubWindow, LocalWindow, LuminoWindow
+export interface FilelistWindow extends FileWidgetWindow, EditorUtilities, GlobalToolbars, SettingsWindow, GithubWindow, LocalWindow, LuminoWindow
 {
 	loadFileTree?: (repoOwner: string, repoName: string, branch: string, selector: string) => Promise<void>;
 	fileListWidgets?: Array<FileListWidget>;
@@ -44,8 +47,6 @@ export interface FilelistWindow extends EditorUtilities, GlobalToolbars, Setting
 		options?: DirectoryPickerOptions
 	) => Promise<FileSystemDirectoryHandle>;
 	getRegistryIdFromWidget(widget: string | HTMLElement | FileListWidget): string | null | undefined | void;
-	FileListWidget?: typeof FileListWidget;
-	GameListWidget?: typeof GameListWidget;
 }
 
 declare var self: Window & FilelistWindow & typeof globalThis;
@@ -78,7 +79,7 @@ export interface WidgetErrorEventArgs
 
 export interface IErrorEvent
 {
-	get errorOccurred(): ISignal<this, WidgetErrorEventArgs>;
+	get errorOccurred(): ISignal<Widget, WidgetErrorEventArgs>;
 }
 
 
@@ -86,12 +87,14 @@ export interface DriveFile
 {
 	id: string;
 	name: string;
-	mimeType: string;
+	mimeType?: string;
+	size?: number;
+	modifiedTime?: string;
 	thumbnailLink?: string;
-	webContentLink?: string;
 }
 
-export interface FileListWindow
+
+export interface FileWidgetWindow
 {
 	fileListWidget: FileListWidget;
 	FileListWidget: typeof FileListWidget;
@@ -99,21 +102,23 @@ export interface FileListWindow
 	searchListWidget: SearchListWidget;
 	SearchListWidget: typeof SearchListWidget;
 
-	httpIndexWidget: HttpIndexWidget;
-	HttpIndexWidget: typeof HttpIndexWidget;
-
-	googleDriveWidget: GoogleDriveWidget;
-	GoogleDriveWidget: typeof GoogleDriveWidget;
-
-	githubListWidget: GithubListWidget;
-	GithubListWidget: typeof GithubListWidget;
+	gameListWidget: GameListWidget;
+	GameListWidget: typeof GameListWidget;
 
 	assetListWidget: AssetListWidget;
 	AssetListWidget: typeof AssetListWidget;
 
-	gameListWidget: GameListWidget;
-	GameListWidget: typeof GameListWidget;
+	googleDriveWidget: GoogleDriveWidget;
+	GoogleDriveWidget: typeof GoogleDriveWidget;
 
-	DatabaseListWidget: DatabaseListWidget;
+	httpIndexWidget: HttpIndexWidget;
+	HttpIndexWidget: typeof HttpIndexWidget;
+
+	githubListWidget: GithubListWidget;
+	GithubListWidget: typeof GithubListWidget;
+
+	databaseListWidget: DatabaseListWidget;
 	DatabaseListWidget: typeof DatabaseListWidget;
+
 }
+
