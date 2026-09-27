@@ -58,7 +58,7 @@ export class FileviewWidget extends ArtWidget
 	private addressInput!: HTMLInputElement;
 	private pillsContainer!: HTMLElement;
 
-	constructor(title?: string, sources: string | string[] = [''])
+	constructor(title?: string, sources?: string | string[])
 	{
 		super(title ?? 'Explorer Workspace', sources);
 		this.addClass('cloud-drive-explorer-widget');

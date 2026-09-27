@@ -3,6 +3,8 @@ import { Widget } from '@lumino/widgets';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
 import type { DriveFile, FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from '../filelist/widget.d';
+import { PUBLIC_GOOGLE_DRIVE_FOLDER_ID } from '../filelist/widget-google';
+import { DEFAULT_HTTP_INDEX_URL } from '../filelist/widget-index';
 
 export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree' | 'music' | string;
 
@@ -34,8 +36,9 @@ export class ArtWidget extends Widget
 	 * Overridable registry of view renderers mapped by mode string
 	 */
 	protected viewRenderers: Map<string, ViewRenderer> = new Map();
+	errorHandlers: ((sender: Widget, args: WidgetErrorEventArgs) => void)[] = [];
 
-	constructor(title?: string, sources: string | string[] = [''])
+	constructor(title?: string, sources?: string | string[])
 	{
 		super();
 		this.addClass('art-widget-container');
@@ -50,7 +53,7 @@ export class ArtWidget extends Widget
 			this.sources = [sources];
 		} else
 		{
-			this.sources = [];
+			this.sources = [PUBLIC_GOOGLE_DRIVE_FOLDER_ID, DEFAULT_HTTP_INDEX_URL];
 		}
 
 		// Register default built-in view handlers
@@ -100,6 +103,15 @@ export class ArtWidget extends Widget
 				return new widgetSelf.GoogleDriveWidget('Drive Assets', cleanId);
 			}
 		}
+		// Google Drive Protocol / ID
+		else if(source.startsWith('idb://') || source.startsWith('1') && source.length > 25)
+		{
+			//const cleanId = source.replace('idb://', '') || source;
+			if(widgetSelf.DatabaseListWidget)
+			{
+				return new widgetSelf.DatabaseListWidget('Indexed DB');
+			}
+		}
 		// HTTP / HTTPS Web Index
 		else if(source.startsWith('http://') || source.startsWith('https://'))
 		{
@@ -140,13 +152,11 @@ export class ArtWidget extends Widget
 
 		if('errorOccurred' in targetWidget && typeof (targetWidget as IErrorEvent).errorOccurred?.connect === 'function')
 		{
-			(targetWidget as IErrorEvent).errorOccurred?.connect((sender: Widget, args: WidgetErrorEventArgs) =>
+			if(!this.errorHandlers[index])
 			{
-				console.warn(`Source failed [${currentSource}]:`, args.error);
-				this.activeWidget?.close();
-				this.activeWidget = undefined;
-				this.openOutlineWidget(index + 1);
-			}, this);
+				this.errorHandlers[index] = this.handleError.bind(this, index);
+			}
+			(targetWidget as IErrorEvent).errorOccurred?.connect(this.errorHandlers[index], this);
 		}
 
 		if(widgetSelf.mainDock && widgetSelf.LayoutAdjuster)
@@ -162,6 +172,17 @@ export class ArtWidget extends Widget
 				this.activeWidget.show();
 			}
 		}
+	}
+
+
+	private handleError(index: number, sender: Widget, args: WidgetErrorEventArgs)
+	{
+		console.warn(`Source failed [${(sender as any)._source}]:`, args.error);
+		(sender as unknown as IErrorEvent).errorOccurred?.disconnect(this.errorHandlers[index]);
+		this.activeWidget?.close();
+		this.activeWidget = undefined;
+
+		this.openOutlineWidget(index + 1);
 	}
 
 	/**

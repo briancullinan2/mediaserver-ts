@@ -389,7 +389,7 @@ filelistSelf.GoogleDriveWidget = GoogleDriveWidget;
 
 
 export const GOOGLE_CLOUD_API_KEY = 'AIzaSyAsZR_uPzhdnkNktP8CGKbooWndEUYaq9I';
-export const PUBLIC_GOOGLE_DRIVE_FOLDER_ID = '1iZXcde4zeQmFJoCedo70wu0ouZ1QF0Se';
+export const PUBLIC_GOOGLE_DRIVE_FOLDER_ID = 'gdrive://1iZXcde4zeQmFJoCedo70wu0ouZ1QF0Se';
 const DEFAULT_DRIVES: Record<string, string> = {};
 DEFAULT_DRIVES[PUBLIC_GOOGLE_DRIVE_FOLDER_ID] = 'txt2img';
 const LOCAL_SETTINGS: Record<string, Record<string, SettingConfig>> = {
