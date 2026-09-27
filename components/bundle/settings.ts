@@ -7,13 +7,13 @@ import type { LuminoLayoutWindow } from "./lumino.d";
 import type { EditorWindow } from "../editor/widget.d";
 import type { GlobalToolbarsWindow, RepositorySettingsWindow } from "./menu.d";
 
-//export type SettingsWindow =
-//	{
-//		[K in keyof typeof LOCAL_SETTINGS]: typeof LOCAL_SETTINGS[K];
-//	};
+export type SettingsWindow =
+	{
+		[K in keyof typeof LOCAL_SETTINGS]: typeof LOCAL_SETTINGS[K];
+	};
 
 const luminoSelf: LuminoLayoutWindow & EditorWindow & RepositorySettingsWindow
-	& GlobalToolbarsWindow & RepositorySettingsWindow //& SettingsWindow
+	& GlobalToolbarsWindow & RepositorySettingsWindow & SettingsWindow
 	= self as unknown as any;
 
 
@@ -232,7 +232,7 @@ export class Settings
 
 		if(targetConfig.windowName)
 		{
-			//luminoSelf[targetConfig.windowName] = finalValue;
+			luminoSelf[targetConfig.windowName] = finalValue;
 		}
 
 		if(typeof targetConfig.set === 'function')

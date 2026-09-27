@@ -7,7 +7,7 @@ import { FileListWidget } from '../filelist/widget';
 import { GoogleDriveFile, GoogleDriveWidget } from '../filelist/widget-google';
 import { HttpIndexWidget } from '../filelist/widget-index';
 import { AssetListWidget } from '../filelist/widget-assets';
-import { FlatFileNode, NestedTreeNode } from '../bundle/github-tools';
+import type { FlatFileNode, NestedTreeNode } from '../bundle/github-tools';
 import type mime from 'mime';
 import { NetflixViewWidget } from './widget-netflix';
 import { CoverflowWidget } from '../art/widget-coverflow';

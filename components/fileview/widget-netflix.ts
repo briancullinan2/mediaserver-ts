@@ -1,7 +1,7 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { ISignal } from '@lumino/signaling';
-import { NestedTreeNode } from '../bundle/github-tools';
+import type { NestedTreeNode } from '../bundle/github-tools';
 
 export interface INetflixViewOptions
 {

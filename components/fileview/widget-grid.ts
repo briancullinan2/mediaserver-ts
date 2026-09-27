@@ -1,6 +1,6 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
-import { NestedTreeNode } from '../bundle/github-tools';
+import type { NestedTreeNode } from '../bundle/github-tools';
 
 
 export type GridFlow = 'row-first' | 'column-first';
