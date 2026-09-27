@@ -1,10 +1,12 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
-import { ArtWidget } from '../art/widget'; // Adjust import path
+import { ArtWidget } from '../art/widget';
 import type { DriveFile } from '../filelist/widget.d';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
-import type { FileListWidget } from '../filelist/widget';
-import type { GoogleDriveWidget } from '../filelist/widget-google';
+import { FileListWidget } from '../filelist/widget';
+import { GoogleDriveWidget } from '../filelist/widget-google';
+import { HttpIndexWidget } from '../filelist/widget-index';
+import { AssetListWidget } from '../filelist/widget-assets';
 
 export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree';
 export type SortOption = 'name-asc' | 'name-desc' | 'date-desc' | 'size-desc' | 'type';
@@ -20,13 +22,9 @@ export interface ICloudDataProvider
 	renameItem?(id: string, newName: string): Promise<boolean>;
 }
 
-
-
 const fileviewSelf: LuminoLayoutWindow & {
-	FileListWidget: typeof FileListWidget;
-	GoogleDriveWidget: typeof GoogleDriveWidget;
+	isShiftPressed?: boolean;
 } = self as unknown as any;
-
 
 export class FileviewWidget extends ArtWidget
 {
@@ -37,31 +35,33 @@ export class FileviewWidget extends ArtWidget
 	private activeFolderPath: string = '/Home';
 	private activeFolderName: string = 'Home';
 
-	// Data & Filtering
-	private dataProvider?: ICloudDataProvider;
-	private rawFiles: DriveFile[] = [];
-	private displayedFiles: DriveFile[] = [];
-	private selectedFileIds: Set<string> = new Set();
-	private clipboard: { action: 'copy' | 'cut'; items: DriveFile[]; } | null = null;
-
-	// View Options & Controls
+	// Filtering & Category Pills
+	private selectedCategoryPill: string = 'all';
+	private availableCategories: Set<string> = new Set();
 	private searchQuery: string = '';
 	private showHiddenFiles: boolean = false;
 	private sortBy: SortOption = 'name-asc';
 	private groupBy: GroupOption = 'none';
 
-	// Sub-widgets & UI References
-	private mountedTreeWidget?: Widget;
+	// Data
+	private dataProvider?: ICloudDataProvider;
+	private rawFiles: DriveFile[] = [];
+	private displayedFiles: DriveFile[] = [];
+	private selectedFileIds: Set<string> = new Set();
+
+	// Active Mounted Sub-Widgets
+	private mountedSubWidgets: Map<HTMLElement, Widget> = new Map();
+
+	// UI References
 	private viewContainer!: HTMLElement;
-	private treeSidebarNode!: HTMLElement;
 	private inspectorPanel!: HTMLElement;
 	private addressInput!: HTMLInputElement;
+	private pillsContainer!: HTMLElement;
 
 	constructor(title?: string, sources: string | string[] = [''])
 	{
-		super(title ?? 'Cloud Drive Explorer', sources);
+		super(title ?? 'Explorer Workspace', sources);
 		this.addClass('cloud-drive-explorer-widget');
-		//this.dataProvider = provider;
 		this.activeFolderId = (this as any).rootFolderId ?? 'root';
 	}
 
@@ -70,16 +70,17 @@ export class FileviewWidget extends ArtWidget
 		super.onAfterAttach(msg);
 		this.renderExplorerShell();
 		this.attachEventListeners();
-		this.loadTreeSidebar();
 		this.refreshCurrentFolder();
 	}
 
-	/**
-	 * Override parent frame renderer to build ribbon + address bar shell
-	 */
+	protected override onBeforeDetach(msg: Message): void
+	{
+		this.clearMountedSubWidgets();
+		super.onBeforeDetach(msg);
+	}
+
 	protected override renderWidgetFrame(): void
 	{
-		// Dynamic class setup based on constructor
 		this.node.classList.add(`${this.constructor.name.toLowerCase()}-frame`);
 		this.node.classList.add('explorer-enhanced-shell');
 	}
@@ -90,134 +91,123 @@ export class FileviewWidget extends ArtWidget
 	private renderExplorerShell(): void
 	{
 		this.node.innerHTML = `
-            <div class="cloud-explorer-container ${this.isSplitView ? 'split-view-active' : ''}">
-                <!-- Primary Action Ribbon -->
-                <header class="explorer-ribbon-bar">
-                    <div class="ribbon-group file-actions">
-                        <button class="ribbon-btn" id="btn-new-folder" title="New Folder"><i class="bx bx-folder-plus"></i><span>Folder</span></button>
-                        <button class="ribbon-btn" id="btn-new-file" title="New File"><i class="bx bx-file-plus"></i><span>File</span></button>
-                        <div class="ribbon-divider"></div>
-                        <button class="ribbon-btn" id="btn-cut" title="Cut"><i class="bx bx-cut"></i></button>
-                        <button class="ribbon-btn" id="btn-copy" title="Copy"><i class="bx bx-copy"></i></button>
-                        <button class="ribbon-btn" id="btn-paste" title="Paste" disabled><i class="bx bx-paste"></i></button>
-                        <button class="ribbon-btn" id="btn-rename" title="Rename"><i class="bx bx-edit"></i></button>
-                        <button class="ribbon-btn danger" id="btn-delete" title="Delete"><i class="bx bx-trash"></i></button>
-                    </div>
+			<div class="cloud-explorer-container ${this.isSplitView ? 'split-view-active' : ''}">
+				<!-- Top Action Ribbon Toolbar -->
+				<header class="explorer-ribbon-bar">
+					<div class="ribbon-group file-actions">
+						<button class="ribbon-btn" id="btn-new-folder" title="New Folder"><i class="bx bx-folder-plus"></i><span>Folder</span></button>
+						<button class="ribbon-btn" id="btn-new-file" title="New File"><i class="bx bx-file-plus"></i><span>File</span></button>
+						<div class="ribbon-divider"></div>
+						<button class="ribbon-btn" id="btn-cut" title="Cut"><i class="bx bx-cut"></i></button>
+						<button class="ribbon-btn" id="btn-copy" title="Copy"><i class="bx bx-copy"></i></button>
+						<button class="ribbon-btn" id="btn-paste" title="Paste" disabled><i class="bx bx-paste"></i></button>
+						<button class="ribbon-btn" id="btn-rename" title="Rename"><i class="bx bx-edit"></i></button>
+						<button class="ribbon-btn danger" id="btn-delete" title="Delete"><i class="bx bx-trash"></i></button>
+					</div>
 
-                    <div class="ribbon-group view-controls">
-                        <label class="toggle-switch" title="Show/Hide Hidden Files">
-                            <input type="checkbox" id="toggle-hidden-files" ${this.showHiddenFiles ? 'checked' : ''} />
-                            <span class="toggle-label"><i class="bx bx-ghost"></i> Hidden</span>
-                        </label>
-                        <select id="sort-select" class="ribbon-select" title="Sort Items">
-                            <option value="name-asc">Name (A-Z)</option>
-                            <option value="name-desc">Name (Z-A)</option>
-                            <option value="date-desc">Date Modified</option>
-                            <option value="size-desc">Size</option>
-                            <option value="type">File Type</option>
-                        </select>
-                        <select id="group-select" class="ribbon-select" title="Group Items">
-                            <option value="none">No Grouping</option>
-                            <option value="type">Group by Type</option>
-                            <option value="date">Group by Date</option>
-                        </select>
-                    </div>
+					<div class="ribbon-group view-controls">
+						<label class="toggle-switch" title="Show/Hide Hidden Files">
+							<input type="checkbox" id="toggle-hidden-files" ${this.showHiddenFiles ? 'checked' : ''} />
+							<span class="toggle-label"><i class="bx bx-ghost"></i> Hidden</span>
+						</label>
+						<select id="sort-select" class="ribbon-select" title="Sort Items">
+							<option value="name-asc">Name (A-Z)</option>
+							<option value="name-desc">Name (Z-A)</option>
+							<option value="date-desc">Date Modified</option>
+							<option value="size-desc">Size</option>
+							<option value="type">File Type</option>
+						</select>
+						<select id="group-select" class="ribbon-select" title="Group Items">
+							<option value="none">No Grouping</option>
+							<option value="type">Group by Type</option>
+							<option value="date">Group by Date</option>
+						</select>
+					</div>
 
-                    <div class="ribbon-group layout-toggles">
-                        <button class="ribbon-btn ${this.isSplitView ? 'active' : ''}" id="btn-toggle-split" title="Toggle Split View">
-                            <i class="bx bx-columns"></i>
-                        </button>
-                        <button class="ribbon-btn" id="btn-toggle-inspector" title="Toggle Details Panel">
-                            <i class="bx bx-info-circle"></i>
-                        </button>
-                    </div>
-                </header>
+					<div class="ribbon-group layout-toggles">
+						<button class="ribbon-btn ${this.isSplitView ? 'active' : ''}" id="btn-toggle-split" title="Toggle Split View Mode">
+							<i class="bx bx-columns"></i>
+						</button>
+						<button class="ribbon-btn" id="btn-toggle-inspector" title="Toggle Details Panel">
+							<i class="bx bx-info-circle"></i>
+						</button>
+					</div>
+				</header>
 
-                <!-- Navigation & Address Bar Header -->
-                <div class="explorer-address-bar-container">
-                    <button class="nav-btn" id="btn-nav-back" title="Back"><i class="bx bx-arrow-back"></i></button>
-                    <button class="nav-btn" id="btn-nav-up" title="Up"><i class="bx bx-up-arrow-alt"></i></button>
+				<!-- Navigation & Address Bar Header -->
+				<div class="explorer-address-bar-container">
+					<button class="nav-btn" id="btn-nav-back" title="Back"><i class="bx bx-arrow-back"></i></button>
+					<button class="nav-btn" id="btn-nav-up" title="Up"><i class="bx bx-up-arrow-alt"></i></button>
 
-                    <div class="address-bar-wrapper">
-                        <i class="bx bx-folder address-icon"></i>
-                        <div class="breadcrumb-trail" id="breadcrumb-trail">
-                            <!-- Rendered dynamically -->
-                        </div>
-                        <input type="text" class="address-input hidden" id="address-input" value="${this.activeFolderPath}" />
-                    </div>
+					<div class="address-bar-wrapper">
+						<i class="bx bx-folder address-icon"></i>
+						<div class="breadcrumb-trail" id="breadcrumb-trail"></div>
+						<input type="text" class="address-input hidden" id="address-input" value="${this.activeFolderPath}" />
+					</div>
 
-                    <div class="search-bar-wrapper">
-                        <i class="bx bx-search search-icon"></i>
-                        <input type="text" class="search-input" id="search-input" placeholder="Search files..." value="${this.searchQuery}" />
-                    </div>
-                </div>
+					<div class="search-bar-wrapper">
+						<i class="bx bx-search search-icon"></i>
+						<input type="text" class="search-input" id="search-input" placeholder="Search files..." value="${this.searchQuery}" />
+					</div>
+				</div>
 
-                <!-- Main Content Split Workspace -->
-                <div class="explorer-workspace">
-                    <!-- Left Sidebar (Tree / Quick Access) -->
-                    <aside class="cloud-tree-sidebar" id="cloud-tree-sidebar">
-                        <div class="sidebar-header">
-                            <span class="sidebar-title">Navigation</span>
-                            <button class="sidebar-refresh-btn" id="refresh-tree-btn" title="Refresh">↻</button>
-                        </div>
-                        <div class="sidebar-tree-content" id="sidebar-tree-content">
-                            <div class="loading-state">Loading navigation...</div>
-                        </div>
-                    </aside>
+				<!-- Category Pills Filter Bar -->
+				<div class="category-pills-bar" id="category-pills-bar">
+					<button class="category-pill active" data-category="all">All Files</button>
+				</div>
 
-                    <!-- Central Dynamic View Stage -->
-                    <main class="cloud-main-panel">
-                        <header class="cloud-toolbar">
-                            <div class="view-switcher-buttons">
-                                <button class="view-btn ${this.activeViews.has('netflix') ? 'active' : ''}" data-view="netflix" title="Netflix Horizontal Rows">
-                                    <i class="bx bx-film"></i> Netflix
-                                </button>
-                                <button class="view-btn ${this.activeViews.has('itunes') ? 'active' : ''}" data-view="itunes" title="iTunes Coverflow">
-                                    <i class="bx bx-carousel"></i> Coverflow
-                                </button>
-                                <button class="view-btn ${this.activeViews.has('grid') ? 'active' : ''}" data-view="grid" title="Icon Grid">
-                                    <i class="bx bx-grid-alt"></i> Grid
-                                </button>
-                                <button class="view-btn ${this.activeViews.has('details') ? 'active' : ''}" data-view="details" title="Details List">
-                                    <i class="bx bx-list-ul"></i> Details
-                                </button>
-                                <button class="view-btn ${this.activeViews.has('tree') ? 'active' : ''}" data-view="tree" title="Full Subtree Widget">
-                                    <i class="bx bx-git-repo-forked"></i> Subtree
-                                </button>
-                            </div>
-                        </header>
+				<!-- Main Content Workspace -->
+				<div class="explorer-workspace">
+					<main class="cloud-main-panel">
+						<header class="cloud-toolbar">
+							<div class="view-switcher-buttons">
+								<button class="view-btn ${this.activeViews.has('netflix') ? 'active' : ''}" data-view="netflix" title="Netflix Rows">
+									<i class="bx bx-film"></i> Netflix
+								</button>
+								<button class="view-btn ${this.activeViews.has('itunes') ? 'active' : ''}" data-view="itunes" title="iTunes Coverflow">
+									<i class="bx bx-carousel"></i> Coverflow
+								</button>
+								<button class="view-btn ${this.activeViews.has('grid') ? 'active' : ''}" data-view="grid" title="Icon Grid">
+									<i class="bx bx-grid-alt"></i> Grid
+								</button>
+								<button class="view-btn ${this.activeViews.has('details') ? 'active' : ''}" data-view="details" title="Details List">
+									<i class="bx bx-list-ul"></i> Details
+								</button>
+								<button class="view-btn ${this.activeViews.has('tree') ? 'active' : ''}" data-view="tree" title="Subtree Widget Instance">
+									<i class="bx bx-git-repo-forked"></i> Subtree
+								</button>
+							</div>
+						</header>
 
-                        <section class="cloud-view-stage" id="cloud-view-stage">
-                            <!-- Layout views rendered dynamically here -->
-                        </section>
-                    </main>
+						<section class="cloud-view-stage" id="cloud-view-stage"></section>
+					</main>
 
-                    <!-- Slide-Out Inspector Panel -->
-                    <aside class="cloud-inspector-panel hidden" id="cloud-inspector-panel">
-                        <div class="inspector-header">
-                            <h3>File Details</h3>
-                            <button class="close-inspector-btn" id="close-inspector-btn">×</button>
-                        </div>
-                        <div class="inspector-body" id="inspector-body">
-                            <div class="empty-selection">Select an item to preview properties</div>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        `;
+					<!-- Slide-Out Inspector Panel -->
+					<aside class="cloud-inspector-panel hidden" id="cloud-inspector-panel">
+						<div class="inspector-header">
+							<h3>File Details</h3>
+							<button class="close-inspector-btn" id="close-inspector-btn">×</button>
+						</div>
+						<div class="inspector-body" id="inspector-body">
+							<div class="empty-selection">Select an item to preview properties</div>
+						</div>
+					</aside>
+				</div>
+			</div>
+		`;
 
-		this.treeSidebarNode = this.node.querySelector('#sidebar-tree-content') as HTMLElement;
 		this.viewContainer = this.node.querySelector('#cloud-view-stage') as HTMLElement;
 		this.inspectorPanel = this.node.querySelector('#cloud-inspector-panel') as HTMLElement;
 		this.addressInput = this.node.querySelector('#address-input') as HTMLInputElement;
+		this.pillsContainer = this.node.querySelector('#category-pills-bar') as HTMLElement;
 	}
 
 	/**
-	 * Wire Action Listeners for Ribbon, Breadcrumbs, and Search
+	 * Attach UI Action Listeners
 	 */
 	private attachEventListeners(): void
 	{
-		// View Toggle Switchers
+		// View Switchers
 		this.node.querySelectorAll('.view-btn').forEach(btn =>
 		{
 			btn.addEventListener('click', e =>
@@ -237,7 +227,7 @@ export class FileviewWidget extends ArtWidget
 			this.renderActiveViews();
 		});
 
-		// Ribbon Options
+		// Ribbon Controls
 		this.node.querySelector('#toggle-hidden-files')?.addEventListener('change', (e) =>
 		{
 			this.showHiddenFiles = (e.target as HTMLInputElement).checked;
@@ -258,7 +248,7 @@ export class FileviewWidget extends ArtWidget
 			this.renderActiveViews();
 		});
 
-		// Split View and Inspector Toggles
+		// Split View & Inspector
 		this.node.querySelector('#btn-toggle-split')?.addEventListener('click', () =>
 		{
 			this.isSplitView = !this.isSplitView;
@@ -276,14 +266,7 @@ export class FileviewWidget extends ArtWidget
 			this.inspectorPanel.classList.add('hidden');
 		});
 
-		// Refresh & Navigation
-		this.node.querySelector('#refresh-tree-btn')?.addEventListener('click', () =>
-		{
-			this.loadTreeSidebar();
-			this.refreshCurrentFolder();
-		});
-
-		// Address Bar Switch
+		// Address Bar Toggle
 		const breadcrumbTrail = this.node.querySelector('#breadcrumb-trail') as HTMLElement;
 		breadcrumbTrail?.addEventListener('click', () =>
 		{
@@ -308,7 +291,7 @@ export class FileviewWidget extends ArtWidget
 	}
 
 	/**
-	 * Switch or Add View Render Strategies
+	 * Toggle Active View Display Modes
 	 */
 	public async toggleViewMode(mode: ViewMode, multiSelect: boolean = false): Promise<void>
 	{
@@ -327,7 +310,6 @@ export class FileviewWidget extends ArtWidget
 			}
 		}
 
-		// Highlight Active View Buttons
 		this.node.querySelectorAll('.view-btn').forEach(btn =>
 		{
 			const target = btn as HTMLElement;
@@ -339,10 +321,11 @@ export class FileviewWidget extends ArtWidget
 	}
 
 	/**
-	 * Orchestrate Active Views Generation
+	 * Render Active View Modes Parallelly
 	 */
 	private async renderActiveViews(): Promise<void>
 	{
+		this.clearMountedSubWidgets();
 		this.viewContainer.innerHTML = '';
 		this.viewContainer.className = `cloud-view-stage views-count-${this.activeViews.size}`;
 
@@ -374,7 +357,7 @@ export class FileviewWidget extends ArtWidget
 	}
 
 	/**
-	 * Netflix Dynamic Row Layout Composer
+	 * Netflix Layout View
 	 */
 	private renderNetflixView(container: HTMLElement, files: DriveFile[]): void
 	{
@@ -386,22 +369,21 @@ export class FileviewWidget extends ArtWidget
 			const row = document.createElement('div');
 			row.className = 'netflix-row';
 			row.innerHTML = `
-                <h4 class="netflix-row-title">${groupName} (${groupFiles.length})</h4>
-                <div class="netflix-row-slider">
-                    ${groupFiles.map(file => `
-                        <div class="netflix-card ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
-                            <div class="card-media">
-                                ${file.thumbnailLink ? `<img src="${file.thumbnailLink}" alt="${file.name}" />` : `<i class="bx ${this.getFileIconClass(file)}"></i>`}
-                            </div>
-                            <div class="card-details">
-                                <span class="card-title">${file.name}</span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+				<h4 class="netflix-row-title">${groupName} (${groupFiles.length})</h4>
+				<div class="netflix-row-slider">
+					${groupFiles.map(file => `
+						<div class="netflix-card ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
+							<div class="card-media">
+								${file.thumbnailLink ? `<img src="${file.thumbnailLink}" alt="${file.name}" />` : `<i class="bx ${this.getFileIconClass(file)}"></i>`}
+							</div>
+							<div class="card-details">
+								<span class="card-title">${file.name}</span>
+							</div>
+						</div>
+					`).join('')}
+				</div>
+			`;
 
-			// Attach card click & Inspector selection triggers
 			row.querySelectorAll('.netflix-card').forEach(card =>
 			{
 				card.addEventListener('click', (e) => this.handleFileSelection((card as HTMLElement).dataset.id!, e as MouseEvent));
@@ -412,22 +394,22 @@ export class FileviewWidget extends ArtWidget
 	}
 
 	/**
-	 * Grid Layout Renderer
+	 * Grid Layout View
 	 */
 	private renderGridView(container: HTMLElement, files: DriveFile[]): void
 	{
 		container.innerHTML = `
-            <div class="grid-view-container">
-                ${files.map(file => `
-                    <div class="grid-item ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
-                        <div class="grid-icon">
-                            ${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<i class="bx ${this.getFileIconClass(file)}"></i>`}
-                        </div>
-                        <div class="grid-label" title="${file.name}">${file.name}</div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
+			<div class="grid-view-container">
+				${files.map(file => `
+					<div class="grid-item ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
+						<div class="grid-icon">
+							${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<i class="bx ${this.getFileIconClass(file)}"></i>`}
+						</div>
+						<div class="grid-label" title="${file.name}">${file.name}</div>
+					</div>
+				`).join('')}
+			</div>
+		`;
 
 		container.querySelectorAll('.grid-item').forEach(item =>
 		{
@@ -436,32 +418,32 @@ export class FileviewWidget extends ArtWidget
 	}
 
 	/**
-	 * Details Table View Renderer
+	 * Details List View
 	 */
 	private renderDetailsView(container: HTMLElement, files: DriveFile[]): void
 	{
 		container.innerHTML = `
-            <table class="details-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Modified</th>
-                        <th>Type</th>
-                        <th>Size</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${files.map(file => `
-                        <tr class="details-row ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
-                            <td class="name-cell"><i class="bx ${this.getFileIconClass(file)}"></i> ${file.name}</td>
-                            <td>${(file as any).modifiedTime ?? '—'}</td>
-                            <td>${file.mimeType ?? 'File'}</td>
-                            <td>${(file as any).size ? `${Math.round((file as any).size / 1024)} KB` : '—'}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
+			<table class="details-table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Modified</th>
+						<th>Type</th>
+						<th>Size</th>
+					</tr>
+				</thead>
+				<tbody>
+					${files.map(file => `
+						<tr class="details-row ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
+							<td class="name-cell"><i class="bx ${this.getFileIconClass(file)}"></i> ${file.name}</td>
+							<td>${(file as any).modifiedTime ?? '—'}</td>
+							<td>${file.mimeType ?? 'File'}</td>
+							<td>${(file as any).size ? `${Math.round((file as any).size / 1024)} KB` : '—'}</td>
+						</tr>
+					`).join('')}
+				</tbody>
+			</table>
+		`;
 
 		container.querySelectorAll('.details-row').forEach(row =>
 		{
@@ -470,22 +452,22 @@ export class FileviewWidget extends ArtWidget
 	}
 
 	/**
-	 * Coverflow / iTunes View Renderer
+	 * iTunes Coverflow View
 	 */
 	private renderCoverflowView(container: HTMLElement, files: DriveFile[]): void
 	{
 		container.innerHTML = `
-            <div class="itunes-coverflow-stage">
-                <div class="coverflow-track">
-                    ${files.map(file => `
-                        <div class="coverflow-item ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
-                            ${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<div class="coverflow-placeholder"><i class="bx ${this.getFileIconClass(file)}"></i></div>`}
-                            <div class="coverflow-title">${file.name}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
+			<div class="itunes-coverflow-stage">
+				<div class="coverflow-track">
+					${files.map(file => `
+						<div class="coverflow-item ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
+							${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<div class="coverflow-placeholder"><i class="bx ${this.getFileIconClass(file)}"></i></div>`}
+							<div class="coverflow-title">${file.name}</div>
+						</div>
+					`).join('')}
+				</div>
+			</div>
+		`;
 
 		container.querySelectorAll('.coverflow-item').forEach(item =>
 		{
@@ -494,33 +476,42 @@ export class FileviewWidget extends ArtWidget
 	}
 
 	/**
-	 * Mount Sub-Widget Tree into Pane
+	 * Mount imported Tree Sub-Widgets dynamically based on folder context
 	 */
 	private async renderSubtreeWidget(container: HTMLElement): Promise<void>
 	{
-		container.innerHTML = '<div class="subtree-widget-mount" id="subtree-mount-node"></div>';
-		const mountNode = container.querySelector('#subtree-mount-node') as HTMLElement;
+		const mountNode = document.createElement('div');
+		mountNode.className = 'subtree-widget-mount';
+		container.appendChild(mountNode);
 
-		// Clean up former widget if present
-		if(this.mountedTreeWidget)
-		{
-			this.mountedTreeWidget.dispose();
-		}
+		let widgetInstance: Widget;
 
-		// Dynamically initialize external tree widget (e.g. GoogleDriveWidget or FileListWidget)
-		const WidgetClass = fileviewSelf.FileListWidget || fileviewSelf.GoogleDriveWidget;
-		if(WidgetClass)
+		if(this.activeFolderPath.startsWith('/Drive'))
 		{
-			this.mountedTreeWidget = new WidgetClass(this.activeFolderId);
-			Widget.attach(this.mountedTreeWidget, mountNode);
+			widgetInstance = new GoogleDriveWidget();
+		} else if(this.activeFolderPath.startsWith('/Http'))
+		{
+			widgetInstance = new HttpIndexWidget();
+		} else if(this.activeFolderPath.startsWith('/Asset'))
+		{
+			widgetInstance = new AssetListWidget();
 		} else
 		{
-			mountNode.innerHTML = `<div class="widget-fallback-info"><i class="bx bx-tree"></i> Native Tree View Active for Root [${this.activeFolderId}]</div>`;
+			widgetInstance = new FileListWidget();
 		}
+
+		Widget.attach(widgetInstance, mountNode);
+		this.mountedSubWidgets.set(mountNode, widgetInstance);
+	}
+
+	private clearMountedSubWidgets(): void
+	{
+		this.mountedSubWidgets.forEach((widget) => widget.dispose());
+		this.mountedSubWidgets.clear();
 	}
 
 	/**
-	 * Fetch Folder Content and Update Data Context
+	 * Data Fetch & Processing
 	 */
 	private async refreshCurrentFolder(): Promise<void>
 	{
@@ -532,25 +523,94 @@ export class FileviewWidget extends ArtWidget
 			this.rawFiles = await this.fetchSharedData(this.activeFolderId);
 		}
 
+		this.extractCategories();
+		this.renderCategoryPills();
 		this.applyFiltersAndSort();
 		this.renderBreadcrumbTrail();
 		await this.renderActiveViews();
 	}
 
-	/**
-	 * Navigation & Address Handler
-	 */
-	private async navigateToPath(path: string): Promise<void>
+	private extractCategories(): void
 	{
-		this.activeFolderPath = path;
-		const parts = path.split('/').filter(Boolean);
-		this.activeFolderName = parts[parts.length - 1] ?? 'Home';
-		await this.refreshCurrentFolder();
+		this.availableCategories.clear();
+		this.rawFiles.forEach(file =>
+		{
+			if(file.mimeType)
+			{
+				const mainType = file.mimeType.split('/')[0];
+				this.availableCategories.add(mainType);
+			}
+		});
 	}
 
-	/**
-	 * Handle File Selection and Slide-Out Inspector Updating
-	 */
+	private renderCategoryPills(): void
+	{
+		this.pillsContainer.innerHTML = `<button class="category-pill ${this.selectedCategoryPill === 'all' ? 'active' : ''}" data-category="all">All Files</button>`;
+
+		this.availableCategories.forEach(cat =>
+		{
+			const btn = document.createElement('button');
+			btn.className = `category-pill ${this.selectedCategoryPill === cat ? 'active' : ''}`;
+			btn.dataset.category = cat;
+			btn.innerText = cat.toUpperCase();
+			btn.addEventListener('click', () =>
+			{
+				this.selectedCategoryPill = cat;
+				this.renderCategoryPills();
+				this.applyFiltersAndSort();
+				this.renderActiveViews();
+			});
+			this.pillsContainer.appendChild(btn);
+		});
+	}
+
+	private applyFiltersAndSort(): void
+	{
+		this.displayedFiles = this.rawFiles.filter(file =>
+		{
+			const matchesHidden = this.showHiddenFiles || !file.name.startsWith('.');
+			const matchesSearch = !this.searchQuery || file.name.toLowerCase().includes(this.searchQuery);
+			const matchesPill = this.selectedCategoryPill === 'all' || (file.mimeType && file.mimeType.startsWith(this.selectedCategoryPill));
+
+			return matchesHidden && matchesSearch && matchesPill;
+		});
+
+		this.displayedFiles.sort((a, b) =>
+		{
+			switch(this.sortBy)
+			{
+				case 'name-asc':
+					return a.name.localeCompare(b.name);
+				case 'name-desc':
+					return b.name.localeCompare(a.name);
+				case 'type':
+					return (a.mimeType ?? '').localeCompare(b.mimeType ?? '');
+				default:
+					return 0;
+			}
+		});
+	}
+
+	private groupFiles(files: DriveFile[]): Record<string, DriveFile[]>
+	{
+		if(this.groupBy === 'none')
+		{
+			return { 'All Items': files };
+		}
+
+		return files.reduce((acc, file) =>
+		{
+			let key = 'Other';
+			if(this.groupBy === 'type')
+			{
+				key = file.mimeType ? file.mimeType.split('/')[0].toUpperCase() : 'FILES';
+			}
+			if(!acc[key]) acc[key] = [];
+			acc[key].push(file);
+			return acc;
+		}, {} as Record<string, DriveFile[]>);
+	}
+
 	private handleFileSelection(id: string, e: MouseEvent): void
 	{
 		if(!e.ctrlKey && !e.metaKey)
@@ -570,9 +630,6 @@ export class FileviewWidget extends ArtWidget
 		this.renderActiveViews();
 	}
 
-	/**
-	 * Render Details Inspector Panel
-	 */
 	private updateInspectorPanel(): void
 	{
 		const inspectorBody = this.node.querySelector('#inspector-body') as HTMLElement;
@@ -587,83 +644,29 @@ export class FileviewWidget extends ArtWidget
 		{
 			const file = selectedFiles[0];
 			inspectorBody.innerHTML = `
-                <div class="inspector-file-card">
-                    <div class="inspector-preview">
-                        ${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<i class="bx ${this.getFileIconClass(file)} icon-large"></i>`}
-                    </div>
-                    <h4>${file.name}</h4>
-                    <ul class="inspector-meta-list">
-                        <li><strong>ID:</strong> ${file.id}</li>
-                        <li><strong>Type:</strong> ${file.mimeType ?? 'File'}</li>
-                        <li><strong>Path:</strong> ${this.activeFolderPath}/${file.name}</li>
-                    </ul>
-                </div>
-            `;
+				<div class="inspector-file-card">
+					<div class="inspector-preview">
+						${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<i class="bx ${this.getFileIconClass(file)} icon-large"></i>`}
+					</div>
+					<h4>${file.name}</h4>
+					<ul class="inspector-meta-list">
+						<li><strong>ID:</strong> ${file.id}</li>
+						<li><strong>Type:</strong> ${file.mimeType ?? 'File'}</li>
+						<li><strong>Path:</strong> ${this.activeFolderPath}/${file.name}</li>
+					</ul>
+				</div>
+			`;
 		} else
 		{
 			inspectorBody.innerHTML = `
-                <div class="inspector-multi-card">
-                    <i class="bx bx-copy-alt icon-large"></i>
-                    <h4>${selectedFiles.length} items selected</h4>
-                </div>
-            `;
+				<div class="inspector-multi-card">
+					<i class="bx bx-copy-alt icon-large"></i>
+					<h4>${selectedFiles.length} items selected</h4>
+				</div>
+			`;
 		}
 	}
 
-	/**
-	 * Apply Filtering, Search, and Sorting Rules
-	 */
-	private applyFiltersAndSort(): void
-	{
-		this.displayedFiles = this.rawFiles.filter(file =>
-		{
-			const matchesHidden = this.showHiddenFiles || !file.name.startsWith('.');
-			const matchesSearch = !this.searchQuery || file.name.toLowerCase().includes(this.searchQuery);
-			return matchesHidden && matchesSearch;
-		});
-
-		this.displayedFiles.sort((a, b) =>
-		{
-			switch(this.sortBy)
-			{
-				case 'name-asc':
-					return a.name.localeCompare(b.name);
-				case 'name-desc':
-					return b.name.localeCompare(a.name);
-				case 'type':
-					return (a.mimeType ?? '').localeCompare(b.mimeType ?? '');
-				default:
-					return 0;
-			}
-		});
-	}
-
-	/**
-	 * Group Items Dynamically
-	 */
-	private groupFiles(files: DriveFile[]): Record<string, DriveFile[]>
-	{
-		if(this.groupBy === 'none')
-		{
-			return { 'All Files': files };
-		}
-
-		return files.reduce((acc, file) =>
-		{
-			let key = 'Other';
-			if(this.groupBy === 'type')
-			{
-				key = file.mimeType ? file.mimeType.split('/')[0].toUpperCase() : 'FILES';
-			}
-			if(!acc[key]) acc[key] = [];
-			acc[key].push(file);
-			return acc;
-		}, {} as Record<string, DriveFile[]>);
-	}
-
-	/**
-	 * Breadcrumb UI Construction
-	 */
 	private renderBreadcrumbTrail(): void
 	{
 		const trail = this.node.querySelector('#breadcrumb-trail') as HTMLElement;
@@ -676,9 +679,9 @@ export class FileviewWidget extends ArtWidget
 		{
 			currentPath += `/${seg}`;
 			trail.innerHTML += `
-                <span class="breadcrumb-separator">/</span>
-                <span class="breadcrumb-item" data-path="${currentPath}">${seg}</span>
-            `;
+				<span class="breadcrumb-separator">/</span>
+				<span class="breadcrumb-item" data-path="${currentPath}">${seg}</span>
+			`;
 		});
 
 		trail.querySelectorAll('.breadcrumb-item').forEach(item =>
@@ -692,34 +695,14 @@ export class FileviewWidget extends ArtWidget
 		});
 	}
 
-	/**
-	 * Load Navigation Tree Sidebar
-	 */
-	private async loadTreeSidebar(): Promise<void>
+	private async navigateToPath(path: string): Promise<void>
 	{
-		if(!this.treeSidebarNode) return;
-		this.treeSidebarNode.innerHTML = `
-            <ul class="tree-root-list">
-                <li class="tree-item active" data-path="/Home"><i class="bx bx-home"></i> Home</li>
-                <li class="tree-item" data-path="/Documents"><i class="bx bx-folder"></i> Documents</li>
-                <li class="tree-item" data-path="/Pictures"><i class="bx bx-image"></i> Pictures</li>
-                <li class="tree-item" data-path="/Drive"><i class="bx bx-cloud"></i> Cloud Drive</li>
-            </ul>
-        `;
-
-		this.treeSidebarNode.querySelectorAll('.tree-item').forEach(item =>
-		{
-			item.addEventListener('click', () =>
-			{
-				const path = (item as HTMLElement).dataset.path!;
-				this.navigateToPath(path);
-			});
-		});
+		this.activeFolderPath = path;
+		const parts = path.split('/').filter(Boolean);
+		this.activeFolderName = parts[parts.length - 1] ?? 'Home';
+		await this.refreshCurrentFolder();
 	}
 
-	/**
-	 * Utility: Determine Boxicon class by MIME type/extension
-	 */
 	private getFileIconClass(file: DriveFile): string
 	{
 		if(file.mimeType?.includes('folder')) return 'bx-folder';
@@ -729,9 +712,6 @@ export class FileviewWidget extends ArtWidget
 		return 'bx-file';
 	}
 
-	/**
-	 * Data Fetching Fallback
-	 */
 	private async fetchSharedData(folderId: string): Promise<DriveFile[]>
 	{
 		if(this.dataProvider)
