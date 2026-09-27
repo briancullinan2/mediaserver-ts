@@ -296,9 +296,9 @@ export class LightGraphWidget extends Widget
 			output_on: green
 		};
 
-		(LiteGraph as any).LINK_COLOR = blue;
-		(LiteGraph as any).EVENT_LINK_COLOR = purple;
-		(LiteGraph as any).CONNECTING_LINK_COLOR = pink;
+		LiteGraph.LINK_COLOR = blue;
+		LiteGraph .EVENT_LINK_COLOR = purple;
+		LiteGraph .CONNECTING_LINK_COLOR = pink;
 
 		// Map data types (number, string, boolean, etc.) to distinct colored wires
 		LGraphCanvas.link_type_colors = {
@@ -310,13 +310,13 @@ export class LightGraphWidget extends Widget
 		};
 
 		// 4. Override LiteGraph Text & Widget Constants
-		(LiteGraph as any).NODE_TEXT_COLOR = foreground;
-		(LiteGraph as any).NODE_TITLE_COLOR = foreground;
-		(LiteGraph as any).NODE_SELECTED_TITLE_COLOR = pink;
+		LiteGraph .NODE_TEXT_COLOR = foreground;
+		LiteGraph .NODE_TITLE_COLOR = foreground;
+		//LiteGraph .NODE_SELECTED_TITLE_COLOR = pink;
 
-		(LiteGraph as any).WIDGET_BGCOLOR = gutter;
-		(LiteGraph as any).WIDGET_TEXT_COLOR = foreground;
-		(LiteGraph as any).WIDGET_SECONDARY_TEXT_COLOR = foreground;
+		//LiteGraph .WIDGET_BGCOLOR = gutter;
+		//LiteGraph .WIDGET_TEXT_COLOR = foreground;
+		//LiteGraph .WIDGET_SECONDARY_TEXT_COLOR = foreground;
 
 		// 5. Retheme Node Color Palettes
 		LGraphCanvas.node_colors = {

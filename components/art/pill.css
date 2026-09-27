@@ -1,0 +1,147 @@
+/* Container & Shell */
+.pill-selector-widget {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	background-color: transparent;
+	color: #e2e8f0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	box-sizing: border-box;
+	padding: 10px 0;
+	user-select: none;
+}
+
+.pill-nav-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+	padding: 0 4px;
+}
+
+.pill-nav-title {
+	font-size: 1.15rem;
+	font-weight: 700;
+	letter-spacing: 0.3px;
+	margin: 0;
+	color: #f8fafc;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Horizontal Carousel Wrapper */
+.pill-carousel-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	width: 100%;
+}
+
+.pill-scroll-container {
+	display: flex;
+	overflow-x: auto;
+	scroll-behavior: smooth;
+	scrollbar-width: none;
+	/* Firefox */
+	-ms-overflow-style: none;
+	/* IE/Edge */
+	padding: 8px 4px;
+	width: 100%;
+	/* Edge gradients for smooth fading */
+	mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
+	-webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
+}
+
+.pill-scroll-container::-webkit-scrollbar {
+	display: none;
+	/* Chrome/Safari */
+}
+
+.pill-grid {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 10px;
+	white-space: nowrap;
+}
+
+/* Pill Component */
+.art-pill {
+	position: relative;
+	background: rgba(30, 32, 53, 0.7);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	color: #a0a6cc;
+	padding: 8px 18px;
+	border-radius: 20px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	outline: none;
+	backdrop-filter: blur(8px);
+	transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.art-pill:hover {
+	background: rgba(42, 45, 74, 0.9);
+	color: #ffffff;
+	border-color: rgba(255, 255, 255, 0.25);
+	transform: translateY(-2px) scale(1.02);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Active Gradient State */
+.art-pill.active {
+	color: #ffffff;
+	border-color: transparent;
+	background: linear-gradient(135deg, rgba(255, 0, 127, 0.85), rgba(121, 40, 202, 0.85));
+	box-shadow: 0 0 15px rgba(255, 0, 127, 0.4), 0 4px 12px rgba(0, 0, 0, 0.5);
+	transform: translateY(-1px);
+}
+
+.art-pill.active::after {
+	content: '';
+	position: absolute;
+	inset: -1px;
+	border-radius: 20px;
+	padding: 1px;
+	background: linear-gradient(135deg, #ff007f, #00dfd8);
+	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+	pointer-events: none;
+}
+
+/* Side Arrows */
+.pill-scroll-btn {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: rgba(18, 19, 28, 0.85);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	color: #ffffff;
+	font-size: 0.8rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	z-index: 10;
+	backdrop-filter: blur(4px);
+	transition: all 0.25s ease;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.pill-scroll-btn:hover {
+	background: rgba(59, 130, 246, 0.9);
+	border-color: #60a5fa;
+	transform: translateY(-50%) scale(1.1);
+}
+
+.pill-scroll-btn.left {
+	left: 0;
+}
+
+.pill-scroll-btn.right {
+	right: 0;
+}

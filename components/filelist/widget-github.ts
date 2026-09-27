@@ -189,7 +189,7 @@ export class GithubListWidget extends FileListWidget
 					owner: parts[0],
 					repo: parts[1],
 					branch: branch,
-					gitHubToken: localStorage.getItem('github_token') || (window as any).api?.github_token
+					gitHubToken: localStorage.getItem('github_token') || filelistSelf.api?.github_token
 				},
 				{ target, folderId },
 				(partialResult: StagingStatusPayload) =>

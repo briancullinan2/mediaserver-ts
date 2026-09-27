@@ -1,0 +1,93 @@
+.art-style-selector-widget {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 12px;
+	background-color: var(--jp-layout-color1, #1e1e1e);
+	border-radius: 6px;
+	border: 1px solid var(--jp-border-color1, #333333);
+	color: var(--jp-ui-font-color1, #ffffff);
+	font-family: var(--jp-ui-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+	user-select: none;
+	outline: none;
+}
+
+.art-style-selector-widget:focus-visible {
+	border-color: var(--jp-brand-color1, #107c41);
+}
+
+.style-selector-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--jp-ui-font-color2, #aaaaaa);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.style-selector-title {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.style-selector-count {
+	font-size: 0.75rem;
+	opacity: 0.7;
+}
+
+.style-pill-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.style-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 10px;
+	border: 1px solid var(--jp-border-color2, #444444);
+	border-radius: 14px;
+	background-color: var(--jp-layout-color2, #252526);
+	color: var(--jp-ui-font-color1, #dddddd);
+	font-size: 0.8rem;
+	cursor: pointer;
+	transition: all 0.15s ease-in-out;
+}
+
+.style-pill:hover {
+	background-color: var(--jp-layout-color3, #333333);
+	border-color: var(--jp-border-color1, #666666);
+}
+
+.style-pill.active {
+	background-color: var(--jp-brand-color1, #0e703c);
+	color: #ffffff;
+	border-color: var(--jp-brand-color0, #107c41);
+	font-weight: 600;
+}
+
+.style-pill.focused {
+	outline: 2px solid var(--jp-brand-color2, #28a745);
+	outline-offset: 1px;
+}
+
+.style-icon {
+	font-size: 0.85rem;
+	line-height: 1;
+}
+
+.style-label {
+	white-space: nowrap;
+}
+
+.style-badge {
+	padding: 1px 5px;
+	border-radius: 8px;
+	background-color: rgba(255, 255, 255, 0.15);
+	font-size: 0.7rem;
+	line-height: 1;
+}

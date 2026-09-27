@@ -450,7 +450,7 @@ export class TerminalEventManager
 				}
 				this.pooledCtx.term.write('\n\rCTRL+C');
 				termEventSelf.TERMINATE = true;
-				if((window as any).building) this.pooledCtx.term.write('\n\rStopping build...');
+				if(termEventSelf.building) this.pooledCtx.term.write('\n\rStopping build...');
 				this.historyManager.writePrompt(this.pooledCtx.term);
 				state.cursorPosition = 0;
 				state.currentLine = '';

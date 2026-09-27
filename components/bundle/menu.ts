@@ -47,7 +47,7 @@ export interface ComponentRoute
 export const MODULE_REGISTRY: Record<string, ComponentRoute> = {
 	'collapse': { label: 'Collapse', iconClass: 'bx bx-arrow-in-left-square-half' },
 	'searchlist': { label: 'Search Files', url: './components/filelist/widget-search.ts', className: 'SearchListWidget', iconClass: 'bx bx-search' },
-	'filelist': { label: 'Engine Files', url: './components/filelist/widget-assets.ts', className: 'AssetListWidget', iconClass: 'bx bx-folder-code' },
+	'fileview': { label: 'Engine Files', url: './components/fileview/widget.ts', className: 'FileviewWidget', iconClass: 'bx bx-folder-code' },
 
 	'music': { label: 'Music', url: './components/music/widget.ts', className: 'MusicWidget', iconClass: 'bx bx-music' },
 	'photos': { label: 'Photos', url: './components/photo/widget.ts', className: 'PhotoWidget', iconClass: 'bx bx-camera-alt' },
@@ -128,10 +128,10 @@ export async function triggerPanelRoute(panelId: string, mainDock: DockPanel, no
 
 		if(route.className === 'TerminalWidget')
 		{
-			targetMemoryWidgets = (window as any).terminalWidgets || [];
+			targetMemoryWidgets = menuSelf.terminalWidgets || [];
 		} else if(route.className && OUTLINE_WIDGET_TYPES.includes(route.className))
 		{
-			targetMemoryWidgets = ((window as any).fileListWidgets || []).filter(
+			targetMemoryWidgets = (menuSelf.fileListWidgets || []).filter(
 				(w: any) => w.constructor.name === route.className
 			);
 		}

@@ -1,0 +1,431 @@
+/* ==========================================================================
+   NETFLIX DETAILS VIEW WIDGET STYLES
+   ========================================================================== */
+
+.netflix-details-widget {
+	width: 100%;
+	height: 100%;
+	background-color: #141414;
+	color: #e5e5e5;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+/* 1. Top Control Bar */
+.ndw-top-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 24px;
+	background: rgba(20, 20, 20, 0.95);
+	border-bottom: 1px solid #282828;
+	gap: 16px;
+	z-index: 20;
+}
+
+.ndw-search-wrapper {
+	position: relative;
+	flex: 0 1 320px;
+	display: flex;
+	align-items: center;
+}
+
+.ndw-search-wrapper .search-icon {
+	position: absolute;
+	left: 12px;
+	color: #808080;
+	font-size: 1.2rem;
+}
+
+.ndw-search-input {
+	width: 100%;
+	background: #000000;
+	border: 1px solid #333333;
+	color: #ffffff;
+	padding: 8px 12px 8px 38px;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	outline: none;
+	transition: border-color 0.2s ease;
+}
+
+.ndw-search-input:focus {
+	border-color: #e50914;
+}
+
+.ndw-result-count {
+	font-size: 0.85rem;
+	color: #808080;
+	font-weight: 600;
+}
+
+.ndw-controls-wrapper {
+	position: relative;
+	display: flex;
+	gap: 12px;
+}
+
+.ndw-btn {
+	background: #2b2b2b;
+	color: #ffffff;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 4px;
+	font-size: 0.85rem;
+	font-weight: 700;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.ndw-btn:hover {
+	background: #3f3f3f;
+}
+
+.ndw-mode-btn {
+	background: #e50914;
+}
+
+.ndw-mode-btn:hover {
+	background: #f40612;
+}
+
+/* Popover Controls Menu */
+.ndw-popover-menu {
+	position: absolute;
+	top: 45px;
+	right: 120px;
+	width: 260px;
+	background: #181818;
+	border: 1px solid #333333;
+	border-radius: 6px;
+	padding: 16px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+	display: none;
+	flex-direction: column;
+	gap: 12px;
+	z-index: 100;
+}
+
+.ndw-popover-menu.visible {
+	display: flex;
+}
+
+.popover-section label {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.75rem;
+	color: #808080;
+	font-weight: 800;
+	margin-bottom: 8px;
+	text-transform: uppercase;
+}
+
+.popover-btn-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.popover-chip {
+	background: #2b2b2b;
+	border: none;
+	color: #aaaaaa;
+	padding: 4px 10px;
+	border-radius: 3px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	cursor: pointer;
+	flex: 1 1 auto;
+}
+
+.popover-chip.active {
+	background: #e50914;
+	color: #ffffff;
+}
+
+.popover-divider {
+	height: 1px;
+	background: #282828;
+}
+
+/* 2. Season-Inspired Quick Scrubber Toolbar */
+.ndw-scrubber-bar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 24px;
+	background: #0f0f0f;
+	border-bottom: 1px solid #202020;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.ndw-scrubber-bar::-webkit-scrollbar {
+	display: none;
+}
+
+.ndw-scrubber-chip {
+	background: transparent;
+	border: 1px solid #282828;
+	color: #555555;
+	padding: 4px 12px;
+	border-radius: 12px;
+	font-size: 0.75rem;
+	font-weight: 800;
+	cursor: not-allowed;
+	white-space: nowrap;
+}
+
+.ndw-scrubber-chip.has-data {
+	color: #cccccc;
+	border-color: #444444;
+	cursor: pointer;
+}
+
+.ndw-scrubber-chip.has-data:hover {
+	background: #e50914;
+	border-color: #e50914;
+	color: #ffffff;
+}
+
+/* 3. Groups Stage & Sticky Lumino Accordion Headers */
+.ndw-groups-container {
+	flex: 1;
+	overflow-y: auto;
+	padding: 0 24px 40px 24px;
+	scroll-behavior: smooth;
+}
+
+.ndw-group-section {
+	margin-top: 24px;
+}
+
+.ndw-sticky-header {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background: rgba(20, 20, 20, 0.95);
+	backdrop-filter: blur(10px);
+	padding: 12px 16px;
+	border-bottom: 2px solid #e50914;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	cursor: pointer;
+	user-select: none;
+}
+
+.ndw-header-left {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.accordion-chevron {
+	font-size: 1.4rem;
+	color: #e50914;
+}
+
+.ndw-group-title {
+	font-size: 1.2rem;
+	font-weight: 900;
+	letter-spacing: 0.5px;
+	color: #ffffff;
+}
+
+.ndw-group-badge {
+	background: #2b2b2b;
+	color: #e5e5e5;
+	font-size: 0.65rem;
+	font-weight: 800;
+	padding: 2px 8px;
+	border-radius: 10px;
+}
+
+.ndw-header-right {
+	font-size: 0.85rem;
+	color: #808080;
+	font-weight: 600;
+}
+
+/* 4. Table Details View */
+.ndw-details-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: #181818;
+	margin-top: 4px;
+}
+
+.ndw-details-table th {
+	text-align: left;
+	padding: 12px 16px;
+	font-size: 0.75rem;
+	color: #808080;
+	text-transform: uppercase;
+	border-bottom: 1px solid #282828;
+}
+
+.ndw-table-row {
+	border-bottom: 1px solid #222222;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.ndw-table-row:hover {
+	background: #252525;
+}
+
+.ndw-table-row td {
+	padding: 12px 16px;
+	font-size: 0.85rem;
+}
+
+.cell-name {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.file-icon {
+	font-size: 1.5rem;
+}
+
+.file-img {
+	color: #46d369;
+}
+
+.file-vid {
+	color: #e50914;
+}
+
+.file-aud {
+	color: #a371f7;
+}
+
+.file-pdf {
+	color: #ff5252;
+}
+
+.file-zip {
+	color: #ffb300;
+}
+
+.file-gen {
+	color: #808080;
+}
+
+.name-meta-stack {
+	display: flex;
+	flex-direction: column;
+}
+
+.file-title {
+	font-weight: 700;
+	color: #ffffff;
+}
+
+.file-sub-size {
+	font-size: 0.75rem;
+	color: #808080;
+}
+
+.mime-tag {
+	background: rgba(255, 255, 255, 0.08);
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 0.75rem;
+}
+
+/* 5. Netflix Row Carousel View */
+.ndw-carousel-wrapper {
+	padding: 16px 0;
+	overflow: hidden;
+}
+
+.ndw-carousel-track {
+	display: flex;
+	gap: 16px;
+	overflow-x: auto;
+	scrollbar-width: none;
+	padding-bottom: 10px;
+}
+
+.ndw-carousel-track::-webkit-scrollbar {
+	display: none;
+}
+
+.ndw-carousel-card {
+	flex: 0 0 220px;
+	height: 130px;
+	border-radius: 6px;
+	position: relative;
+	padding: 16px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	cursor: pointer;
+	transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ndw-carousel-card:hover {
+	transform: scale(1.08) translateY(-4px);
+	z-index: 5;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+}
+
+.card-media-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 80%);
+	border-radius: 6px;
+}
+
+.card-content {
+	position: relative;
+	z-index: 2;
+}
+
+.card-icon {
+	font-size: 1.8rem;
+	margin-bottom: 6px;
+}
+
+.card-title {
+	font-size: 0.9rem;
+	font-weight: 800;
+	color: #ffffff;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.card-sub {
+	font-size: 0.75rem;
+	color: #aaaaaa;
+}
+
+/* Empty State */
+.ndw-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 80px 0;
+	color: #555555;
+	gap: 12px;
+}
+
+.ndw-empty-state i {
+	font-size: 3rem;
+}

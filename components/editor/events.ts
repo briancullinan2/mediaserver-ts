@@ -177,7 +177,7 @@ export class AceEventManager
 			tokenType,
 			isFunctionCall,
 			compilerError,
-			id: (this._widget as any).currentOpenFileId ?? 'unknown',
+			id: editorSelf.currentOpenFileId ?? 'unknown',
 			file: (this._widget as any).filePath ?? null,
 		};
 
@@ -294,8 +294,8 @@ export class AceEventManager
 		const absoluteGutterRight = gutterRect.right;
 
 		const correctedLeft = absoluteGutterRight + 10;
-		const rowHeight = (this._widget._editor?.renderer as any).layerConfig?.lineHeight || 19;
-		const correctedTop = rowCoords?.pageY + rowHeight;
+		const rowHeight = (this._widget._editor?.renderer)?.layerConfig?.lineHeight || 19;
+		const correctedTop = (rowCoords?.pageY ?? gutterRect.top) + rowHeight;
 
 		this._globalTooltip.style.left = correctedLeft + 'px';
 		this._globalTooltip.style.top = correctedTop + 'px';

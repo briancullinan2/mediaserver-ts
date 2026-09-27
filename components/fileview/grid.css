@@ -1,0 +1,283 @@
+/* ==========================================================================
+   EXPLORER TILE & GRID WIDGET STYLES
+   ========================================================================== */
+
+.explorer-grid-widget {
+	width: 100%;
+	height: 100%;
+	background: #121212;
+	color: #e0e0e0;
+	font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+/* 1. Header Toolbar Controls */
+.egw-toolbar {
+	display: flex;
+	align-items: center;
+	padding: 8px 16px;
+	background: #1a1a1a;
+	border-bottom: 1px solid #2a2a2a;
+	gap: 16px;
+	z-index: 10;
+}
+
+.egw-toolbar-group {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.egw-toolbar-group label {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: #888888;
+	text-transform: uppercase;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.egw-btn-group {
+	display: flex;
+	background: #0a0a0a;
+	border-radius: 4px;
+	padding: 2px;
+	border: 1px solid #2a2a2a;
+}
+
+.egw-tool-btn {
+	background: transparent;
+	border: none;
+	color: #aaaaaa;
+	padding: 4px 10px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	border-radius: 3px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	transition: all 0.15s ease;
+}
+
+.egw-tool-btn:hover {
+	color: #ffffff;
+}
+
+.egw-tool-btn.active {
+	background: #0078d4;
+	color: #ffffff;
+}
+
+.egw-toolbar-divider {
+	width: 1px;
+	height: 20px;
+	background: #2a2a2a;
+}
+
+/* 2. Scrollable Grid Viewport Stage */
+.egw-viewport {
+	flex: 1;
+	position: relative;
+	overflow: auto;
+	padding: 16px;
+	outline: none;
+}
+
+.egw-grid-container {
+	display: grid;
+	gap: 12px;
+	align-content: start;
+}
+
+/* Default Row-First Wrap */
+.egw-grid-container[data-flow="row-first"][data-icon-size="small"] {
+	grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+}
+
+.egw-grid-container[data-flow="row-first"][data-icon-size="medium"] {
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.egw-grid-container[data-flow="row-first"][data-icon-size="large"] {
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.egw-grid-container[data-flow="row-first"][data-icon-size="huge"] {
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+/* 3. Dynamic Grid Items */
+.egw-grid-item {
+	background: #1a1a1a;
+	border: 1px solid #282828;
+	border-radius: 6px;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	cursor: pointer;
+	user-select: none;
+	position: relative;
+	transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.egw-grid-item:hover {
+	background: #252525;
+	border-color: #383838;
+}
+
+.egw-grid-item.selected {
+	background: rgba(0, 120, 212, 0.25) !important;
+	border-color: #0078d4 !important;
+}
+
+/* Icon Sizing Modes */
+.egw-grid-container[data-icon-size="small"] .egw-item-thumbnail {
+	font-size: 1.8rem;
+}
+
+.egw-grid-container[data-icon-size="medium"] .egw-item-thumbnail {
+	font-size: 2.8rem;
+}
+
+.egw-grid-container[data-icon-size="large"] .egw-item-thumbnail {
+	font-size: 4rem;
+}
+
+.egw-grid-container[data-icon-size="huge"] .egw-item-thumbnail {
+	font-size: 5.5rem;
+}
+
+.egw-item-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: #ffffff;
+	margin-top: 6px;
+	width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.egw-item-badge {
+	font-size: 0.7rem;
+	color: #777777;
+	margin-top: 2px;
+}
+
+/* Color File Type Indicators */
+.file-img {
+	color: #46d369;
+}
+
+.file-vid {
+	color: #e50914;
+}
+
+.file-aud {
+	color: #a371f7;
+}
+
+.file-pdf {
+	color: #ff5252;
+}
+
+.file-zip {
+	color: #ffb300;
+}
+
+.file-gen {
+	color: #0078d4;
+}
+
+/* 4. Translucent Drag Marquee Selector */
+.egw-marquee-box {
+	position: absolute;
+	background: rgba(0, 120, 212, 0.3);
+	border: 1px solid #0078d4;
+	border-radius: 2px;
+	pointer-events: none;
+	display: none;
+	z-index: 100;
+}
+
+/* 5. Floating Hover Expandable Details Card */
+.egw-hover-card {
+	position: absolute;
+	width: 230px;
+	background: #1f1f1f;
+	border: 1px solid #333333;
+	border-radius: 6px;
+	padding: 12px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+	pointer-events: none;
+	opacity: 0;
+	transform: translateY(6px);
+	transition: opacity 0.2s ease, transform 0.2s ease;
+	z-index: 200;
+}
+
+.egw-hover-card.visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.egw-card-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 1.2rem;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #2a2a2a;
+}
+
+.egw-card-title {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: #ffffff;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.egw-card-body {
+	margin-top: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 0.75rem;
+}
+
+.egw-card-row {
+	display: flex;
+	justify-content: space-between;
+	color: #888888;
+}
+
+.egw-card-row strong {
+	color: #dddddd;
+	font-weight: 600;
+}
+
+/* Empty State */
+.egw-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 80px 0;
+	color: #444444;
+	gap: 8px;
+	grid-column: 1 / -1;
+}
+
+.egw-empty-state i {
+	font-size: 3.5rem;
+}

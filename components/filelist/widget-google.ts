@@ -6,15 +6,14 @@ import type { GithubWindow } from "../bundle/github.d";
 import type { BuildWindow } from "../bundle/make.d";
 import type { SettingConfig, Settings } from "../bundle/settings.js";
 import { Signal, ISignal } from '@lumino/signaling';
-import { Widget } from "@lumino/widgets";
-import type { DriveFile, FilelistWindow, WidgetErrorEventArgs } from "./widget.d";
+import type { DriveFile, FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from "./widget.d";
 
 const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & FilelistWindow & {
 	settingsManager: Settings;
 	GoogleDriveWidget: typeof GoogleDriveWidget;
 } = self as unknown as any;
 
-export class GoogleDriveWidget extends FileListWidget
+export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 {
 	private rootFolderName: string | null = null;
 	private _errorOccurred = new Signal<this, WidgetErrorEventArgs>(this);

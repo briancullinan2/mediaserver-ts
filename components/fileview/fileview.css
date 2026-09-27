@@ -1,42 +1,285 @@
-/* Container & Layout */
-.cloud-drive-explorer-widget {
+/* ==========================================================================
+   FileviewWidget & Explorer Enhanced Shell Stylesheet
+   ========================================================================== */
+
+.cloud-drive-explorer-widget,
+.explorer-enhanced-shell {
+	display: flex;
+	flex-direction: column;
 	width: 100%;
 	height: 100%;
+	box-sizing: border-box;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	color: #333333;
+	background-color: #f8f9fa;
 	overflow: hidden;
-	background-color: #141414;
-	color: #ffffff;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .cloud-explorer-container {
 	display: flex;
+	flex-direction: column;
 	width: 100%;
 	height: 100%;
+	overflow: hidden;
 }
 
-/* Left Sidebar Tree */
+/* --------------------------------------------------------------------------
+   1. Ribbon Bar Top Control Header
+   -------------------------------------------------------------------------- */
+.explorer-ribbon-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 12px;
+	background-color: #ffffff;
+	border-bottom: 1px solid #e2e8f0;
+	gap: 12px;
+	flex-shrink: 0;
+	user-select: none;
+}
+
+.ribbon-group {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.ribbon-divider {
+	width: 1px;
+	height: 20px;
+	background-color: #cbd5e1;
+	margin: 0 4px;
+}
+
+.ribbon-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 10px;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+	background-color: #ffffff;
+	color: #334155;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.ribbon-btn:hover:not(:disabled) {
+	background-color: #f1f5f9;
+	border-color: #94a3b8;
+	color: #0f172a;
+}
+
+.ribbon-btn:active:not(:disabled),
+.ribbon-btn.active {
+	background-color: #e2e8f0;
+	border-color: #64748b;
+}
+
+.ribbon-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.ribbon-btn.danger {
+	color: #dc2626;
+}
+
+.ribbon-btn.danger:hover:not(:disabled) {
+	background-color: #fef2f2;
+	border-color: #fca5a5;
+}
+
+.ribbon-select {
+	padding: 5px 8px;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+	background-color: #ffffff;
+	color: #334155;
+	font-size: 13px;
+	outline: none;
+	cursor: pointer;
+}
+
+.ribbon-select:focus {
+	border-color: #3b82f6;
+}
+
+.toggle-switch {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	color: #475569;
+	cursor: pointer;
+}
+
+.toggle-switch input[type="checkbox"] {
+	cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   2. Address Bar & Navigation Header
+   -------------------------------------------------------------------------- */
+.explorer-address-bar-container {
+	display: flex;
+	align-items: center;
+	padding: 6px 12px;
+	background-color: #f1f5f9;
+	border-bottom: 1px solid #e2e8f0;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.nav-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background: transparent;
+	color: #475569;
+	font-size: 16px;
+	cursor: pointer;
+}
+
+.nav-btn:hover {
+	background-color: #e2e8f0;
+	border-color: #cbd5e1;
+}
+
+.address-bar-wrapper {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	height: 28px;
+	padding: 0 8px;
+	background-color: #ffffff;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+	overflow: hidden;
+	position: relative;
+}
+
+.address-icon {
+	color: #64748b;
+	margin-right: 6px;
+}
+
+.breadcrumb-trail {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 13px;
+	color: #334155;
+	width: 100%;
+	cursor: text;
+	white-space: nowrap;
+}
+
+.breadcrumb-item {
+	padding: 2px 4px;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.breadcrumb-item:hover {
+	background-color: #e2e8f0;
+	color: #0284c7;
+}
+
+.breadcrumb-separator {
+	color: #94a3b8;
+	user-select: none;
+}
+
+.address-input {
+	width: 100%;
+	height: 100%;
+	border: none;
+	outline: none;
+	font-size: 13px;
+	color: #0f172a;
+	background: transparent;
+}
+
+.search-bar-wrapper {
+	display: flex;
+	align-items: center;
+	width: 200px;
+	height: 28px;
+	padding: 0 8px;
+	background-color: #ffffff;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+}
+
+.search-icon {
+	color: #94a3b8;
+	margin-right: 6px;
+}
+
+.search-input {
+	width: 100%;
+	border: none;
+	outline: none;
+	font-size: 13px;
+	color: #0f172a;
+	background: transparent;
+}
+
+.hidden {
+	display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. Main Explorer Workspace Layout
+   -------------------------------------------------------------------------- */
+.explorer-workspace {
+	display: flex;
+	flex: 1;
+	height: calc(100% - 82px);
+	overflow: hidden;
+	position: relative;
+}
+
+/* Left Navigation Sidebar */
 .cloud-tree-sidebar {
-	width: 240px;
-	min-width: 180px;
-	background-color: #181818;
-	border-right: 1px solid #282828;
+	width: 220px;
+	background-color: #ffffff;
+	border-right: 1px solid #e2e8f0;
 	display: flex;
 	flex-direction: column;
+	flex-shrink: 0;
 }
 
 .sidebar-header {
-	padding: 12px 16px;
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
-	border-bottom: 1px solid #282828;
+	justify-content: space-between;
+	padding: 10px 12px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #64748b;
+	border-bottom: 1px solid #f1f5f9;
 }
 
-.sidebar-title {
-	font-weight: 600;
-	font-size: 0.9rem;
-	color: #a0a0a0;
-	text-transform: uppercase;
+.sidebar-refresh-btn {
+	border: none;
+	background: transparent;
+	color: #64748b;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.sidebar-refresh-btn:hover {
+	color: #0f172a;
 }
 
 .sidebar-tree-content {
@@ -45,26 +288,36 @@
 	padding: 8px 0;
 }
 
-.sidebar-tree-list {
+.tree-root-list {
 	list-style: none;
-	padding: 0;
 	margin: 0;
+	padding: 0;
 }
 
 .tree-item {
-	padding: 8px 16px;
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	padding: 6px 14px;
+	font-size: 13px;
+	color: #334155;
 	cursor: pointer;
-	font-size: 0.9rem;
-	color: #cccccc;
-	transition: background 0.15s ease;
+	transition: background-color 0.15s ease;
 }
 
 .tree-item:hover {
-	background-color: #2a2a2a;
-	color: #ffffff;
+	background-color: #f1f5f9;
+	color: #0f172a;
+}
+
+.tree-item.active {
+	background-color: #e0f2fe;
+	color: #0284c7;
+	font-weight: 600;
+}
+
+.tree-item i {
+	font-size: 16px;
 }
 
 /* Main Content Panel */
@@ -73,75 +326,94 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+	background-color: #ffffff;
 }
 
-/* Toolbar & View Switcher */
 .cloud-toolbar {
-	height: 48px;
-	padding: 0 16px;
+	padding: 8px 12px;
+	background-color: #ffffff;
+	border-bottom: 1px solid #f1f5f9;
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
-	background-color: #1f1f1f;
-	border-bottom: 1px solid #282828;
-}
-
-.breadcrumb-trail {
-	font-size: 0.95rem;
-	font-weight: 500;
 }
 
 .view-switcher-buttons {
 	display: flex;
 	gap: 4px;
-	background-color: #141414;
+	background-color: #f1f5f9;
 	padding: 3px;
 	border-radius: 6px;
 }
 
 .view-btn {
-	background: transparent;
-	border: none;
-	color: #888888;
-	padding: 6px 10px;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 1.2rem;
 	display: flex;
 	align-items: center;
-	transition: all 0.2s;
+	gap: 5px;
+	padding: 4px 10px;
+	border: none;
+	background: transparent;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 500;
+	color: #64748b;
+	cursor: pointer;
+	transition: all 0.15s ease;
 }
 
 .view-btn:hover {
-	color: #ffffff;
+	color: #0f172a;
 }
 
 .view-btn.active {
-	background-color: #e50914;
-	/* Netflix Red accent */
+	background-color: #ffffff;
+	color: #0284c7;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Stage Area Supporting Multi-View Container Spans */
+.cloud-view-stage {
+	flex: 1;
+	display: flex;
+	overflow: auto;
+	padding: 12px;
+	gap: 12px;
+	background-color: #f8f9fa;
+}
+
+.view-pane {
+	flex: 1;
+	min-width: 0;
+	height: 100%;
+	overflow-y: auto;
+	background-color: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 6px;
+	padding: 12px;
+	box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   4. View Layout Modes
+   -------------------------------------------------------------------------- */
+
+/* A. Netflix Horizontal Rows */
+.view-pane-netflix {
+	background-color: #141414;
 	color: #ffffff;
 }
 
-.cloud-view-stage {
-	flex: 1;
-	overflow-y: auto;
-	padding: 16px;
-}
-
-/* Netflix Style View */
-.netflix-rows-container {
-	display: flex;
-	flex-direction: column;
-	gap: 24px;
+.netflix-row {
+	margin-bottom: 24px;
 }
 
 .netflix-row-title {
-	font-size: 1.2rem;
-	margin: 0 0 12px 0;
+	margin: 0 0 10px 0;
+	font-size: 15px;
 	font-weight: 600;
+	color: #e5e5e5;
 }
 
-.netflix-carousel {
+.netflix-row-slider {
 	display: flex;
 	gap: 12px;
 	overflow-x: auto;
@@ -149,89 +421,349 @@
 }
 
 .netflix-card {
-	min-width: 200px;
-	max-width: 200px;
-	height: 130px;
-	background-color: #222222;
+	flex: 0 0 140px;
+	height: 160px;
+	background-color: #1f1f1f;
 	border-radius: 4px;
 	overflow: hidden;
-	position: relative;
 	cursor: pointer;
-	transition: transform 0.2s ease;
+	transition: transform 0.2s ease, border-color 0.2s ease;
+	border: 2px solid transparent;
+	display: flex;
+	flex-direction: column;
 }
 
 .netflix-card:hover {
-	transform: scale(1.05);
-	z-index: 2;
+	transform: scale(1.04);
+	background-color: #2a2a2a;
 }
 
-.netflix-card-media {
+.netflix-card.selected {
+	border-color: #e50914;
+}
+
+.card-media {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #2b2b2b;
+	overflow: hidden;
+}
+
+.card-media img {
 	width: 100%;
-	height: 80%;
-	background-size: cover;
-	background-position: center;
+	height: 100%;
+	object-fit: cover;
 }
 
-.netflix-card-title {
-	padding: 4px 8px;
-	font-size: 0.8rem;
+.card-media i {
+	font-size: 42px;
+	color: #808080;
+}
+
+.card-details {
+	padding: 8px;
+	background-color: #181818;
+}
+
+.card-title {
+	display: block;
+	font-size: 12px;
+	color: #ffffff;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-/* Grid View */
-.explorer-grid {
+/* B. Grid View */
+.grid-view-container {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-	gap: 16px;
+	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+	gap: 12px;
 }
 
 .grid-item {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 12px;
+	padding: 10px;
 	border-radius: 6px;
+	border: 1px solid transparent;
 	cursor: pointer;
+	transition: background-color 0.15s ease;
 }
 
 .grid-item:hover {
-	background-color: #222222;
+	background-color: #f1f5f9;
 }
 
-.grid-item-icon {
-	font-size: 2.5rem;
-	color: #e50914;
+.grid-item.selected {
+	background-color: #e0f2fe;
+	border-color: #38bdf8;
 }
 
-.grid-item-label {
-	margin-top: 6px;
-	font-size: 0.8rem;
+.grid-icon {
+	width: 64px;
+	height: 64px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 6px;
+}
+
+.grid-icon img {
+	max-width: 100%;
+	max-height: 100%;
+	border-radius: 4px;
+	object-fit: contain;
+}
+
+.grid-icon i {
+	font-size: 48px;
+	color: #0284c7;
+}
+
+.grid-label {
+	font-size: 12px;
 	text-align: center;
-	word-break: break-word;
+	color: #334155;
+	width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-/* Details Table View */
-.explorer-details-table {
+/* C. Details Table View */
+.details-table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 0.85rem;
-}
-
-.explorer-details-table th,
-.explorer-details-table td {
-	padding: 8px 12px;
+	font-size: 13px;
 	text-align: left;
-	border-bottom: 1px solid #282828;
 }
 
-.explorer-details-table th {
-	color: #888888;
+.details-table th {
+	padding: 8px 12px;
+	border-bottom: 2px solid #e2e8f0;
+	color: #64748b;
+	font-weight: 600;
+}
+
+.details-row {
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.details-row:hover {
+	background-color: #f8fafc;
+}
+
+.details-row.selected {
+	background-color: #e0f2fe;
+}
+
+.details-row td {
+	padding: 8px 12px;
+	border-bottom: 1px solid #f1f5f9;
+	color: #334155;
+}
+
+.name-cell {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	font-weight: 500;
 }
 
-.code-font {
-	font-family: monospace;
-	color: #777777;
+.name-cell i {
+	font-size: 18px;
+	color: #0284c7;
+}
+
+/* D. iTunes Coverflow Stage */
+.view-pane-itunes {
+	background-color: #050505;
+}
+
+.itunes-coverflow-stage {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	perspective: 800px;
+	overflow-x: auto;
+}
+
+.coverflow-track {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 40px;
+}
+
+.coverflow-item {
+	width: 160px;
+	height: 160px;
+	background-color: #111;
+	border-radius: 6px;
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+	cursor: pointer;
+	transition: all 0.3s ease;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #333;
+}
+
+.coverflow-item:hover,
+.coverflow-item.selected {
+	transform: scale(1.15) translateZ(20px);
+	border-color: #38bdf8;
+	z-index: 10;
+}
+
+.coverflow-item img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: 6px;
+}
+
+.coverflow-placeholder i {
+	font-size: 54px;
+	color: #555;
+}
+
+.coverflow-title {
+	position: absolute;
+	bottom: -28px;
+	font-size: 12px;
+	color: #ccc;
+	white-space: nowrap;
+}
+
+/* E. Subtree External Mount Node */
+.subtree-widget-mount {
+	width: 100%;
+	height: 100%;
+}
+
+.widget-fallback-info {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	height: 100%;
+	color: #64748b;
+	font-size: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   5. Slide-Out Inspector Panel
+   -------------------------------------------------------------------------- */
+.cloud-inspector-panel {
+	width: 260px;
+	background-color: #ffffff;
+	border-left: 1px solid #e2e8f0;
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	transition: margin-right 0.2s ease;
+}
+
+.inspector-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 14px;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.inspector-header h3 {
+	margin: 0;
+	font-size: 14px;
+	color: #0f172a;
+}
+
+.close-inspector-btn {
+	border: none;
+	background: transparent;
+	font-size: 18px;
+	color: #64748b;
+	cursor: pointer;
+}
+
+.inspector-body {
+	padding: 14px;
+	flex: 1;
+	overflow-y: auto;
+}
+
+.empty-selection {
+	font-size: 13px;
+	color: #94a3b8;
+	text-align: center;
+	margin-top: 40px;
+}
+
+.inspector-file-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.inspector-preview {
+	width: 100%;
+	height: 140px;
+	background-color: #f8fafc;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 12px;
+	overflow: hidden;
+}
+
+.inspector-preview img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+}
+
+.icon-large {
+	font-size: 56px;
+	color: #0284c7;
+}
+
+.inspector-file-card h4 {
+	margin: 0 0 12px 0;
+	font-size: 14px;
+	word-break: break-all;
+	text-align: center;
+}
+
+.inspector-meta-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+	font-size: 12px;
+	color: #475569;
+}
+
+.inspector-meta-list li {
+	padding: 4px 0;
+	border-bottom: 1px dashed #f1f5f9;
+	word-break: break-all;
+}
+
+.inspector-multi-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding-top: 40px;
+	color: #64748b;
 }

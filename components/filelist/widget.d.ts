@@ -70,6 +70,12 @@ export interface WidgetErrorEventArgs
 }
 
 
+export interface IErrorEvent
+{
+	get errorOccurred(): ISignal<this, WidgetErrorEventArgs>;
+}
+
+
 interface DriveFile
 {
 	id: string;

@@ -328,10 +328,10 @@ export class SearchListWidget extends FileListWidget
 			id: g.path,
 			path: g.path,
 			text: g.path.split('/').pop() || g.path,
-			mode: (window as any).FS_FILE || 33188
+			mode: filelistSelf.FS_FILE || 33188
 		}));
 
-		const nodes = (window as any).convertFlatToNested?.(flatItems) || [];
+		const nodes = filelistSelf.convertFlatToNested?.(flatItems) || [];
 
 		this.loadedDatabases[searchDbKey] = {
 			id: searchDbKey,

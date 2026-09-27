@@ -390,7 +390,7 @@ export function terminalClickEvent(term: Terminal)
 	if(!term.element) return;
 
 	const softActive = document.querySelector('#terminals a[href="#soft"].active') !== null;
-	if(softActive && (window as any).isModifierPressed && typeof term.element.requestPointerLock === 'function')
+	if(softActive && renderSelf.isModifierPressed && typeof term.element.requestPointerLock === 'function')
 	{
 		term.element.requestPointerLock();
 	}
