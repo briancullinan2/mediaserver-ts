@@ -8,7 +8,13 @@ import type { FileListWidget, GameListWidget } from "./widget";
 import type { LuminoWindow } from '../bundle/lumino.d';
 import type { ApiWindow, WorkerWindow } from "../bundle/worker.d";
 import type { BuildWindow } from "../bundle/make.d";
-
+import type { SearchListWidget } from "./widget-search";
+//import type { LocalD} from "./widget-local";
+import type { HttpIndexWidget } from "./widget-index";
+import type { GoogleDriveWidget } from "./widget-google";
+import type { GithubListWidget } from "./widget-github";
+import type { DatabaseListWidget } from "./widget-database";
+import type { AssetListWidget } from "./widget-assets";
 
 type PermissionState = 'granted' | 'denied' | 'prompt';
 
@@ -76,7 +82,7 @@ export interface IErrorEvent
 }
 
 
-interface DriveFile
+export interface DriveFile
 {
 	id: string;
 	name: string;
@@ -85,3 +91,29 @@ interface DriveFile
 	webContentLink?: string;
 }
 
+export interface FileListWindow
+{
+	fileListWidget: FileListWidget;
+	FileListWidget: typeof FileListWidget;
+
+	searchListWidget: SearchListWidget;
+	SearchListWidget: typeof SearchListWidget;
+
+	httpIndexWidget: HttpIndexWidget;
+	HttpIndexWidget: typeof HttpIndexWidget;
+
+	googleDriveWidget: GoogleDriveWidget;
+	GoogleDriveWidget: typeof GoogleDriveWidget;
+
+	githubListWidget: GithubListWidget;
+	GithubListWidget: typeof GithubListWidget;
+
+	assetListWidget: AssetListWidget;
+	AssetListWidget: typeof AssetListWidget;
+
+	gameListWidget: GameListWidget;
+	GameListWidget: typeof GameListWidget;
+
+	DatabaseListWidget: DatabaseListWidget;
+	DatabaseListWidget: typeof DatabaseListWidget;
+}

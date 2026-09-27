@@ -7,9 +7,13 @@ import type { LuminoLayoutWindow } from "./lumino.d";
 import type { EditorWindow } from "../editor/widget.d";
 import type { GlobalToolbarsWindow, RepositorySettingsWindow } from "./menu.d";
 
+export type SettingsWindow =
+	{
+		[K in keyof typeof LOCAL_SETTINGS]: typeof LOCAL_SETTINGS[K];
+	};
 
 const luminoSelf: LuminoLayoutWindow & EditorWindow & RepositorySettingsWindow
-	& GlobalToolbarsWindow & RepositorySettingsWindow
+	& GlobalToolbarsWindow & RepositorySettingsWindow & SettingsWindow
 	= self as unknown as any;
 
 

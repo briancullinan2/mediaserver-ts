@@ -2,7 +2,7 @@ import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
-import type { DriveFile, IErrorEvent, WidgetErrorEventArgs } from '../filelist/widget.d';
+import type { DriveFile, FileListWindow, IErrorEvent, WidgetErrorEventArgs } from '../filelist/widget.d';
 
 export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree' | 'music' | string;
 
@@ -15,8 +15,9 @@ export interface SourceProviderConfig
 	getWidget: (source: string) => Widget;
 }
 
-const widgetSelf = self as unknown as LuminoLayoutWindow & GlobalToolbarsWindow & {
-
+const widgetSelf = self as unknown as LuminoLayoutWindow & GlobalToolbarsWindow & FileListWindow & {
+	artWidget: ArtWidget;
+	ArtWidget: typeof ArtWidget;
 };
 
 export class ArtWidget extends Widget
@@ -107,9 +108,9 @@ export class ArtWidget extends Widget
 		// Local File System / Workspace Fallback
 		else if(source.startsWith('file://') || source.startsWith('local://'))
 		{
-			if(widgetSelf.LocalDriveWidget)
+			if(widgetSelf.FileListWidget)
 			{
-				return new widgetSelf.LocalDriveWidget('Local Workspace', source);
+				return new widgetSelf.FileListWidget('Local Workspace', source);
 			}
 		}
 
