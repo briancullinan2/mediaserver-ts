@@ -262,6 +262,9 @@ export interface NestedTreeNode
 	mode?: number;
 	parent?: string;
 	sha?: string | null;
+	mimeType?: string | null;
+	size?: number | null;
+	modifiedTime?: string | number | null;
 	children?: NestedTreeNode[] | null | undefined;
 }
 

@@ -1,4 +1,4 @@
-import type { NestedTreeNode } from "../bundle/github-tools";
+import type { FlatFileNode, NestedTreeNode } from "../bundle/github-tools";
 import { FileListWidget } from "./widget";
 import Tree from './tree.js';
 import type { GlobalToolbarsWindow } from "../bundle/menu.d";
@@ -6,9 +6,18 @@ import type { GithubWindow } from "../bundle/github.d";
 import type { BuildWindow } from "../bundle/make.d";
 import type { SettingConfig } from "../bundle/settings.js";
 import { Signal, ISignal } from '@lumino/signaling';
-import type { DriveFile, FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from "./widget.d";
+import type { FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from "./widget.d";
 
 const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & FilelistWindow = self as unknown as any;
+
+
+export interface GoogleDriveFile extends FlatFileNode
+{
+	mimeType?: string;
+	modifiedTime?: string;
+	thumbnailLink?: string;
+}
+
 
 export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 {
@@ -42,7 +51,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 		return rawSource.replace(/^GoogleDrive\//i, '').trim();
 	}
 
-	public static async fetchDriveFiles(query: string): Promise<DriveFile[]>
+	public static async fetchDriveFiles(query: string): Promise<GoogleDriveFile[]>
 	{
 		const apiKey = filelistSelf.settingsManager?.get('filelist', 'google_key') || GOOGLE_CLOUD_API_KEY;
 		// Added thumbnailLink to requested fields
@@ -88,7 +97,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 	{
 		const q = encodeURIComponent(`'${parentDriveId}' in parents and trashed = false`);
 
-		const driveFiles: DriveFile[] = await GoogleDriveWidget.fetchDriveFiles(q);
+		const driveFiles: GoogleDriveFile[] = await GoogleDriveWidget.fetchDriveFiles(q);
 
 
 		if(filelistSelf.filesRepo && !filelistSelf.filesRepo[database])

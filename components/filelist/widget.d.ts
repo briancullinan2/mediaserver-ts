@@ -18,6 +18,7 @@ import type { GoogleDriveWidget } from "./widget-google";
 import type { GithubListWidget } from "./widget-github";
 import type { DatabaseListWidget } from "./widget-database";
 import type { AssetListWidget } from "./widget-assets";
+import { NestedTreeNode } from "../bundle/github-tools";
 
 type PermissionState = 'granted' | 'denied' | 'prompt';
 
@@ -83,17 +84,6 @@ export interface IErrorEvent
 }
 
 
-export interface DriveFile
-{
-	id: string;
-	name: string;
-	mimeType?: string;
-	size?: number;
-	modifiedTime?: string;
-	thumbnailLink?: string;
-}
-
-
 export interface FileWidgetWindow
 {
 	fileListWidget: FileListWidget;
@@ -122,3 +112,13 @@ export interface FileWidgetWindow
 
 }
 
+
+export interface IFileDataProvider
+{
+	fetchFolders(parentId: string): Promise<NestedTreeNode[]>;
+	fetchFiles(folderId: string): Promise<NestedTreeNode[]>;
+	createFolder?(parentId: string, name: string): Promise<boolean>;
+	createFile?(parentId: string, name: string, content?: Blob): Promise<boolean>;
+	deleteItems?(ids: string[]): Promise<boolean>;
+	renameItem?(id: string, newName: string): Promise<boolean>;
+}

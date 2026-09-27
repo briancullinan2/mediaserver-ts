@@ -2,13 +2,14 @@ import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
-import type { DriveFile, FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from '../filelist/widget.d';
+import type { FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from '../filelist/widget.d';
 import { PUBLIC_GOOGLE_DRIVE_FOLDER_ID } from '../filelist/widget-google';
 import { DEFAULT_HTTP_INDEX_URL } from '../filelist/widget-index';
+import type { NestedTreeNode } from '../bundle/github-tools';
 
 export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree' | 'music' | string;
 
-export type ViewRenderer = (this: ArtWidget, files: DriveFile[], container: HTMLElement) => void;
+export type ViewRenderer = (this: ArtWidget, files: NestedTreeNode[], container: HTMLElement) => void;
 
 export interface SourceProviderConfig
 {
@@ -29,7 +30,7 @@ export class ArtWidget extends Widget
 {
 	private sources: string[];
 	private activeWidget: Widget | undefined;
-	private sourcePromises: Map<string, Promise<DriveFile[]>> = new Map();
+	private sourcePromises: Map<string, Promise<NestedTreeNode[]>> = new Map();
 	private currentMode: ViewMode = 'netflix';
 
 	/**
@@ -188,7 +189,7 @@ export class ArtWidget extends Widget
 	/**
 	 * Single Fetch API with Promise caching per source URL
 	 */
-	public fetchFileList(source: string): Promise<DriveFile[]>
+	public fetchFileList(source: string): Promise<NestedTreeNode[]>
 	{
 		if(this.sourcePromises.has(source))
 		{
@@ -214,7 +215,7 @@ export class ArtWidget extends Widget
 	/**
 	 * Dynamically swaps out views based on view mode via the lookup table
 	 */
-	public setViewMode(mode: ViewMode, files: DriveFile[] = []): void
+	public setViewMode(mode: ViewMode, files: NestedTreeNode[] = []): void
 	{
 		this.currentMode = mode;
 		this.node.replaceChildren();

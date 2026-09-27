@@ -1,36 +1,35 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
-import type { DriveFile } from '../filelist/widget.d';
+import { NestedTreeNode } from '../bundle/github-tools';
 
 
-export const SORT_KEY_MAP: Record<SortColumn, keyof DriveFile> = {
-	name: 'name',
-	type: 'mimeType',
+export const SORT_KEY_MAP: Record<SortColumn, keyof NestedTreeNode> = {
+	text: 'text',
+	mimeType: 'mimeType',
 	size: 'size',
 	modifiedTime: 'modifiedTime',
 };
 
-export type SortColumn = 'name' | 'type' | 'size' | 'modifiedTime';
+export type SortColumn = 'text' | 'mimeType' | 'size' | 'modifiedTime';
 export type SortDirection = 'asc' | 'desc';
 export type GroupByOption = 'alphabetical' | 'date' | 'type' | 'size';
 export type DisplayMode = 'details' | 'carousel';
 
-export interface INetflixDetailsOptions
+export interface IDetailsOptions
 {
-	files?: DriveFile[];
 	title?: string;
-	onFileSelect?: (file: DriveFile) => void;
+	onFileSelect?: (file: NestedTreeNode) => void;
 }
 
 export class DetailsViewWidget extends Widget
 {
-	private _files: DriveFile[] = [];
-	private _filteredFiles: DriveFile[] = [];
-	private _onFileSelect?: (file: DriveFile) => void;
+	private _files: NestedTreeNode[] = [];
+	private _filteredFiles: NestedTreeNode[] = [];
+	private _onFileSelect?: (file: NestedTreeNode) => void;
 
 	// View State
 	private _searchQuery: string = '';
-	private _sortBy: SortColumn = 'name';
+	private _sortBy: SortColumn = 'text';
 	private _sortDir: SortDirection = 'asc';
 	private _groupBy: GroupByOption = 'alphabetical';
 	private _displayMode: DisplayMode = 'details';
@@ -45,18 +44,18 @@ export class DetailsViewWidget extends Widget
 	private _groupsContainer!: HTMLElement;
 	private _resultCountNode!: HTMLElement;
 
-	constructor(options: INetflixDetailsOptions = {})
+	constructor(options: IDetailsOptions = {}, files?: NestedTreeNode[])
 	{
 		super();
 		this.addClass('netflix-details-widget');
-		this._files = options.files || [];
+		this._files = files || [];
 		this._onFileSelect = options.onFileSelect;
 
 		this.renderShell();
 		this.applyFilterAndSort();
 	}
 
-	public setFiles(files: DriveFile[]): void
+	public setFiles(files: NestedTreeNode[]): void
 	{
 		this._files = files;
 		this.applyFilterAndSort();
@@ -220,7 +219,7 @@ export class DetailsViewWidget extends Widget
 		{
 			if(!this._searchQuery) return true;
 			return (
-				f.name.toLowerCase().includes(this._searchQuery) ||
+				f.text.toLowerCase().includes(this._searchQuery) ||
 				(f.mimeType && f.mimeType.toLowerCase().includes(this._searchQuery))
 			);
 		});
@@ -257,16 +256,16 @@ export class DetailsViewWidget extends Widget
 		this.renderGroupSections();
 	}
 
-	private groupFiles(): Map<string, DriveFile[]>
+	private groupFiles(): Map<string, NestedTreeNode[]>
 	{
-		const map = new Map<string, DriveFile[]>();
+		const map = new Map<string, NestedTreeNode[]>();
 
 		this._filteredFiles.forEach((file) =>
 		{
 			let key = '#';
 			if(this._groupBy === 'alphabetical')
 			{
-				const firstChar = file.name.trim().charAt(0).toUpperCase();
+				const firstChar = file.text.trim().charAt(0).toUpperCase();
 				if(/[0-9]/.test(firstChar)) key = '0-9';
 				else if(/[A-Z]/.test(firstChar)) key = firstChar;
 				else key = 'WILD';
@@ -404,7 +403,7 @@ export class DetailsViewWidget extends Widget
 		});
 	}
 
-	private buildTableDetails(files: DriveFile[]): HTMLElement
+	private buildTableDetails(files: NestedTreeNode[]): HTMLElement
 	{
 		const table = document.createElement('table');
 		table.className = 'ndw-details-table';
@@ -426,7 +425,7 @@ export class DetailsViewWidget extends Widget
             <td class="cell-name">
               <i class="bx ${this.getFileIconClass(f)} file-icon"></i>
               <div class="name-meta-stack">
-                <span class="file-title">${f.name}</span>
+                <span class="file-title">${f.text}</span>
                 <span class="file-sub-size">${this.formatFileSize(f.size)}</span>
               </div>
             </td>
@@ -453,7 +452,7 @@ export class DetailsViewWidget extends Widget
 		return table;
 	}
 
-	private buildNetflixCarousel(files: DriveFile[]): HTMLElement
+	private buildNetflixCarousel(files: NestedTreeNode[]): HTMLElement
 	{
 		const wrapper = document.createElement('div');
 		wrapper.className = 'ndw-carousel-wrapper';
@@ -466,14 +465,14 @@ export class DetailsViewWidget extends Widget
 			const card = document.createElement('div');
 			card.className = 'ndw-carousel-card';
 
-			const hue = Math.abs(this.hashCode(file.name)) % 360;
+			const hue = Math.abs(this.hashCode(file.text)) % 360;
 			card.style.background = `linear-gradient(135deg, hsl(${hue}, 60%, 20%), hsl(${(hue + 40) % 360}, 70%, 10%))`;
 
 			card.innerHTML = `
         <div class="card-media-overlay"></div>
         <div class="card-content">
           <i class="bx ${this.getFileIconClass(file)} card-icon"></i>
-          <div class="card-title" title="${file.name}">${file.name}</div>
+          <div class="card-title" title="${file.text}">${file.text}</div>
           <div class="card-sub">${this.formatFileSize(file.size)}</div>
         </div>
       `;
@@ -490,7 +489,7 @@ export class DetailsViewWidget extends Widget
 		return wrapper;
 	}
 
-	private getFileIconClass(file: DriveFile): string
+	private getFileIconClass(file: NestedTreeNode): string
 	{
 		const mime = file.mimeType || '';
 		if(mime.includes('image')) return 'bx-image file-img';
@@ -501,7 +500,7 @@ export class DetailsViewWidget extends Widget
 		return 'bx-file file-gen';
 	}
 
-	private formatFileSize(bytes?: number): string
+	private formatFileSize(bytes?: number | null): string
 	{
 		if(!bytes || isNaN(bytes)) return '--';
 		if(bytes === 0) return '0 B';

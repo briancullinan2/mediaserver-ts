@@ -1,6 +1,6 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
-import type { DriveFile } from '../filelist/widget.d';
+import { NestedTreeNode } from '../bundle/github-tools';
 
 
 export type GridFlow = 'row-first' | 'column-first';
@@ -8,23 +8,22 @@ export type IconSize = 'small' | 'medium' | 'large' | 'huge';
 
 export interface IExplorerGridOptions
 {
-	files?: DriveFile[];
 	iconSize?: IconSize;
 	flow?: GridFlow;
-	onSelectionChange?: (selectedFiles: DriveFile[]) => void;
-	onFileActivate?: (file: DriveFile) => void;
+	onSelectionChange?: (selectedFiles: NestedTreeNode[]) => void;
+	onFileActivate?: (file: NestedTreeNode) => void;
 }
 
 export class ExplorerGridWidget extends Widget
 {
-	private _files: DriveFile[] = [];
+	private _files: NestedTreeNode[] = [];
 	private _selectedIds: Set<string> = new Set();
 	private _flow: GridFlow = 'row-first';
 	private _iconSize: IconSize = 'medium';
 
 	// Callbacks
-	private _onSelectionChange?: (selectedFiles: DriveFile[]) => void;
-	private _onFileActivate?: (file: DriveFile) => void;
+	private _onSelectionChange?: (selectedFiles: NestedTreeNode[]) => void;
+	private _onFileActivate?: (file: NestedTreeNode) => void;
 
 	// DOM Elements
 	private _toolbarNode!: HTMLElement;
@@ -41,11 +40,11 @@ export class ExplorerGridWidget extends Widget
 	// ResizeObserver for Column-First Dynamic Calculations
 	private _resizeObserver: ResizeObserver;
 
-	constructor(options: IExplorerGridOptions = {})
+	constructor(options: IExplorerGridOptions = {}, files?: NestedTreeNode[])
 	{
 		super();
 		this.addClass('explorer-grid-widget');
-		this._files = options.files || [];
+		this._files = files || [];
 		this._iconSize = options.iconSize || 'medium';
 		this._flow = options.flow || 'row-first';
 		this._onSelectionChange = options.onSelectionChange;
@@ -76,7 +75,7 @@ export class ExplorerGridWidget extends Widget
 		super.onBeforeDetach(msg);
 	}
 
-	public setFiles(files: DriveFile[]): void
+	public setFiles(files: NestedTreeNode[]): void
 	{
 		this._files = files;
 		this._selectedIds.clear();
@@ -218,7 +217,7 @@ export class ExplorerGridWidget extends Widget
         <div class="egw-item-thumbnail">
           <i class="bx ${this.getFileIconClass(file)}"></i>
         </div>
-        <div class="egw-item-label" title="${file.name}">${file.name}</div>
+        <div class="egw-item-label" title="${file.text}">${file.text}</div>
         <div class="egw-item-badge">${this.formatFileSize(file.size)}</div>
       `;
 
@@ -267,7 +266,7 @@ export class ExplorerGridWidget extends Widget
 	   HOVER DETAILS CARD
 	   ========================================================================== */
 
-	private showHoverCard(e: MouseEvent, file: DriveFile): void
+	private showHoverCard(e: MouseEvent, file: NestedTreeNode): void
 	{
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const vpRect = this._gridViewport.getBoundingClientRect();
@@ -275,7 +274,7 @@ export class ExplorerGridWidget extends Widget
 		this._hoverCard.innerHTML = `
       <div class="egw-card-header">
         <i class="bx ${this.getFileIconClass(file)}"></i>
-        <span class="egw-card-title">${file.name}</span>
+        <span class="egw-card-title">${file.text}</span>
       </div>
       <div class="egw-card-body">
         <div class="egw-card-row"><span>Type:</span> <strong>${file.mimeType || 'Unknown'}</strong></div>
@@ -459,7 +458,7 @@ export class ExplorerGridWidget extends Widget
 	   UTILITIES
 	   ========================================================================== */
 
-	private getFileIconClass(file: DriveFile): string
+	private getFileIconClass(file: NestedTreeNode): string
 	{
 		const mime = file.mimeType || '';
 		if(mime.includes('image')) return 'bx-image file-img';
@@ -470,7 +469,7 @@ export class ExplorerGridWidget extends Widget
 		return 'bx-file file-gen';
 	}
 
-	private formatFileSize(bytes?: number): string
+	private formatFileSize(bytes?: number | null): string
 	{
 		if(!bytes || isNaN(bytes)) return '--';
 		if(bytes === 0) return '0 B';

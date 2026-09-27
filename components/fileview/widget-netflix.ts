@@ -1,23 +1,22 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { ISignal } from '@lumino/signaling';
-import type { DriveFile } from '../filelist/widget.d';
+import { NestedTreeNode } from '../bundle/github-tools';
 
 export interface INetflixViewOptions
 {
-	files?: DriveFile[];
-	filesSignal?: ISignal<any, DriveFile[]>;
-	onFileSelect?: (file: DriveFile) => void;
+	filesSignal?: ISignal<any, NestedTreeNode[]>;
+	onFileSelect?: (file: NestedTreeNode) => void;
 	title?: string;
 	categoryName?: string;
 }
 
 export class NetflixViewWidget extends Widget
 {
-	private _files: DriveFile[] = [];
-	private _filesSignal?: ISignal<any, DriveFile[]>;
-	private _onFileSelect?: (file: DriveFile) => void;
-	private _activeFile: DriveFile | null = null;
+	private _files: NestedTreeNode[] = [];
+	private _filesSignal?: ISignal<any, NestedTreeNode[]>;
+	private _onFileSelect?: (file: NestedTreeNode) => void;
+	private _activeFile: NestedTreeNode | null = null;
 
 	// DOM Elements
 	private _backdropNode!: HTMLElement;
@@ -28,12 +27,12 @@ export class NetflixViewWidget extends Widget
 	private _btnLeft!: HTMLButtonElement;
 	private _btnRight!: HTMLButtonElement;
 
-	constructor(options: INetflixViewOptions = {})
+	constructor(options: INetflixViewOptions = {}, files?: NestedTreeNode[])
 	{
 		super();
 		this.addClass('netflix-hero-widget');
 
-		this._files = options.files || [];
+		this._files = files || [];
 		this._filesSignal = options.filesSignal;
 		this._onFileSelect = options.onFileSelect;
 
@@ -45,13 +44,13 @@ export class NetflixViewWidget extends Widget
 		}
 	}
 
-	public setFiles(files: DriveFile[]): void
+	public setFiles(files: NestedTreeNode[]): void
 	{
 		this._files = files;
 		this.renderCarousel();
 	}
 
-	private onFilesUpdated(sender: any, files: DriveFile[]): void
+	private onFilesUpdated(sender: any, files: NestedTreeNode[]): void
 	{
 		this.setFiles(files);
 	}
@@ -170,7 +169,7 @@ export class NetflixViewWidget extends Widget
 			mediaFrame.className = 'netflix-card-media';
 
 			// Fallback visual generator based on name hash
-			const hue = Math.abs(this.hashCode(file.name)) % 360;
+			const hue = Math.abs(this.hashCode(file.text)) % 360;
 			mediaFrame.style.background = `linear-gradient(135deg, hsl(${hue}, 70%, 20%), hsl(${(hue + 40) % 360}, 80%, 10%))`;
 
 			const cardBody = document.createElement('div');
@@ -178,7 +177,7 @@ export class NetflixViewWidget extends Widget
 
 			const cardTitle = document.createElement('div');
 			cardTitle.className = 'netflix-card-title';
-			cardTitle.textContent = file.name;
+			cardTitle.textContent = file.text;
 
 			const cardBadge = document.createElement('span');
 			cardBadge.className = 'netflix-card-badge';
@@ -204,12 +203,12 @@ export class NetflixViewWidget extends Widget
 		});
 	}
 
-	private setActiveFile(file: DriveFile, backgroundStyle: string): void
+	private setActiveFile(file: NestedTreeNode, backgroundStyle: string): void
 	{
 		this._activeFile = file;
 		this._backdropNode.style.background = backgroundStyle;
 
-		this._heroTitleNode.textContent = file.name;
+		this._heroTitleNode.textContent = file.text;
 		this._heroMetaNode.innerHTML = `
       <span class="match-score">98% Match</span>
       <span class="cert-rating">4K Ultra HD</span>

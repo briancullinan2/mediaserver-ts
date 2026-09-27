@@ -1,29 +1,27 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import { ArtWidget } from '../art/widget';
-import type { DriveFile } from '../filelist/widget.d';
+import type { IFileDataProvider } from '../filelist/widget.d';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import { FileListWidget } from '../filelist/widget';
-import { GoogleDriveWidget } from '../filelist/widget-google';
+import { GoogleDriveFile, GoogleDriveWidget } from '../filelist/widget-google';
 import { HttpIndexWidget } from '../filelist/widget-index';
 import { AssetListWidget } from '../filelist/widget-assets';
+import { FlatFileNode, NestedTreeNode } from '../bundle/github-tools';
+import type mime from 'mime';
+import { NetflixViewWidget } from './widget-netflix';
+import { CoverflowWidget } from '../art/widget-coverflow';
+import { ExplorerGridWidget } from './widget-grid';
+import { DetailsViewWidget } from './widget-details';
+
 
 export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree';
 export type SortOption = 'name-asc' | 'name-desc' | 'date-desc' | 'size-desc' | 'type';
 export type GroupOption = 'none' | 'type' | 'date' | 'size';
 
-export interface ICloudDataProvider
-{
-	fetchFolders(parentId: string): Promise<Array<{ id: string; name: string; path?: string; }>>;
-	fetchFiles(folderId: string): Promise<DriveFile[]>;
-	createFolder?(parentId: string, name: string): Promise<boolean>;
-	createFile?(parentId: string, name: string, content?: Blob): Promise<boolean>;
-	deleteItems?(ids: string[]): Promise<boolean>;
-	renameItem?(id: string, newName: string): Promise<boolean>;
-}
-
 const fileviewSelf: LuminoLayoutWindow & {
 	isShiftPressed?: boolean;
+	mime: typeof mime;
 } = self as unknown as any;
 
 export class FileviewWidget extends ArtWidget
@@ -44,9 +42,9 @@ export class FileviewWidget extends ArtWidget
 	private groupBy: GroupOption = 'none';
 
 	// Data
-	private dataProvider?: ICloudDataProvider;
-	private rawFiles: DriveFile[] = [];
-	private displayedFiles: DriveFile[] = [];
+	private dataProvider?: IFileDataProvider;
+	private rawFiles: NestedTreeNode[] = [];
+	private displayedFiles: NestedTreeNode[] = [];
 	private selectedFileIds: Set<string> = new Set();
 
 	// Active Mounted Sub-Widgets
@@ -62,7 +60,6 @@ export class FileviewWidget extends ArtWidget
 	{
 		super(title ?? 'Explorer Workspace', sources);
 		this.addClass('cloud-drive-explorer-widget');
-		this.activeFolderId = (this as any).rootFolderId ?? 'root';
 	}
 
 	protected override onAfterAttach(msg: Message): void
@@ -333,156 +330,42 @@ export class FileviewWidget extends ArtWidget
 			const pane = document.createElement('div');
 			pane.className = `view-pane view-pane-${mode}`;
 			this.viewContainer.appendChild(pane);
+			let widgetInstance: Widget | undefined = undefined;
 
 			switch(mode)
 			{
 				case 'netflix':
-					this.renderNetflixView(pane, this.displayedFiles);
+					widgetInstance = new NetflixViewWidget(pane, this.displayedFiles);
 					break;
 				case 'itunes':
-					this.renderCoverflowView(pane, this.displayedFiles);
+					widgetInstance = new CoverflowWidget(pane, this.displayedFiles);
 					break;
 				case 'grid':
-					this.renderGridView(pane, this.displayedFiles);
+					widgetInstance = new ExplorerGridWidget(pane, this.displayedFiles);
 					break;
 				case 'details':
-					this.renderDetailsView(pane, this.displayedFiles);
+					widgetInstance = new DetailsViewWidget(pane, this.displayedFiles);
 					break;
 				case 'tree':
 					await this.renderSubtreeWidget(pane);
-					break;
+					return;
+			}
+
+			if(widgetInstance)
+			{
+				Widget.attach(widgetInstance, pane);
+				this.mountedSubWidgets.set(pane, widgetInstance);
 			}
 		}
+
 	}
 
-	/**
-	 * Netflix Layout View
-	 */
-	private renderNetflixView(container: HTMLElement, files: DriveFile[]): void
-	{
-		container.innerHTML = '';
-		const groups = this.groupFiles(files);
-
-		for(const [groupName, groupFiles] of Object.entries(groups))
-		{
-			const row = document.createElement('div');
-			row.className = 'netflix-row';
-			row.innerHTML = `
-				<h4 class="netflix-row-title">${groupName} (${groupFiles.length})</h4>
-				<div class="netflix-row-slider">
-					${groupFiles.map(file => `
-						<div class="netflix-card ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
-							<div class="card-media">
-								${file.thumbnailLink ? `<img src="${file.thumbnailLink}" alt="${file.name}" />` : `<i class="bx ${this.getFileIconClass(file)}"></i>`}
-							</div>
-							<div class="card-details">
-								<span class="card-title">${file.name}</span>
-							</div>
-						</div>
-					`).join('')}
-				</div>
-			`;
-
-			row.querySelectorAll('.netflix-card').forEach(card =>
-			{
-				card.addEventListener('click', (e) => this.handleFileSelection((card as HTMLElement).dataset.id!, e as MouseEvent));
-			});
-
-			container.appendChild(row);
-		}
-	}
-
-	/**
-	 * Grid Layout View
-	 */
-	private renderGridView(container: HTMLElement, files: DriveFile[]): void
-	{
-		container.innerHTML = `
-			<div class="grid-view-container">
-				${files.map(file => `
-					<div class="grid-item ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
-						<div class="grid-icon">
-							${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<i class="bx ${this.getFileIconClass(file)}"></i>`}
-						</div>
-						<div class="grid-label" title="${file.name}">${file.name}</div>
-					</div>
-				`).join('')}
-			</div>
-		`;
-
-		container.querySelectorAll('.grid-item').forEach(item =>
-		{
-			item.addEventListener('click', (e) => this.handleFileSelection((item as HTMLElement).dataset.id!, e as MouseEvent));
-		});
-	}
-
-	/**
-	 * Details List View
-	 */
-	private renderDetailsView(container: HTMLElement, files: DriveFile[]): void
-	{
-		container.innerHTML = `
-			<table class="details-table">
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Modified</th>
-						<th>Type</th>
-						<th>Size</th>
-					</tr>
-				</thead>
-				<tbody>
-					${files.map(file => `
-						<tr class="details-row ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
-							<td class="name-cell"><i class="bx ${this.getFileIconClass(file)}"></i> ${file.name}</td>
-							<td>${(file as any).modifiedTime ?? '—'}</td>
-							<td>${file.mimeType ?? 'File'}</td>
-							<td>${(file as any).size ? `${Math.round((file as any).size / 1024)} KB` : '—'}</td>
-						</tr>
-					`).join('')}
-				</tbody>
-			</table>
-		`;
-
-		container.querySelectorAll('.details-row').forEach(row =>
-		{
-			row.addEventListener('click', (e) => this.handleFileSelection((row as HTMLElement).dataset.id!, e as MouseEvent));
-		});
-	}
-
-	/**
-	 * iTunes Coverflow View
-	 */
-	private renderCoverflowView(container: HTMLElement, files: DriveFile[]): void
-	{
-		container.innerHTML = `
-			<div class="itunes-coverflow-stage">
-				<div class="coverflow-track">
-					${files.map(file => `
-						<div class="coverflow-item ${this.selectedFileIds.has(file.id) ? 'selected' : ''}" data-id="${file.id}">
-							${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<div class="coverflow-placeholder"><i class="bx ${this.getFileIconClass(file)}"></i></div>`}
-							<div class="coverflow-title">${file.name}</div>
-						</div>
-					`).join('')}
-				</div>
-			</div>
-		`;
-
-		container.querySelectorAll('.coverflow-item').forEach(item =>
-		{
-			item.addEventListener('click', (e) => this.handleFileSelection((item as HTMLElement).dataset.id!, e as MouseEvent));
-		});
-	}
 
 	/**
 	 * Mount imported Tree Sub-Widgets dynamically based on folder context
 	 */
 	private async renderSubtreeWidget(container: HTMLElement): Promise<void>
 	{
-		const mountNode = document.createElement('div');
-		mountNode.className = 'subtree-widget-mount';
-		container.appendChild(mountNode);
-
 		let widgetInstance: Widget;
 
 		if(this.activeFolderPath.startsWith('/Drive'))
@@ -499,8 +382,8 @@ export class FileviewWidget extends ArtWidget
 			widgetInstance = new FileListWidget();
 		}
 
-		Widget.attach(widgetInstance, mountNode);
-		this.mountedSubWidgets.set(mountNode, widgetInstance);
+		Widget.attach(widgetInstance, container);
+		this.mountedSubWidgets.set(container, widgetInstance);
 	}
 
 	private clearMountedSubWidgets(): void
@@ -517,9 +400,13 @@ export class FileviewWidget extends ArtWidget
 		if(this.dataProvider)
 		{
 			this.rawFiles = await this.dataProvider.fetchFiles(this.activeFolderId);
-		} else
-		{
-			this.rawFiles = await this.fetchSharedData(this.activeFolderId);
+			for(const file of this.rawFiles)
+			{
+				if(!file.mimeType)
+				{
+					file.mimeType = fileviewSelf.mime.getType(file.path);
+				}
+			}
 		}
 
 		this.extractCategories();
@@ -567,8 +454,8 @@ export class FileviewWidget extends ArtWidget
 	{
 		this.displayedFiles = this.rawFiles.filter(file =>
 		{
-			const matchesHidden = this.showHiddenFiles || !file.name.startsWith('.');
-			const matchesSearch = !this.searchQuery || file.name.toLowerCase().includes(this.searchQuery);
+			const matchesHidden = this.showHiddenFiles || !file.text.startsWith('.');
+			const matchesSearch = !this.searchQuery || file.text.toLowerCase().includes(this.searchQuery);
 			const matchesPill = this.selectedCategoryPill === 'all' || (file.mimeType && file.mimeType.startsWith(this.selectedCategoryPill));
 
 			return matchesHidden && matchesSearch && matchesPill;
@@ -579,54 +466,15 @@ export class FileviewWidget extends ArtWidget
 			switch(this.sortBy)
 			{
 				case 'name-asc':
-					return a.name.localeCompare(b.name);
+					return a.text.localeCompare(b.text);
 				case 'name-desc':
-					return b.name.localeCompare(a.name);
+					return b.text.localeCompare(a.text);
 				case 'type':
 					return (a.mimeType ?? '').localeCompare(b.mimeType ?? '');
 				default:
 					return 0;
 			}
 		});
-	}
-
-	private groupFiles(files: DriveFile[]): Record<string, DriveFile[]>
-	{
-		if(this.groupBy === 'none')
-		{
-			return { 'All Items': files };
-		}
-
-		return files.reduce((acc, file) =>
-		{
-			let key = 'Other';
-			if(this.groupBy === 'type')
-			{
-				key = file.mimeType ? file.mimeType.split('/')[0].toUpperCase() : 'FILES';
-			}
-			if(!acc[key]) acc[key] = [];
-			acc[key].push(file);
-			return acc;
-		}, {} as Record<string, DriveFile[]>);
-	}
-
-	private handleFileSelection(id: string, e: MouseEvent): void
-	{
-		if(!e.ctrlKey && !e.metaKey)
-		{
-			this.selectedFileIds.clear();
-		}
-
-		if(this.selectedFileIds.has(id))
-		{
-			this.selectedFileIds.delete(id);
-		} else
-		{
-			this.selectedFileIds.add(id);
-		}
-
-		this.updateInspectorPanel();
-		this.renderActiveViews();
 	}
 
 	private updateInspectorPanel(): void
@@ -645,13 +493,13 @@ export class FileviewWidget extends ArtWidget
 			inspectorBody.innerHTML = `
 				<div class="inspector-file-card">
 					<div class="inspector-preview">
-						${file.thumbnailLink ? `<img src="${file.thumbnailLink}" />` : `<i class="bx ${this.getFileIconClass(file)} icon-large"></i>`}
+						${'thumbnailLink' in file ? `<img src="${file.thumbnailLink}" />` : `<i class="bx ${this.getFileIconClass(file)} icon-large"></i>`}
 					</div>
-					<h4>${file.name}</h4>
+					<h4>${file.text}</h4>
 					<ul class="inspector-meta-list">
 						<li><strong>ID:</strong> ${file.id}</li>
 						<li><strong>Type:</strong> ${file.mimeType ?? 'File'}</li>
-						<li><strong>Path:</strong> ${this.activeFolderPath}/${file.name}</li>
+						<li><strong>Path:</strong> ${this.activeFolderPath}/${file.text}</li>
 					</ul>
 				</div>
 			`;
@@ -702,32 +550,20 @@ export class FileviewWidget extends ArtWidget
 		await this.refreshCurrentFolder();
 	}
 
-	private getFileIconClass(file: DriveFile): string
+	private getFileIconClass(file: FlatFileNode | NestedTreeNode | GoogleDriveFile): string
 	{
-		if(file.mimeType?.includes('folder')) return 'bx-folder';
-		if(file.mimeType?.includes('image')) return 'bx-image';
-		if(file.mimeType?.includes('video')) return 'bx-video';
-		if(file.mimeType?.includes('pdf')) return 'bx-file-pdf';
+		if(typeof file.mode === 'number' && (file.mode >> 12) === 4)
+		{
+			return 'bx-folder';
+		}
+		if('mimeType' in file)
+		{
+			if(file.mimeType?.includes('folder')) return 'bx-folder';
+			if(file.mimeType?.includes('image')) return 'bx-image';
+			if(file.mimeType?.includes('video')) return 'bx-video';
+			if(file.mimeType?.includes('pdf')) return 'bx-file-pdf';
+		}
 		return 'bx-file';
 	}
 
-	private async fetchSharedData(folderId: string): Promise<DriveFile[]>
-	{
-		if(this.dataProvider)
-		{
-			return await this.dataProvider.fetchFiles(folderId);
-		}
-
-		const categoryMap = (this as any).categoryMap;
-		const activeCategory = (this as any).activeCategory;
-		const activeStyle = (this as any).activeStyle;
-		const meta = categoryMap?.[activeCategory]?.[activeStyle];
-
-		if(meta)
-		{
-			return await (this as any).loadFolderImagesLazy(meta);
-		}
-
-		return [];
-	}
 }

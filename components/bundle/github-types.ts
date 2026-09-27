@@ -14,7 +14,7 @@ export interface GitHubFileEntry extends FileRecord
 {
 	name?: string;
 	type?: 'file' | 'dir' | 'tree' | 'blob';
-	size?: number | undefined;
+	size?: number | undefined | null;
 }
 
 export interface GitHubBranch
