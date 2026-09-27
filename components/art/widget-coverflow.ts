@@ -12,7 +12,7 @@ export interface CoverflowItem
 }
 
 const widgetSelf = self as unknown as GithubWindow & {
-	[key: string]: any;
+
 };
 
 export class CoverflowWidget extends Widget

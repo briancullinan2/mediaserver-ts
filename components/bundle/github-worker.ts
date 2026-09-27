@@ -13,7 +13,6 @@ export interface StagingStatusPayload
 	modified?: string[];
 	added?: string[];
 	staged?: string[];
-	[key: string]: any;
 }
 
 export interface GithubTransactionState

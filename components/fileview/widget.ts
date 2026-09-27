@@ -136,8 +136,7 @@ export class FileviewWidget extends ArtWidget
 
 				<!-- Navigation & Address Bar Header -->
 				<div class="explorer-address-bar-container">
-					<button class="nav-btn" id="btn-nav-back" title="Back"><i class="bx bx-arrow-back"></i></button>
-					<button class="nav-btn" id="btn-nav-up" title="Up"><i class="bx bx-up-arrow-alt"></i></button>
+					<button class="nav-btn" id="btn-nav-up" title="Up"><i class="bx bx-folder-up-arrow"></i></button>
 
 					<div class="address-bar-wrapper">
 						<i class="bx bx-folder address-icon"></i>

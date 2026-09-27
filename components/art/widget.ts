@@ -16,7 +16,7 @@ export interface SourceProviderConfig
 }
 
 const widgetSelf = self as unknown as LuminoLayoutWindow & GlobalToolbarsWindow & {
-	[key: string]: any;
+
 };
 
 export class ArtWidget extends Widget

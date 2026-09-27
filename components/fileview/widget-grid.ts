@@ -9,7 +9,6 @@ export interface DriveFile
 	size?: number;
 	modifiedTime?: string;
 	thumbnailLink?: string;
-	[key: string]: any;
 }
 
 export type GridFlow = 'row-first' | 'column-first';
