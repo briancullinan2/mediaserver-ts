@@ -12,6 +12,8 @@ const filelistSelf: LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow &
 
 export class DatabaseListWidget extends FileListWidget
 {
+	public override  _source?: string = 'idb://';
+
 	constructor(titleStr: string)
 	{
 		super(titleStr);

@@ -34,7 +34,7 @@ export class FileListWidget extends Widget implements IFileDataProvider
 	handleKey?: string;
 	protected treeLoading: boolean = false;
 	protected refreshTreeTimer: ReturnType<typeof setTimeout> | undefined;
-	protected _source?: string;
+	public _source?: string;
 
 	protected get selector()
 	{

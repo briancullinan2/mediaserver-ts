@@ -1,7 +1,6 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import { ArtWidget } from '../art/widget';
-import type { IFileDataProvider } from '../filelist/widget.d';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import { FileListWidget } from '../filelist/widget';
 import { GoogleDriveFile, GoogleDriveWidget } from '../filelist/widget-google';
@@ -42,8 +41,7 @@ export class FileviewWidget extends ArtWidget
 	private groupBy: GroupOption = 'none';
 
 	// Data
-	private dataProvider?: IFileDataProvider;
-	private rawFiles: NestedTreeNode[] = [];
+	private rawFiles: NestedTreeNode[] | undefined = [];
 	private displayedFiles: NestedTreeNode[] = [];
 	private selectedFileIds: Set<string> = new Set();
 
@@ -400,7 +398,7 @@ export class FileviewWidget extends ArtWidget
 		if(this.dataProvider)
 		{
 			this.rawFiles = await this.dataProvider.fetchFiles(this.activeFolderId);
-			for(const file of this.rawFiles)
+			for(const file of this.rawFiles ?? [])
 			{
 				if(!file.mimeType)
 				{
@@ -419,7 +417,7 @@ export class FileviewWidget extends ArtWidget
 	private extractCategories(): void
 	{
 		this.availableCategories.clear();
-		this.rawFiles.forEach(file =>
+		this.rawFiles?.forEach(file =>
 		{
 			if(file.mimeType)
 			{
@@ -452,14 +450,14 @@ export class FileviewWidget extends ArtWidget
 
 	private applyFiltersAndSort(): void
 	{
-		this.displayedFiles = this.rawFiles.filter(file =>
+		this.displayedFiles = this.rawFiles?.filter(file =>
 		{
 			const matchesHidden = this.showHiddenFiles || !file.text.startsWith('.');
 			const matchesSearch = !this.searchQuery || file.text.toLowerCase().includes(this.searchQuery);
 			const matchesPill = this.selectedCategoryPill === 'all' || (file.mimeType && file.mimeType.startsWith(this.selectedCategoryPill));
 
 			return matchesHidden && matchesSearch && matchesPill;
-		});
+		}) ?? [];
 
 		this.displayedFiles.sort((a, b) =>
 		{
@@ -486,7 +484,7 @@ export class FileviewWidget extends ArtWidget
 			return;
 		}
 
-		const selectedFiles = this.rawFiles.filter(f => this.selectedFileIds.has(f.id));
+		const selectedFiles = this.rawFiles?.filter(f => this.selectedFileIds.has(f.id)) ?? [];
 		if(selectedFiles.length === 1)
 		{
 			const file = selectedFiles[0];

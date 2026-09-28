@@ -2,10 +2,11 @@ import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
-import type { FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from '../filelist/widget.d';
+import type { FilelistWindow, IErrorEvent, IFileDataProvider, WidgetErrorEventArgs } from '../filelist/widget.d';
 import { PUBLIC_GOOGLE_DRIVE_FOLDER_ID } from '../filelist/widget-google';
 import { DEFAULT_HTTP_INDEX_URL } from '../filelist/widget-index';
 import type { NestedTreeNode } from '../bundle/github-tools';
+import type { FileListWidget } from '../filelist/widget';
 
 export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree' | 'music' | string;
 
@@ -32,6 +33,7 @@ export class ArtWidget extends Widget
 	private activeWidget: Widget | undefined;
 	private sourcePromises: Map<string, Promise<NestedTreeNode[]>> = new Map();
 	private currentMode: ViewMode = 'netflix';
+	protected dataProvider?: IFileDataProvider;
 
 	/**
 	 * Overridable registry of view renderers mapped by mode string
@@ -98,10 +100,9 @@ export class ArtWidget extends Widget
 		// Google Drive Protocol / ID
 		else if(source.startsWith('gdrive://') || source.startsWith('1') && source.length > 25)
 		{
-			const cleanId = source.replace('gdrive://', '').split('/folders/')[1]?.split('?')[0] || source;
 			if(widgetSelf.GoogleDriveWidget)
 			{
-				return new widgetSelf.GoogleDriveWidget('Drive Assets', cleanId);
+				return new widgetSelf.GoogleDriveWidget('Drive Assets', source);
 			}
 		}
 		// Google Drive Protocol / ID
@@ -140,8 +141,28 @@ export class ArtWidget extends Widget
 	{
 		if(index >= this.sources.length) return;
 
+		if(this.activeWidget)
+		{
+			this.showOutline();
+			return;
+		}
+
 		const currentSource = this.sources[index];
-		const targetWidget = this.resolveSourceWidget(currentSource);
+
+		let targetWidget: Widget | FileListWidget | undefined;
+		for(const w of widgetSelf.fileListWidgets ?? [])
+		{
+			if(w._source === currentSource)
+			{
+				targetWidget = w;
+				break;
+			}
+		}
+
+		if(!targetWidget)
+		{
+			targetWidget = this.resolveSourceWidget(currentSource);
+		}
 
 		if(!targetWidget)
 		{
@@ -150,6 +171,10 @@ export class ArtWidget extends Widget
 		}
 
 		this.activeWidget = targetWidget;
+		if('fetchFiles' in targetWidget && typeof targetWidget.fetchFiles === 'function')
+		{
+			this.dataProvider = targetWidget;
+		}
 
 		if('errorOccurred' in targetWidget && typeof (targetWidget as IErrorEvent).errorOccurred?.connect === 'function')
 		{
@@ -159,20 +184,35 @@ export class ArtWidget extends Widget
 			}
 			(targetWidget as IErrorEvent).errorOccurred?.connect(this.errorHandlers[index], this);
 		}
+		this.showOutline();
+	}
 
-		if(widgetSelf.mainDock && widgetSelf.LayoutAdjuster)
+
+	private showOutline()
+	{
+		const that = this;
+
+		if(!this.activeWidget)
 		{
-			if(!this.activeWidget.isAttached)
-			{
-				widgetSelf.LayoutAdjuster.addOptimalWidgetLayout(widgetSelf.mainDock, this.activeWidget, {
-					type: 'outline',
-					projectId: this.activeWidget.constructor.name
-				});
-			} else
-			{
-				this.activeWidget.show();
-			}
+			return;
 		}
+		requestAnimationFrame(() =>
+		{
+
+			if(widgetSelf.mainDock && widgetSelf.LayoutAdjuster)
+			{
+				if(that.activeWidget && !that.activeWidget?.isAttached)
+				{
+					widgetSelf.LayoutAdjuster?.addOptimalWidgetLayout(widgetSelf.mainDock, that.activeWidget, {
+						type: 'outline',
+						projectId: that.activeWidget?.constructor.name
+					});
+				} else
+				{
+					that.activeWidget?.show();
+				}
+			}
+		});
 	}
 
 
