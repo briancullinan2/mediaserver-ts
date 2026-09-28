@@ -1,3 +1,7 @@
+@import '/components/art/pill.css';
+@import '/components/art/style.css';
+@import '/components/art/coverflow.css';
+
 /* Container & Widget Shell */
 .clipart-drive-widget {
 	display: flex;

@@ -1,3 +1,7 @@
+@import '/components/fileview/netflix.css';
+@import '/components/fileview/details.css';
+@import '/components/fileview/grid.css';
+
 /* Container & Root Frame Shell */
 .cloud-drive-explorer-widget {
 	width: 100%;

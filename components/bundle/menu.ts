@@ -47,7 +47,7 @@ export interface ComponentRoute
 export const MODULE_REGISTRY: Record<string, ComponentRoute> = {
 	'collapse': { label: 'Collapse', iconClass: 'bx bx-arrow-in-left-square-half' },
 	'searchlist': { label: 'Search Files', url: './components/filelist/widget-search.ts', className: 'SearchListWidget', iconClass: 'bx bx-search' },
-	'fileview': { label: 'Engine Files', url: './components/fileview/widget.ts', className: 'FileviewWidget', iconClass: 'bx bx-folder-code' },
+	'fileview': { label: 'Shared Files', url: './components/fileview/widget.ts', className: 'FileviewWidget', iconClass: 'bx bx-folder-code' },
 
 	'music': { label: 'Music', url: './components/music/widget.ts', className: 'MusicWidget', iconClass: 'bx bx-music' },
 	'photos': { label: 'Photos', url: './components/photo/widget.ts', className: 'PhotoWidget', iconClass: 'bx bx-camera-alt' },

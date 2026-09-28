@@ -115,8 +115,8 @@ export interface FileWidgetWindow
 
 export interface IFileDataProvider
 {
-	fetchFolders(parentId: string): Promise<NestedTreeNode[]>;
-	fetchFiles(folderId: string): Promise<NestedTreeNode[]>;
+	fetchFolders(parentId?: string): Promise<NestedTreeNode[] | undefined>;
+	fetchFiles(folderId?: string): Promise<NestedTreeNode[] | undefined>;
 	createFolder?(parentId: string, name: string): Promise<boolean>;
 	createFile?(parentId: string, name: string, content?: Blob): Promise<boolean>;
 	deleteItems?(ids: string[]): Promise<boolean>;

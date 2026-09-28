@@ -101,7 +101,7 @@ export class NetflixViewWidget extends Widget
 
 		const infoBtn = document.createElement('button');
 		infoBtn.className = 'netflix-btn netflix-btn-secondary';
-		infoBtn.innerHTML = `<span class="icon">ℹ</span> More Info`;
+		infoBtn.innerHTML = `<span class="icon">ⓘ</span> More Info`;
 
 		heroActions.append(playBtn, infoBtn);
 		heroContainer.append(brandBadge, this._heroTitleNode, this._heroMetaNode, this._heroDescNode, heroActions);

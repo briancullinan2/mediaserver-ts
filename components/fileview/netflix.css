@@ -1,4 +1,3 @@
-
 /* ==========================================================================
    NETFLIX HERO WIDGET STYLES
    ========================================================================== */
@@ -126,7 +125,7 @@
 	transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-.netflix-btn .icon {
+.netflix-btn-secondary.netflix-btn .icon {
 	font-size: 1.3rem;
 }
 

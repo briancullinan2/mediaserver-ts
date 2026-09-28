@@ -39,7 +39,8 @@ export const OUTLINE_WIDGET_TYPES = [
 	'FileListWidget', 'GameListWidget',
 	'DatabaseListWidget', 'AssetListWidget',
 	'GithubListWidget', 'SearchListWidget',
-	'SkillsWidget', 'GoogleDriveWidget'
+	'SkillsWidget', 'GoogleDriveWidget',
+	'HttpIndexWidget'
 ];
 
 
