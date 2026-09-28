@@ -67,6 +67,16 @@ export class HttpIndexWidget extends FileListWidget
 				continue;
 			}
 
+			// ignore parent directory
+			const nodePath = `${baseNodePath.replace(/\/$/, '')}/${name.replace(/^\//, '')}`;
+			const targetUrl = new URL(href, currentFetchUrl).href;
+			if(nodePath === baseNodePath || href === baseNodePath
+				|| targetUrl === currentFetchUrl
+			)
+			{
+				continue;
+			}
+
 			// avoid breadcrumb
 			// TODO: fix incase parent is the same name, use link comparison instead
 			const parts = currentFetchUrl.split('/');
@@ -82,9 +92,6 @@ export class HttpIndexWidget extends FileListWidget
 			// Determine directory state via class attributes, standard HTML markup, or href structure
 			const classAttr = (link.getAttribute('class') || '') + ' ' + (link.parentElement?.getAttribute('class') || '');
 			const isDir = classAttr.includes('icon-directory') || href.endsWith('/') || !name.includes('.');
-
-			const nodePath = `${baseNodePath.replace(/\/$/, '')}/${name.replace(/^\//, '')}`;
-			const targetUrl = new URL(href, currentFetchUrl).href;
 
 			const newNode: NestedTreeNode = {
 				id: nodePath,

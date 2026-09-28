@@ -6,7 +6,8 @@ import type { GlobalToolbarsWindow, LuminoMenuWindow } from "./menu.d";
 import type { FileSystemWindow, LuminoLayoutWindow } from "./lumino.d";
 import type { EditorWindow } from "../editor/widget.d";
 
-const menuSelf: LuminoMenuWindow & GlobalToolbarsWindow & FileSystemWindow & LuminoLayoutWindow & EditorWindow = self as unknown as any;
+const menuSelf: LuminoMenuWindow & GlobalToolbarsWindow & FileSystemWindow
+	& LuminoLayoutWindow & EditorWindow = self as unknown as any;
 
 const FILE_MENU: MenuConfig = {
 	name: "File",
@@ -76,7 +77,7 @@ const FILE_MENU: MenuConfig = {
 	}, {
 		name: "Auto Save",
 		target: "ace_file.toggle_auto_save",
-		iconClass: "bx bx-refresh"
+		iconClass: "bx bx-history"
 	}, {
 		divider: true
 	}, {
@@ -84,13 +85,13 @@ const FILE_MENU: MenuConfig = {
 		ellipsis: true,
 		shortcut: "Ctrl+S",
 		target: "file/save.export",
-		iconClass: "bx bx-export"
+		iconClass: "bx bx-save"
 	}, {
 		name: "Save As",
 		ellipsis: true,
 		shortcut: "Shift + S",
 		target: "file/save.save",
-		iconClass: "bx bx-save"
+		iconClass: "bx bx-file-plus"
 	}, {
 		name: "Save As Data URL",
 		ellipsis: true,
@@ -115,7 +116,7 @@ const FILE_MENU: MenuConfig = {
 	},
 	{
 		name: "Publish",
-		iconClass: "bx bx-export",
+		iconClass: "bx bx-archive-arrow-up",
 		children: [
 			{ name: "Web", target: "file/publish/web", iconClass: "bx bx-globe" },
 			{ name: "Windows", target: "file/publish/windows", iconClass: "bxl bx-microsoft" },
@@ -125,6 +126,7 @@ const FILE_MENU: MenuConfig = {
 	},
 	{
 		name: "Import",
+		iconClass: "bx bx-archive-arrow-down",
 		target: "file/import"
 	},
 	{
@@ -139,7 +141,7 @@ const FILE_MENU: MenuConfig = {
 		name: "Quick Load",
 		shortcut: "F10",
 		target: "file/quickload.quickload",
-		iconClass: "bx bx-refresh"
+		iconClass: "bx bx-refresh-ccw"
 	}, {
 		divider: true
 	},
@@ -148,139 +150,6 @@ const FILE_MENU: MenuConfig = {
 		shortcut: "F10",
 		target: "file/exit.exit",
 		iconClass: "bx bx-power"
-	}]
-};
-
-
-const EDIT_MENU: MenuConfig = {
-	name: "Edit",
-	iconClass: "bx bx-edit",
-	children: [{
-		name: "Undo",
-		shortcut: "Ctrl+Z",
-		target: "edit/undo.undo",
-		iconClass: "bx bx-undo"
-	}, {
-		name: "Redo",
-		shortcut: "Ctrl+Y",
-		target: "edit/redo.redo",
-		iconClass: "bx bx-redo"
-	}, {
-		divider: true
-	}, {
-		name: "Copy to Clipboard",
-		shortcut: "Ctrl+C",
-		target: "edit/copy.copy_to_clipboard",
-		iconClass: "bx bx-copy"
-	}, {
-		name: "Cut",
-		target: "edit/cut.cut",
-		iconClass: "bx bx-cut"
-	}, {
-		name: "Paste",
-		shortcut: "Ctrl+V",
-		target: "edit/paste.paste",
-		iconClass: "bx bx-paste"
-	}, {
-		name: "Delete Selection",
-		target: "edit/selection.delete",
-		iconClass: "bx bx-trash"
-	}, {
-		divider: true
-	}, {
-		name: "Find",
-		shortcut: "Ctrl+F",
-		target: "edit/find.find",
-		iconClass: "bx bx-search"
-	}, {
-		name: "Find In Files",
-		shortcut: "Ctrl+Shift+F",
-		target: "edit/find.find_all",
-		iconClass: "bx bx-folder-search"
-	}, {
-		name: "Replace",
-		shortcut: "Ctrl+H",
-		target: "edit/replace.replace",
-		iconClass: "bx bx-find-replace"
-	}, {
-		name: "Search Images",
-		ellipsis: true,
-		target: "file/open.search",
-		iconClass: "bx bx-search-alt"
-	}, {
-		divider: true
-	}, {
-		name: "Select All",
-		shortcut: "Ctrl+A",
-		target: "edit/selection.select_all",
-		iconClass: "bx bx-select-all"
-	}, {
-		name: "Deselect All",
-		shortcut: "~",
-		target: "edit/deselect_all"
-	}]
-};
-
-
-const VIEW_MENU: MenuConfig = {
-	name: "View",
-	iconClass: "bx bx-eye",
-	children: [{
-		name: "Zoom",
-		iconClass: "bx bx-search-alt",
-		children: [{
-			name: "Zoom In",
-			shortcut: 'Ctrl+=',
-			target: "view/zoom.in",
-			iconClass: "bx bx-search-plus"
-		}, {
-			name: "Zoom Out",
-			shortcut: 'Ctrl+-',
-			target: "view/zoom.out",
-			iconClass: "bx bx-search-minus"
-		}, {
-			divider: true
-		}, {
-			name: "Original Size",
-			target: "view/zoom.original",
-			iconClass: "bx bx-size-uniform"
-		}, {
-			name: "Fit Window",
-			target: "view/zoom.auto",
-			iconClass: "bx bx-fullscreen"
-		}]
-	}, {
-		name: "Grid",
-		shortcut: "G",
-		target: "view/grid.grid",
-		iconClass: "bx bx-grid"
-	}, {
-		name: "Guides",
-		iconClass: "bx bx-border-inner",
-		children: [{
-			name: "Insert",
-			ellipsis: true,
-			target: "view/guides.insert",
-			iconClass: "bx bx-plus"
-		}, {
-			name: "Update",
-			target: "view/guides.update",
-			iconClass: "bx bx-refresh"
-		}, {
-			name: "Remove all",
-			target: "view/guides.remove",
-			iconClass: "bx bx-trash"
-		}]
-	}, {
-		name: "Ruler",
-		target: "view/ruler.ruler",
-		iconClass: "bx bx-ruler"
-	}, {
-		divider: true
-	}, {
-		name: "Full Screen",
-		target: "view/full_screen.fs",
-		iconClass: "bx bx-fullscreen"
 	}]
 };
 
@@ -309,7 +178,7 @@ const HELP_MENU: MenuConfig = {
 	}, {
 		name: "Store Offline Version",
 		target: "help/store_offline",
-		iconClass: "bx bx-download"
+		iconClass: "bx bx-wifi-slash"
 	}, {
 		name: "See Welcome Message",
 		target: "help/see_welcome",
@@ -348,12 +217,8 @@ export class FileToolbar extends Widget
 	{
 		this._commands = commands;
 		menuSelf.registerAllCommands?.(FILE_MENU);
-		menuSelf.registerAllCommands?.(EDIT_MENU);
-		menuSelf.registerAllCommands?.(VIEW_MENU);
 		menuSelf.registerAllCommands?.(HELP_MENU);
 		MenuManager.injectMenus(null, FILE_MENU);
-		MenuManager.injectMenus(null, EDIT_MENU);
-		MenuManager.injectMenus(null, VIEW_MENU);
 		MenuManager.injectMenus(null, HELP_MENU);
 		return this;
 	}
@@ -541,15 +406,4 @@ menuSelf.globalModules['file/new'] = {
 		}
 	}
 
-};
-
-
-menuSelf.globalModules['edit/find'] = {
-	find_all: async function ()
-	{
-		if(menuSelf.mainDock)
-		{
-			await triggerPanelRoute('searchlist', menuSelf.mainDock, true);
-		}
-	}
 };

@@ -8,7 +8,7 @@ import { DEFAULT_HTTP_INDEX_URL } from '../filelist/widget-index';
 import type { NestedTreeNode } from '../bundle/github-tools';
 import type { FileListWidget } from '../filelist/widget';
 
-export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree' | 'music' | string;
+export type ViewMode = 'netflix' | 'overflow' | 'grid' | 'details' | 'tree' | 'music' | string;
 
 export type ViewRenderer = (this: ArtWidget, files: NestedTreeNode[], container: HTMLElement) => void;
 

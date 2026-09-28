@@ -14,6 +14,7 @@ textarea {
 #popups input,
 .toolbar a.bx,
 .toolbar button.bx,
+.view-switcher-buttons .view-btn,
 #app-top-header-row button.bx,
 #app-top-header-row select,
 #app-top-header-row select option,
@@ -43,6 +44,7 @@ ul.toolbar button,
 	font-family: inherit;
 	cursor: pointer;
 	box-shadow: none;
+	padding: 0;
 }
 
 #popups input[type="radio"],
@@ -62,6 +64,7 @@ ul.toolbar button,
 #popups .popup .actions button:hover,
 .toolbar a.bx:hover,
 .toolbar button.bx:hover,
+.view-switcher-buttons .view-btn:hover,
 #app-top-header-row button.bx:hover,
 #app-top-header-row select:hover,
 #app-top-header-row select option:hover,
@@ -90,12 +93,11 @@ ul.toolbar button:hover,
 
 .toolbar a.bx,
 .toolbar button.bx,
+.view-switcher-buttons .view-btn .bx,
 #app-top-header-row a.bx,
 #app-top-header-row button.bx {
 	background: transparent;
-	border: none;
 	cursor: pointer;
-	font-size: 16px;
 	text-decoration: none;
 	font-size: 24px;
 	color: var(--ace-foreground);
@@ -103,10 +105,23 @@ ul.toolbar button:hover,
 	padding: 0px;
 	height: 30px;
 	width: 30px;
+	vertical-align: middle;
+}
+
+.view-switcher-buttons .view-btn {
+	padding: 0px;
+	cursor: pointer;
+	background: transparent;
+	align-items: center;
+	width: min-content;
+	border: 2px solid transparent;
+	color: var(--ace-foreground);
+	vertical-align: middle;
 }
 
 .toolbar a.bx:hover,
 .toolbar button.bx:hover,
+.view-switcher-buttons .view-btn:hover,
 #app-top-header-row button:hover,
 #app-top-header-row a:hover {
 	background: rgb(from var(--ace-selection-bg) r g b / 50%);

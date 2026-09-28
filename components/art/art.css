@@ -96,7 +96,7 @@
 	box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
 }
 
-/* iTunes / Cover Flow Carousel Display */
+/* Cover Flow Carousel Display */
 .coverflow-stage {
 	perspective: 1000px;
 	width: 100%;

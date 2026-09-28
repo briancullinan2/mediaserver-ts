@@ -12,9 +12,10 @@ import { NetflixViewWidget } from './widget-netflix';
 import { CoverflowWidget } from '../art/widget-coverflow';
 import { ExplorerGridWidget } from './widget-grid';
 import { DetailsViewWidget } from './widget-details';
+import { PillSelectorWidget } from '../art/widget-pill';
 
 
-export type ViewMode = 'netflix' | 'itunes' | 'grid' | 'details' | 'tree';
+export type ViewMode = 'netflix' | 'coverflow' | 'grid' | 'details' | 'tree' | 'pills' | 'styles';
 export type SortOption = 'name-asc' | 'name-desc' | 'date-desc' | 'size-desc' | 'type';
 export type GroupOption = 'none' | 'type' | 'date' | 'size';
 
@@ -26,7 +27,7 @@ const fileviewSelf: LuminoLayoutWindow & {
 export class FileviewWidget extends ArtWidget
 {
 	// Active Display State
-	private activeViews: Set<ViewMode> = new Set(['netflix']);
+	private activeViews: Set<ViewMode> = new Set(['pills', 'netflix']);
 	private isSplitView: boolean = false;
 	private activeFolderId: string = 'root';
 	private activeFolderPath: string = '/Home';
@@ -52,12 +53,17 @@ export class FileviewWidget extends ArtWidget
 	private viewContainer!: HTMLElement;
 	private inspectorPanel!: HTMLElement;
 	private addressInput!: HTMLInputElement;
-	private pillsContainer!: HTMLElement;
+	protected pillsWidget!: PillSelectorWidget;
 
 	constructor(title?: string, sources?: string | string[])
 	{
 		super(title ?? 'Explorer Workspace', sources);
 		this.addClass('cloud-drive-explorer-widget');
+		//const theme = Array.from(document.body.classList.values()).find(c => c.startsWith('theme-'));
+		//if(theme)
+		//{
+		//	this.addClass(theme);
+		//}
 	}
 
 	protected override onAfterAttach(msg: Message): void
@@ -86,49 +92,9 @@ export class FileviewWidget extends ArtWidget
 	{
 		this.node.innerHTML = `
 			<div class="cloud-explorer-container ${this.isSplitView ? 'split-view-active' : ''}">
-				<!-- Top Action Ribbon Toolbar -->
-				<header class="explorer-ribbon-bar">
-					<div class="ribbon-group file-actions">
-						<button class="ribbon-btn" id="btn-new-folder" title="New Folder"><i class="bx bx-folder-plus"></i><span>Folder</span></button>
-						<button class="ribbon-btn" id="btn-new-file" title="New File"><i class="bx bx-file-plus"></i><span>File</span></button>
-						<div class="ribbon-divider"></div>
-						<button class="ribbon-btn" id="btn-cut" title="Cut"><i class="bx bx-cut"></i></button>
-						<button class="ribbon-btn" id="btn-copy" title="Copy"><i class="bx bx-copy"></i></button>
-						<button class="ribbon-btn" id="btn-paste" title="Paste" disabled><i class="bx bx-paste"></i></button>
-						<button class="ribbon-btn" id="btn-rename" title="Rename"><i class="bx bx-edit"></i></button>
-						<button class="ribbon-btn danger" id="btn-delete" title="Delete"><i class="bx bx-trash"></i></button>
-					</div>
-
-					<div class="ribbon-group view-controls">
-						<label class="toggle-switch" title="Show/Hide Hidden Files">
-							<input type="checkbox" id="toggle-hidden-files" ${this.showHiddenFiles ? 'checked' : ''} />
-							<span class="toggle-label"><i class="bx bx-ghost"></i> Hidden</span>
-						</label>
-						<select id="sort-select" class="ribbon-select" title="Sort Items">
-							<option value="name-asc">Name (A-Z)</option>
-							<option value="name-desc">Name (Z-A)</option>
-							<option value="date-desc">Date Modified</option>
-							<option value="size-desc">Size</option>
-							<option value="type">File Type</option>
-						</select>
-						<select id="group-select" class="ribbon-select" title="Group Items">
-							<option value="none">No Grouping</option>
-							<option value="type">Group by Type</option>
-							<option value="date">Group by Date</option>
-						</select>
-					</div>
-
-					<div class="ribbon-group layout-toggles">
-						<button class="ribbon-btn ${this.isSplitView ? 'active' : ''}" id="btn-toggle-split" title="Toggle Split View Mode">
-							<i class="bx bx-columns"></i>
-						</button>
-						<button class="ribbon-btn" id="btn-toggle-inspector" title="Toggle Details Panel">
-							<i class="bx bx-info-circle"></i>
-						</button>
-					</div>
-				</header>
 
 				<!-- Navigation & Address Bar Header -->
+				<!--
 				<div class="explorer-address-bar-container">
 					<button class="nav-btn" id="btn-nav-up" title="Up"><i class="bx bx-folder-up-arrow"></i></button>
 
@@ -143,35 +109,11 @@ export class FileviewWidget extends ArtWidget
 						<input type="text" class="search-input" id="search-input" placeholder="Search files..." value="${this.searchQuery}" />
 					</div>
 				</div>
-
-				<!-- Category Pills Filter Bar -->
-				<div class="category-pills-bar" id="category-pills-bar">
-					<button class="category-pill active" data-category="all">All Files</button>
-				</div>
+				-->
 
 				<!-- Main Content Workspace -->
 				<div class="explorer-workspace">
 					<main class="cloud-main-panel">
-						<header class="cloud-toolbar">
-							<div class="view-switcher-buttons">
-								<button class="view-btn ${this.activeViews.has('netflix') ? 'active' : ''}" data-view="netflix" title="Netflix Rows">
-									<i class="bx bx-film"></i> Netflix
-								</button>
-								<button class="view-btn ${this.activeViews.has('itunes') ? 'active' : ''}" data-view="itunes" title="iTunes Coverflow">
-									<i class="bx bx-carousel"></i> Coverflow
-								</button>
-								<button class="view-btn ${this.activeViews.has('grid') ? 'active' : ''}" data-view="grid" title="Icon Grid">
-									<i class="bx bx-grid-alt"></i> Grid
-								</button>
-								<button class="view-btn ${this.activeViews.has('details') ? 'active' : ''}" data-view="details" title="Details List">
-									<i class="bx bx-list-ul"></i> Details
-								</button>
-								<button class="view-btn ${this.activeViews.has('tree') ? 'active' : ''}" data-view="tree" title="Subtree Widget Instance">
-									<i class="bx bx-git-repo-forked"></i> Subtree
-								</button>
-							</div>
-						</header>
-
 						<section class="cloud-view-stage" id="cloud-view-stage"></section>
 					</main>
 
@@ -192,7 +134,6 @@ export class FileviewWidget extends ArtWidget
 		this.viewContainer = this.node.querySelector('#cloud-view-stage') as HTMLElement;
 		this.inspectorPanel = this.node.querySelector('#cloud-inspector-panel') as HTMLElement;
 		this.addressInput = this.node.querySelector('#address-input') as HTMLInputElement;
-		this.pillsContainer = this.node.querySelector('#category-pills-bar') as HTMLElement;
 	}
 
 	/**
@@ -334,7 +275,7 @@ export class FileviewWidget extends ArtWidget
 				case 'netflix':
 					widgetInstance = new NetflixViewWidget(pane, this.displayedFiles);
 					break;
-				case 'itunes':
+				case 'coverflow':
 					widgetInstance = new CoverflowWidget(pane, this.displayedFiles);
 					break;
 				case 'grid':
@@ -342,6 +283,9 @@ export class FileviewWidget extends ArtWidget
 					break;
 				case 'details':
 					widgetInstance = new DetailsViewWidget(pane, this.displayedFiles);
+					break;
+				case 'pills':
+					widgetInstance = new PillSelectorWidget(Array.from(this.availableCategories), this.selectedCategoryPill);
 					break;
 				case 'tree':
 					await this.renderSubtreeWidget(pane);
@@ -407,9 +351,8 @@ export class FileviewWidget extends ArtWidget
 		}
 
 		this.extractCategories();
-		this.renderCategoryPills();
 		this.applyFiltersAndSort();
-		this.renderBreadcrumbTrail();
+		//this.renderBreadcrumbTrail();
 		await this.renderActiveViews();
 	}
 
@@ -423,27 +366,6 @@ export class FileviewWidget extends ArtWidget
 				const mainType = file.mimeType.split('/')[0];
 				this.availableCategories.add(mainType);
 			}
-		});
-	}
-
-	private renderCategoryPills(): void
-	{
-		this.pillsContainer.innerHTML = `<button class="category-pill ${this.selectedCategoryPill === 'all' ? 'active' : ''}" data-category="all">All Files</button>`;
-
-		this.availableCategories.forEach(cat =>
-		{
-			const btn = document.createElement('button');
-			btn.className = `category-pill ${this.selectedCategoryPill === cat ? 'active' : ''}`;
-			btn.dataset.category = cat;
-			btn.innerText = cat.toUpperCase();
-			btn.addEventListener('click', () =>
-			{
-				this.selectedCategoryPill = cat;
-				this.renderCategoryPills();
-				this.applyFiltersAndSort();
-				this.renderActiveViews();
-			});
-			this.pillsContainer.appendChild(btn);
 		});
 	}
 
@@ -511,6 +433,7 @@ export class FileviewWidget extends ArtWidget
 		}
 	}
 
+	/*
 	private renderBreadcrumbTrail(): void
 	{
 		const trail = this.node.querySelector('#breadcrumb-trail') as HTMLElement;
@@ -538,6 +461,7 @@ export class FileviewWidget extends ArtWidget
 			});
 		});
 	}
+	*/
 
 	private async navigateToPath(path: string): Promise<void>
 	{

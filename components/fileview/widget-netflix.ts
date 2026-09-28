@@ -64,7 +64,7 @@ export class NetflixViewWidget extends Widget
 		this._backdropNode.className = 'netflix-backdrop';
 
 		const overlay = document.createElement('div');
-		overlay.className = 'netflix-backdrop-overlay';
+		overlay.className = 'animated-bg-layer';
 
 		// Hero Section
 		const heroContainer = document.createElement('div');

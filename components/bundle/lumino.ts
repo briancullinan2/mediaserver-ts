@@ -16,7 +16,7 @@ import { isDevToolsOpen, OUTLINE_WIDGET_TYPES, ResponsiveManager } from './lumin
 
 import '@lumino/widgets/style/index.css';
 //import '@lumino/default-theme/style/index.css'
-import { applyInitialLayout } from './menu-app';
+import { applyInitialLayout } from './menu-layout';
 import JSZip from 'jszip';
 import type { LuminoLayoutWindow } from './lumino.d';
 import type { LuminoMenuWindow, RepositorySettingsWindow } from './menu.d';

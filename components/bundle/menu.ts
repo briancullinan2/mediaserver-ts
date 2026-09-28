@@ -14,6 +14,9 @@ import { FileManager } from './lumino-files';
 import type { GlobalToolbarsWindow, LuminoMenuWindow, RepositorySettingsWindow } from './menu.d';
 import type { LuminoLayoutWindow } from './lumino.d';
 import type { EditorWindow } from '../editor/widget.d';
+import { EditToolbar } from './menu-edit';
+import { ViewToolbar } from './menu-view';
+import { LayoutToolbar } from './menu-layout';
 
 
 const menuSelf: RepositorySettingsWindow & LuminoMenuWindow & LuminoLayoutWindow & GlobalToolbarsWindow & EditorWindow = self as unknown as any;
@@ -549,6 +552,12 @@ export function createTopBar(commands: CommandRegistry): TopBarComponents
 	menuSelf.appToolbar = appToolbar;
 	const fileToolbar = FileToolbar.getInstance().initialize(commands);
 	menuSelf.fileToolbar = fileToolbar;
+	const editToolbar = EditToolbar.getInstance().initialize(commands);
+	menuSelf.editToolbar = editToolbar;
+	const viewToolbar = ViewToolbar.getInstance().initialize(commands);
+	menuSelf.viewToolbar = viewToolbar;
+	const layoutToolbar = LayoutToolbar.getInstance().initialize(commands);
+	menuSelf.layoutToolbar = layoutToolbar;
 	const historyToolbar = HistoryToolbar.getInstance().initialize(commands);
 	menuSelf.historyToolbar = historyToolbar;
 	const settingsToolbar = SettingsToolbar.getInstance().initialize(commands);
@@ -559,6 +568,9 @@ export function createTopBar(commands: CommandRegistry): TopBarComponents
 	headerRow.addWidget(scriptToolbar);
 	headerRow.addWidget(appToolbar);
 	headerRow.addWidget(fileToolbar);
+	headerRow.addWidget(editToolbar);
+	headerRow.addWidget(viewToolbar);
+	headerRow.addWidget(layoutToolbar);
 	headerRow.addWidget(historyToolbar);
 	headerRow.addWidget(settingsToolbar);
 

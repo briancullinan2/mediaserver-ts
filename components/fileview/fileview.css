@@ -38,43 +38,6 @@
 	gap: 6px;
 }
 
-.ribbon-btn {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	background: #32323e;
-	border: 1px solid #424250;
-	color: #d0d0e0;
-	padding: 5px 10px;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 13px;
-	transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.ribbon-btn:hover {
-	background: #3b3b4a;
-	border-color: #55556a;
-}
-
-.ribbon-btn.active {
-	background: #0066cc;
-	border-color: #0077ee;
-	color: #ffffff;
-}
-
-.ribbon-btn.danger:hover {
-	background: #992222;
-	border-color: #bb3333;
-}
-
-.ribbon-divider {
-	width: 1px;
-	height: 20px;
-	background-color: #424250;
-	margin: 0 4px;
-}
-
 .ribbon-select {
 	background: #32323e;
 	border: 1px solid #424250;
@@ -89,8 +52,11 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	font-size: 12px;
 	cursor: pointer;
+}
+
+.toggle-label {
+	white-space: nowrap;
 }
 
 /* Navigation & Address Bar */
@@ -226,12 +192,12 @@
 
 .view-btn {
 	background: transparent;
-	border: none;
-	color: #888888;
+	border: 2px solid transparent;
 	padding: 4px 8px;
-	border-radius: 4px;
 	cursor: pointer;
-	font-size: 12px;
+	color: var(--ace-foreground);
+	font-size: inherit;
+	white-space: nowrap;
 }
 
 .view-btn.active {
@@ -244,7 +210,7 @@
 	flex: 1;
 	display: grid;
 	gap: 8px;
-	padding: 12px;
+	/* padding: 12px; */
 	overflow-y: auto;
 }
 
@@ -261,11 +227,8 @@
 }
 
 .view-pane {
-	background: #16161c;
-	border: 1px solid #2a2a36;
-	border-radius: 6px;
 	overflow-y: auto;
-	padding: 12px;
+	/* padding: 12px; */
 }
 
 /* Netflix View Layout */
@@ -320,23 +283,6 @@
 	object-fit: cover;
 }
 
-.card-details {
-	padding: 6px;
-	font-size: 12px;
-	text-align: center;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-/* Coverflow Layout */
-.itunes-coverflow-stage {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	height: 100%;
-	perspective: 800px;
-}
 
 .coverflow-track {
 	display: flex;
@@ -361,24 +307,6 @@
 .coverflow-item.selected {
 	border-color: #0077ee;
 	box-shadow: 0 0 12px rgba(0, 119, 238, 0.4);
-}
-
-/* Details Table */
-.details-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 13px;
-}
-
-.details-table th,
-.details-table td {
-	text-align: left;
-	padding: 8px 12px;
-	border-bottom: 1px solid #282834;
-}
-
-.details-table th {
-	color: #888899;
 }
 
 .details-row.selected {
