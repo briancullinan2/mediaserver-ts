@@ -216,7 +216,7 @@ export class ViewToolbar extends Widget
 		const checkbox = this.node.querySelector('#toggle-hidden-files') as HTMLInputElement;
 		checkbox?.addEventListener('change', () =>
 		{
-			this.showHiddenFiles = checkbox.checked;
+			//this.showHiddenFiles = checkbox.checked;
 			this._commands?.execute('view/options.toggle_hidden');
 		});
 

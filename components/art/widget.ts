@@ -7,6 +7,9 @@ import { PUBLIC_GOOGLE_DRIVE_FOLDER_ID } from '../filelist/widget-google';
 import { DEFAULT_HTTP_INDEX_URL } from '../filelist/widget-index';
 import type { NestedTreeNode } from '../bundle/github-tools';
 import type { FileListWidget } from '../filelist/widget';
+import { CoverflowWidget } from './widget-coverflow';
+import { PillSelectorWidget } from './widget-pill';
+import { StyleSelectorWidget } from './widget-style';
 
 export type ViewMode = 'netflix' | 'overflow' | 'grid' | 'details' | 'tree' | 'music' | string;
 
@@ -32,8 +35,21 @@ export class ArtWidget extends Widget
 	private sources: string[];
 	private activeWidget: Widget | undefined;
 	private sourcePromises: Map<string, Promise<NestedTreeNode[]>> = new Map();
-	private currentMode: ViewMode = 'netflix';
+
+	protected activeViews: Set<ViewMode> = new Set(['pills', 'styles', 'coverflow']);
 	protected dataProvider?: IFileDataProvider;
+	// Active Mounted Sub-Widgets
+	protected mountedSubWidgets: Map<HTMLElement, Widget> = new Map();
+	protected viewContainer!: HTMLElement;
+
+	// Filtering & Category Pills
+	protected selectedCategoryPill: string = 'all';
+	protected availableCategories: Set<string> = new Set();
+
+	// Data
+	protected rawFiles: NestedTreeNode[] | undefined = [];
+	protected displayedFiles: NestedTreeNode[] = [];
+	protected selectedFileIds: Set<string> = new Set();
 
 	/**
 	 * Overridable registry of view renderers mapped by mode string
@@ -60,19 +76,54 @@ export class ArtWidget extends Widget
 		}
 
 		// Register default built-in view handlers
-		this.renderWidgetFrame();
+		this.renderActiveViews();
 	}
+
+	protected clearMountedSubWidgets(): void
+	{
+		this.mountedSubWidgets.forEach((widget) => widget.dispose());
+		this.mountedSubWidgets.clear();
+	}
+
 
 	/**
-	 * Registers initial set of view renderers. Subclasses can override this or use `registerViewRenderer`.
+	 * Render Active View Modes Parallelly
 	 */
-	protected renderWidgetFrame(): void
+	protected async renderActiveViews(): Promise<void>
 	{
-		// TODO: make this a const list at the top
+		this.clearMountedSubWidgets();
+		this.viewContainer.innerHTML = '';
+		this.viewContainer.className = `cloud-main-panel views-count-${this.activeViews.size}`;
 
-		// TODO: make this dynamic based on widget constructor name
-		//container.classList.add('default-frame');
+		for(const mode of this.activeViews)
+		{
+			const pane = document.createElement('div');
+			pane.className = `view-pane view-pane-${mode}`;
+			this.viewContainer.appendChild(pane);
+			let widgetInstance: Widget | undefined = undefined;
+
+			switch(mode)
+			{
+				case 'coverflow':
+					widgetInstance = new CoverflowWidget(pane, this.displayedFiles);
+					break;
+				case 'pills':
+					widgetInstance = new PillSelectorWidget(Array.from(this.availableCategories), this.selectedCategoryPill);
+					break;
+				case 'styles':
+					widgetInstance = new StyleSelectorWidget();
+					break;
+			}
+
+			if(widgetInstance)
+			{
+				Widget.attach(widgetInstance, pane);
+				this.mountedSubWidgets.set(pane, widgetInstance);
+			}
+		}
+
 	}
+
 
 	/**
 	 * Public extension API to add or override a view mode renderer
@@ -256,23 +307,10 @@ export class ArtWidget extends Widget
 	/**
 	 * Dynamically swaps out views based on view mode via the lookup table
 	 */
-	public setViewMode(mode: ViewMode, files: NestedTreeNode[] = []): void
+	public setViewMode(mode: ViewMode | ViewMode[] | Set<ViewMode>, files: NestedTreeNode[] = []): void
 	{
-		this.currentMode = mode;
-		this.node.replaceChildren();
-
-		const renderer = this.viewRenderers.get(mode);
-		if(renderer)
-		{
-			const section = document.createElement('div');
-			section.className = 'art-view-section';
-			renderer.call(this, files, section);
-			this.node.appendChild(section);
-		} else
-		{
-			console.warn(`No view renderer registered for mode "${mode}".`);
-		}
-
+		this.activeViews = new Set<ViewMode>(mode instanceof Set ? Array.from(mode) : mode instanceof Array ? mode : [mode]);
+		this.renderActiveViews();
 		this.updateSectionHeights();
 	}
 
@@ -300,7 +338,7 @@ export class ArtWidget extends Widget
 	{
 		super.onAfterAttach(msg);
 		this.openOutlineWidget(0);
-		this.setViewMode(this.currentMode);
+		this.setViewMode(this.activeViews);
 		this.refreshCurrentFolder();
 	}
 

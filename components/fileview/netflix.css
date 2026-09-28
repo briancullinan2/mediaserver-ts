@@ -3,13 +3,9 @@
    ========================================================================== */
 
 .netflix-hero-widget {
-	position: relative;
 	width: 100%;
 	height: 100%;
-	min-height: 850px;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	overflow-y: visible;
-	overflow-x: hidden;
 	box-sizing: border-box;
 }
 
@@ -165,6 +161,13 @@
 	position: relative;
 	display: flex;
 	align-items: center;
+	transition: mask-image ease 0.2s;
+}
+
+
+.netflix-carousel-wrapper:hover .netflix-carousel-track {
+	mask-image: linear-gradient(to right, transparent 30px, black 80px, black calc(100% - 80px), transparent calc(100% - 30px));
+	-webkit-mask-image: linear-gradient(to right, transparent 30px, black 80px, black calc(100% - 80px), transparent calc(100% - 30px));
 }
 
 .netflix-carousel-track {
@@ -172,9 +175,11 @@
 	gap: 16px;
 	overflow-x: auto;
 	scroll-behavior: smooth;
-	padding: 20px 0;
+	padding: 30px 0;
 	scrollbar-width: none;
 	/* Firefox */
+	mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
+	-webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
 }
 
 .netflix-carousel-track::-webkit-scrollbar {
@@ -197,7 +202,7 @@
 .netflix-card:hover {
 	transform: scale(1.15) translateY(-10px);
 	z-index: 10;
-	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9);
+	box-shadow: 5px 10px 15px rgba(0, 0, 0, 0.9);
 }
 
 .netflix-card-media {

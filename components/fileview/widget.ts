@@ -13,6 +13,7 @@ import { CoverflowWidget } from '../art/widget-coverflow';
 import { ExplorerGridWidget } from './widget-grid';
 import { DetailsViewWidget } from './widget-details';
 import { PillSelectorWidget } from '../art/widget-pill';
+import { StyleSelectorWidget } from '../art/widget-style';
 
 
 export type ViewMode = 'netflix' | 'coverflow' | 'grid' | 'details' | 'tree' | 'pills' | 'styles';
@@ -27,38 +28,31 @@ const fileviewSelf: LuminoLayoutWindow & {
 export class FileviewWidget extends ArtWidget
 {
 	// Active Display State
-	private activeViews: Set<ViewMode> = new Set(['pills', 'netflix']);
 	private isSplitView: boolean = false;
 	private activeFolderId: string = 'root';
 	private activeFolderPath: string = '/Home';
 	private activeFolderName: string = 'Home';
 
 	// Filtering & Category Pills
-	private selectedCategoryPill: string = 'all';
-	private availableCategories: Set<string> = new Set();
 	private searchQuery: string = '';
 	private showHiddenFiles: boolean = false;
 	private sortBy: SortOption = 'name-asc';
 	private groupBy: GroupOption = 'none';
 
-	// Data
-	private rawFiles: NestedTreeNode[] | undefined = [];
-	private displayedFiles: NestedTreeNode[] = [];
-	private selectedFileIds: Set<string> = new Set();
-
-	// Active Mounted Sub-Widgets
-	private mountedSubWidgets: Map<HTMLElement, Widget> = new Map();
-
 	// UI References
-	private viewContainer!: HTMLElement;
 	private inspectorPanel!: HTMLElement;
 	private addressInput!: HTMLInputElement;
 	protected pillsWidget!: PillSelectorWidget;
+
+	protected override activeViews: Set<ViewMode> = new Set(['pills', 'styles', 'netflix']);
+
 
 	constructor(title?: string, sources?: string | string[])
 	{
 		super(title ?? 'Explorer Workspace', sources);
 		this.addClass('cloud-drive-explorer-widget');
+		this.addClass(`${this.constructor.name.toLowerCase()}-frame`);
+
 		//const theme = Array.from(document.body.classList.values()).find(c => c.startsWith('theme-'));
 		//if(theme)
 		//{
@@ -79,11 +73,6 @@ export class FileviewWidget extends ArtWidget
 		super.onBeforeDetach(msg);
 	}
 
-	protected override renderWidgetFrame(): void
-	{
-		this.node.classList.add(`${this.constructor.name.toLowerCase()}-frame`);
-		this.node.classList.add('explorer-enhanced-shell');
-	}
 
 	/**
 	 * Main UI Shell Construction
@@ -114,7 +103,6 @@ export class FileviewWidget extends ArtWidget
 				<!-- Main Content Workspace -->
 				<div class="explorer-workspace">
 					<main class="cloud-main-panel">
-						<section class="cloud-view-stage" id="cloud-view-stage"></section>
 					</main>
 
 					<!-- Slide-Out Inspector Panel -->
@@ -131,7 +119,7 @@ export class FileviewWidget extends ArtWidget
 			</div>
 		`;
 
-		this.viewContainer = this.node.querySelector('#cloud-view-stage') as HTMLElement;
+		this.viewContainer = this.node.querySelector('.cloud-main-panel') as HTMLElement;
 		this.inspectorPanel = this.node.querySelector('#cloud-inspector-panel') as HTMLElement;
 		this.addressInput = this.node.querySelector('#address-input') as HTMLInputElement;
 	}
@@ -254,14 +242,15 @@ export class FileviewWidget extends ArtWidget
 		await this.renderActiveViews();
 	}
 
+
 	/**
 	 * Render Active View Modes Parallelly
 	 */
-	private async renderActiveViews(): Promise<void>
+	protected override async renderActiveViews(): Promise<void>
 	{
 		this.clearMountedSubWidgets();
 		this.viewContainer.innerHTML = '';
-		this.viewContainer.className = `cloud-view-stage views-count-${this.activeViews.size}`;
+		this.viewContainer.className = `cloud-main-panel views-count-${this.activeViews.size}`;
 
 		for(const mode of this.activeViews)
 		{
@@ -286,6 +275,9 @@ export class FileviewWidget extends ArtWidget
 					break;
 				case 'pills':
 					widgetInstance = new PillSelectorWidget(Array.from(this.availableCategories), this.selectedCategoryPill);
+					break;
+				case 'styles':
+					widgetInstance = new StyleSelectorWidget();
 					break;
 				case 'tree':
 					await this.renderSubtreeWidget(pane);
@@ -327,11 +319,6 @@ export class FileviewWidget extends ArtWidget
 		this.mountedSubWidgets.set(container, widgetInstance);
 	}
 
-	private clearMountedSubWidgets(): void
-	{
-		this.mountedSubWidgets.forEach((widget) => widget.dispose());
-		this.mountedSubWidgets.clear();
-	}
 
 	/**
 	 * Data Fetch & Processing
