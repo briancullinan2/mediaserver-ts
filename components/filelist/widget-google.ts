@@ -48,7 +48,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 		{
 			return rawSource.split('/folders/')[1].split('?')[0];
 		}
-		return rawSource.replace(/^GoogleDrive\//i, '').trim();
+		return rawSource.replace(/^GoogleDrive\/|gdrive:\/\//i, '').trim();
 	}
 
 	public static async fetchDriveFiles(query: string): Promise<GoogleDriveFile[]>
@@ -93,16 +93,21 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 	/**
 	 * Shared helper to query Drive API and map results into NestedTreeNode instances
 	 */
-	private async fetchDriveFolderNodes(parentDriveId: string, baseNodePath: string, database: string): Promise<NestedTreeNode[]>
+	public override async fetchFiles(baseNodePath: string): Promise<NestedTreeNode[]>
 	{
-		const q = encodeURIComponent(`'${parentDriveId}' in parents and trashed = false`);
+		if(!this.handleKey)
+		{
+			return [];
+		}
+
+		const q = encodeURIComponent(`'${this.handleKey}' in parents and trashed = false`);
 
 		const driveFiles: GoogleDriveFile[] = await GoogleDriveWidget.fetchDriveFiles(q);
 
 
-		if(filelistSelf.filesRepo && !filelistSelf.filesRepo[database])
+		if(filelistSelf.filesRepo && !filelistSelf.filesRepo[this.handleKey])
 		{
-			filelistSelf.filesRepo[database] = {};
+			filelistSelf.filesRepo[this.handleKey] = {};
 		}
 
 		const nodes: NestedTreeNode[] = [];
@@ -126,9 +131,9 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 					: null
 			};
 
-			if(filelistSelf.filesRepo?.[database] && filelistSelf.FS)
+			if(filelistSelf.filesRepo?.[this.handleKey] && filelistSelf.FS)
 			{
-				filelistSelf.filesRepo[database][nodePath] = filelistSelf.FS.virtual[nodePath] = Object.assign(newNode, {
+				filelistSelf.filesRepo[this.handleKey]![nodePath] = filelistSelf.FS.virtual[nodePath] = Object.assign(newNode, {
 					mode: isDir ? (filelistSelf.FS_DIR ?? 0o040000) : (filelistSelf.FS_FILE ?? (0o100000 | 0o666)),
 					driveId: file.id
 				});
@@ -249,19 +254,17 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 		if(!activeTree || !activeTree.nodesById[folderId]) return;
 
 		const parts = folderId.split('/');
-		const database = `${parts[0]}/${parts[1]}`;
-
 		let parentDriveId = parts[parts.length - 1];
 		if(parentDriveId === 'Root')
 		{
-			parentDriveId = this.extractFolderId(this.defaultRepository);
+			this.handleKey = this.extractFolderId(this.defaultRepository);
 		}
 
 		try
 		{
 			this.treeLoading = true;
 
-			const newChildren = await this.fetchDriveFolderNodes(parentDriveId, folderId, database);
+			const newChildren = await this.fetchFiles(folderId);
 
 			if(newChildren.length === 0)
 			{
@@ -345,13 +348,13 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 		}
 
 		const rootDisplayText = this.rootFolderName || database;
-
+		let rootChildren: NestedTreeNode[] = [];
 		if(!this.loadedDatabases[database])
 		{
-			let rootChildren: NestedTreeNode[] = [];
 			try
 			{
-				rootChildren = await this.fetchDriveFolderNodes(rawFolderId, database, database);
+				this.handleKey = rawFolderId;
+				rootChildren = await this.fetchFiles('');
 			}
 			catch(err)
 			{
@@ -363,34 +366,13 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 				});
 				return;
 			}
-
-			this.loadedDatabases[database] = {
-				id: `${database}/${rawFolderId}`,
-				text: rootDisplayText,
-				status: 0,
-				state: { open: false, expanded: false },
-				path: database,
-				children: rootChildren
-			};
 		}
 		else
 		{
 			this.loadedDatabases[database].text = rootDisplayText;
 		}
 
-		const activeTree = filelistSelf.trees?.[this.selector];
-		if(!activeTree && filelistSelf.trees)
-		{
-			filelistSelf.trees[this.selector] = filelistSelf.trees[database] = new Tree(this.selector, {
-				data: this.loadedDatabases[database].children,
-				autoOpen: false,
-				closeDepth: null
-			});
-		} else if(folderId && activeTree)
-		{
-			activeTree.options.data = this.loadedDatabases[database].children;
-			activeTree.renderPartial(folderId);
-		}
+		this.showFileTree(folderId, this.loadedDatabases[database].children ?? rootChildren);
 	}
 }
 

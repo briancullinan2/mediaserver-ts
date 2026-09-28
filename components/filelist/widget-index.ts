@@ -310,7 +310,7 @@ export class HttpIndexWidget extends FileListWidget
 	private async showGitRoot(folderId?: string): Promise<void>
 	{
 		const baseUrl = this.cleanUrl(this.defaultRepository);
-		const database = this.defaultRepository;
+		this.handleKey = baseUrl.replace(/^https*:\/\//i, '').trim();
 
 		if(!this.rootFolderName)
 		{
@@ -319,7 +319,7 @@ export class HttpIndexWidget extends FileListWidget
 			const repoSelect = this.node.querySelector('.filelist-drive') as HTMLSelectElement;
 			if(repoSelect)
 			{
-				const option = Array.from(repoSelect.options).find(opt => opt.value === database || opt.value === baseUrl);
+				const option = Array.from(repoSelect.options).find(opt => opt.value === this.handleKey || opt.value === baseUrl);
 				if(option)
 				{
 					option.textContent = this.rootFolderName;
@@ -327,7 +327,7 @@ export class HttpIndexWidget extends FileListWidget
 				else
 				{
 					const newOpt = document.createElement('option');
-					newOpt.value = database;
+					newOpt.value = this.handleKey;
 					newOpt.textContent = this.rootFolderName;
 					newOpt.selected = true;
 					repoSelect.appendChild(newOpt);
@@ -335,11 +335,10 @@ export class HttpIndexWidget extends FileListWidget
 			}
 		}
 
-		const rootDisplayText = this.rootFolderName || database;
-
-		if(!this.loadedDatabases[database])
+		const rootDisplayText = this.rootFolderName || this.handleKey;
+		let rootChildren: NestedTreeNode[] = [];
+		if(!this.loadedDatabases[this.handleKey])
 		{
-			let rootChildren: NestedTreeNode[] = [];
 			try
 			{
 				rootChildren = await this.fetchFiles(baseUrl) ?? [];
@@ -355,34 +354,21 @@ export class HttpIndexWidget extends FileListWidget
 				return;
 			}
 
-			this.loadedDatabases[database] = {
-				id: `${database}`,
+			this.loadedDatabases[this.handleKey] = {
+				id: this.handleKey,
 				text: rootDisplayText,
 				status: 0,
 				state: { open: false, expanded: false },
-				path: database,
+				path: this.handleKey,
 				children: rootChildren
 			};
 		}
 		else
 		{
-			this.loadedDatabases[database].text = rootDisplayText;
+			this.loadedDatabases[this.handleKey].text = rootDisplayText;
 		}
 
-		const activeTree = filelistSelf.trees?.[this.selector];
-		if(!activeTree && filelistSelf.trees)
-		{
-			filelistSelf.trees[this.selector] = filelistSelf.trees[database] = new Tree(this.selector, {
-				data: this.loadedDatabases[database].children,
-				autoOpen: false,
-				closeDepth: null
-			});
-		}
-		else if(folderId && activeTree)
-		{
-			activeTree.options.data = this.loadedDatabases[database].children;
-			activeTree.renderPartial(folderId);
-		}
+		this.showFileTree(folderId, this.loadedDatabases[this.handleKey].children ?? rootChildren);
 	}
 }
 

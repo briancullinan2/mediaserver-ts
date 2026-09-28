@@ -58,19 +58,7 @@ export class AssetListWidget extends FileListWidget
 			}
 
 			// TODO: put github call here:
-			const result = await menuSelf.loadGitHubTree?.(owner, repo, branch, baseDir);
-			const nodes = menuSelf.convertFlatToNested?.(Object.values(result ?? {}));
-			for(const r of nodes ?? [])
-			{
-				r.path = basePath + '/' + r.path;
-				if(menuSelf.filesRepo?.[database] && menuSelf.FS)
-				{
-					menuSelf.filesRepo[database][r.path] = menuSelf.FS.virtual[r.path] = Object.assign(r, {
-						mode: r.mode ?? menuSelf.FS_FILE ?? (0o100000 | 0o666),
-					});
-				}
-			}
-
+			const nodes = await this.fetchFiles(baseDir);
 
 			resultSet = Object.values(menuSelf.filesRepo?.[database] ?? {}).reduce((acc: any, r: any) =>
 			{
@@ -175,49 +163,38 @@ export class AssetListWidget extends FileListWidget
 		const owner = (this.node.querySelector('.filelist-owner') as HTMLSelectElement).value;
 		const repo = (this.node.querySelector('.filelist-repository') as HTMLSelectElement).value;
 		const branch = (this.node.querySelector('.filelist-branch') as HTMLSelectElement).value;
-		const database = `${owner}/${repo}`;
+		this.handleKey = `${owner}/${repo}`;
+		let rootChildren: NestedTreeNode[] = [];
 
-		if(!this.loadedDatabases[database] && menuSelf.filesRepo)
+		if(!this.loadedDatabases[this.handleKey])
 		{
-			// TODO: replace with call to loadGitHubTree(path = '/')
-			menuSelf.filesRepo[this.selector] = await menuSelf.loadGitHubTree?.(owner, repo, branch, '/');
-			if(!menuSelf.filesRepo[database])
+			try
 			{
-				menuSelf.filesRepo[database] = {};
+				rootChildren = await this.fetchFiles(folderId) ?? [];
+
+				for(const child of rootChildren)
+				{
+					this.loadedDatabases[child.id] = child;
+				}
 			}
-			const nodes = menuSelf.convertFlatToNested?.(Object.values(menuSelf.filesRepo[this.selector] ?? {}));
-			for(let n of nodes ?? [])
+			catch(err)
 			{
-				n.id = database + '/' + n.id;
-				const isDir = n.mode ? (n.mode >> 12) & (menuSelf.ST_DIR ?? 4) : false;
-				n.children = isDir ? [{ text: 'Loading...', id: `${n.path}/loading`, path: `${n.path}/loading`, status: 0, state: { open: false, expanded: false } } as NestedTreeNode] : null;
-				menuSelf.filesRepo[database][n.path] = menuSelf.FS.virtual[n.path] = this.loadedDatabases[n.id] = Object.assign(n, {
-					mode: n.mode ?? menuSelf.FS_FILE ?? (0o100000 | 0o666),
-				});;
+				console.error('Failed to initialize top-level HTTP index children:', err);
+				return;
 			}
-			this.loadedDatabases[database] = {
-				id: database,
-				text: database,
+
+
+			this.loadedDatabases[this.handleKey] = {
+				id: this.handleKey,
+				text: this.handleKey,
 				status: 0,
 				state: { open: false, expanded: false },
-				path: database,
-				children: nodes
+				path: this.handleKey,
+				children: rootChildren
 			};
 		}
 
-		const activeTree = menuSelf.trees?.[this.selector];
-		if(!activeTree && menuSelf.trees)
-		{
-			menuSelf.trees[this.selector] = menuSelf.trees[database] = new Tree(this.selector, {
-				data: this.loadedDatabases[database].children,
-				autoOpen: false,
-				closeDepth: null
-			});
-		} else if(folderId)
-		{
-			activeTree.options.data = this.loadedDatabases[database].children;
-			activeTree.renderPartial(folderId);
-		}
+		this.showFileTree(folderId, this.loadedDatabases[this.handleKey].children ?? rootChildren);
 	}
 
 }

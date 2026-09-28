@@ -31,7 +31,7 @@ export class FileListWidget extends Widget implements IFileDataProvider
 	handle?: FileSystemDirectoryHandle;
 	private observer!: MutationObserver;
 	protected loadedDatabases: Record<string, NestedTreeNode> = {};
-	handleKey?: string;
+	protected handleKey?: string;
 	protected treeLoading: boolean = false;
 	protected refreshTreeTimer: ReturnType<typeof setTimeout> | undefined;
 	public _source?: string;
@@ -327,16 +327,34 @@ export class FileListWidget extends Widget implements IFileDataProvider
 				const owner = (this.node.querySelector('.filelist-owner') as HTMLSelectElement).value;
 				const repo = (this.node.querySelector('.filelist-repository') as HTMLSelectElement).value;
 				const branch = (this.node.querySelector('.filelist-branch') as HTMLSelectElement).value;
+				this.handleKey = `${owner}/${repo}`;
 
 				let files: Record<string, GitHubFileEntry> | undefined = undefined;
 				if(filelistSelf.filesRepo && !filelistSelf.filesRepo[this.selector])
 				{
-					files = filelistSelf.filesRepo[this.selector] = await filelistSelf.loadGitHubTree?.(owner, repo, branch);
+					files = filelistSelf.filesRepo[this.selector] = await filelistSelf.loadGitHubTree?.(owner, repo, branch, folderId);
 				}
 
 				if(typeof files !== 'undefined')
 				{
-					return filelistSelf.convertFlatToNested?.(Object.values(files));
+					if(filelistSelf.filesRepo && !filelistSelf.filesRepo[this.handleKey])
+					{
+						filelistSelf.filesRepo[this.handleKey] = {};
+					}
+
+					const nodes = filelistSelf.convertFlatToNested?.(Object.values(files));
+					for(let n of nodes ?? [])
+					{
+						n.id = this.handleKey + '/' + n.id;
+						const isDir = n.mode ? (n.mode >> 12) & (filelistSelf.ST_DIR ?? 4) : false;
+						n.children = isDir ? [{ text: 'Loading...', id: `${n.path}/loading`, path: `${n.path}/loading`, status: 0, state: { open: false, expanded: false } } as NestedTreeNode] : null;
+						if(filelistSelf.filesRepo)
+						{
+							filelistSelf.filesRepo[this.handleKey]![n.path] = filelistSelf.FS.virtual[n.path] = this.loadedDatabases[n.id] = Object.assign(n, {
+								mode: n.mode ?? filelistSelf.FS_FILE ?? (0o100000 | 0o666),
+							});
+						}
+					}
 				}
 			}
 		}
@@ -348,7 +366,7 @@ export class FileListWidget extends Widget implements IFileDataProvider
 
 
 
-	private async showFileTree(folderId?: string, nodes?: NestedTreeNode[]): Promise<void>
+	protected async showFileTree(folderId?: string, nodes?: NestedTreeNode[]): Promise<void>
 	{
 		if(!this.handleKey)
 		{
