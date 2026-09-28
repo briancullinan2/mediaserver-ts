@@ -10,8 +10,8 @@
 	background-color: #141414;
 	color: #ffffff;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	overflow-y: visible;
 	overflow-x: hidden;
-	overflow-y: auto;
 	box-sizing: border-box;
 }
 
