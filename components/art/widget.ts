@@ -174,6 +174,7 @@ export class ArtWidget extends Widget
 		if('fetchFiles' in targetWidget && typeof targetWidget.fetchFiles === 'function')
 		{
 			this.dataProvider = targetWidget;
+			this.refreshCurrentFolder();
 		}
 
 		if('errorOccurred' in targetWidget && typeof (targetWidget as IErrorEvent).errorOccurred?.connect === 'function')
@@ -300,6 +301,12 @@ export class ArtWidget extends Widget
 		super.onAfterAttach(msg);
 		this.openOutlineWidget(0);
 		this.setViewMode(this.currentMode);
+		this.refreshCurrentFolder();
+	}
+
+	protected async refreshCurrentFolder(): Promise<void>
+	{
+
 	}
 
 	protected override onActivateRequest(msg: Message): void

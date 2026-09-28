@@ -65,7 +65,6 @@ export class FileviewWidget extends ArtWidget
 		super.onAfterAttach(msg);
 		this.renderExplorerShell();
 		this.attachEventListeners();
-		this.refreshCurrentFolder();
 	}
 
 	protected override onBeforeDetach(msg: Message): void
@@ -393,7 +392,7 @@ export class FileviewWidget extends ArtWidget
 	/**
 	 * Data Fetch & Processing
 	 */
-	private async refreshCurrentFolder(): Promise<void>
+	protected override async refreshCurrentFolder(): Promise<void>
 	{
 		if(this.dataProvider)
 		{
