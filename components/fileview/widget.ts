@@ -13,7 +13,7 @@ import { NetflixViewWidget } from './widget-netflix';
 import { CoverflowWidget } from '../art/widget-coverflow';
 import { ExplorerGridWidget } from './widget-grid';
 import { DetailsViewWidget } from './widget-details';
-import { PillSelectorWidget } from '../art/widget-pill';
+import { IPillSelectedArgs, PillSelectorWidget } from '../art/widget-pill';
 import { StyleSelectorWidget } from '../art/widget-style';
 
 
@@ -45,9 +45,9 @@ export class FileviewWidget extends ArtWidget
 	private addressInput!: HTMLInputElement;
 	protected pillsWidget!: PillSelectorWidget;
 
-	protected override activeViews: Set<ViewMode> = new Set(['pills', 'styles', 'netflix']);
+	protected override activeViews: Set<ViewMode> = new Set(['netflix']);
 	private styleWidget?: StyleSelectorWidget;
-	private categorySelected?: Signal<PillSelectorWidget, import("../art/widget-pill").IPillSelectedArgs>;
+	private categorySelected?: Signal<PillSelectorWidget, IPillSelectedArgs>;
 
 
 	constructor(title?: string, sources?: string | string[])
@@ -275,9 +275,11 @@ export class FileviewWidget extends ArtWidget
 			switch(mode)
 			{
 				case 'netflix':
-					widgetInstance = new NetflixViewWidget({
-						filesSignal: this.filesChanged
-					}, this.displayedFiles);
+					widgetInstance = new NetflixViewWidget(undefined, {
+						filesSignal: this.filesChanged,
+						files: this.displayedFiles
+					});
+					this.categorySelected = (widgetInstance as NetflixViewWidget).categorySelected;
 					break;
 				case 'coverflow':
 					widgetInstance = new CoverflowWidget(pane, this.displayedFiles);
@@ -289,11 +291,12 @@ export class FileviewWidget extends ArtWidget
 					widgetInstance = new DetailsViewWidget(pane, this.displayedFiles);
 					break;
 				case 'pills':
-					widgetInstance = new PillSelectorWidget({
+					widgetInstance = new PillSelectorWidget(null, {
 						filesSignal: this.filesChanged,
 						items: this.rawFiles,
-						categories: Array.from(this.availableCategories)
-					}, this.selectedCategoryPill);
+						categories: Array.from(this.availableCategories),
+						activeCategory: this.selectedCategoryPill
+					});
 					this.categorySelected = (widgetInstance as PillSelectorWidget).categorySelected;
 					break;
 				case 'styles':

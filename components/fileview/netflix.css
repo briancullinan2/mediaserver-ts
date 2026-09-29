@@ -39,11 +39,16 @@
 			transparent 100%);
 }
 
+.netflix-hero-widget>*:not(.netflix-backdrop, .animated-bg-layer) {
+	z-index: 1;
+	position: relative;
+}
+
 /* Hero Content Area */
 .netflix-hero-container {
 	position: relative;
 	z-index: 3;
-	padding: 80px 4% 20px 4%;
+	padding: 20px 4% 20px 4%;
 	max-width: 900px;
 }
 

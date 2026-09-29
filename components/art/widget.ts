@@ -128,7 +128,10 @@ export class ArtWidget extends Widget
 					widgetInstance = new CoverflowWidget(pane, this.displayedFiles);
 					break;
 				case 'pills':
-					widgetInstance = new PillSelectorWidget(Array.from(this.availableCategories), this.selectedCategoryPill);
+					widgetInstance = new PillSelectorWidget(null, {
+						categories: Array.from(this.availableCategories),
+						activeCategory: this.selectedCategoryPill,
+					});
 					break;
 				case 'styles':
 					widgetInstance = new StyleSelectorWidget();

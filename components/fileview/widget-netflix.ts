@@ -1,10 +1,12 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
-import type { ISignal } from '@lumino/signaling';
+import type { ISignal, Signal } from '@lumino/signaling';
 import type { NestedTreeNode } from '../bundle/github-tools';
 import type { IFileDataProvider, WidgetFilesEventArgs } from '../filelist/widget.d';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { ArtWindow } from '../art/widget';
+import { IPillSelectedArgs, PillSelectorWidget } from '../art/widget-pill';
+import { StyleSelectorWidget } from '../art/widget-style';
 
 const netflixSelf: LuminoLayoutWindow & ArtWindow = self as unknown as any;
 
@@ -15,6 +17,7 @@ export interface INetflixViewOptions
 	onFileSelect?: (file: NestedTreeNode) => void;
 	title?: string;
 	categoryName?: string;
+	files?: NestedTreeNode[];
 }
 
 export class NetflixViewWidget extends Widget
@@ -23,6 +26,8 @@ export class NetflixViewWidget extends Widget
 	private _filesSignal?: ISignal<any, WidgetFilesEventArgs>;
 	private _onFileSelect?: (file: NestedTreeNode) => void;
 	private _activeFile: NestedTreeNode | null = null;
+	protected selectedCategoryPill: string = 'all';
+	public categorySelected?: Signal<PillSelectorWidget, IPillSelectedArgs>;
 
 	// DOM Elements
 	private _backdropNode!: HTMLElement;
@@ -33,13 +38,16 @@ export class NetflixViewWidget extends Widget
 	private _btnLeft!: HTMLButtonElement;
 	private _btnRight!: HTMLButtonElement;
 	private dataProvider?: Function | IFileDataProvider;
+	private pillsWidget?: PillSelectorWidget;
+	private styleWidget?: StyleSelectorWidget;
+	private pillsSection!: HTMLDivElement;
 
-	constructor(options: INetflixViewOptions = {}, files?: NestedTreeNode[])
+	constructor(title?: string, options: INetflixViewOptions = {})
 	{
 		super();
 		this.addClass('netflix-hero-widget');
 
-		this._files = files || [];
+		this._files = options.files || [];
 		this._filesSignal = options.filesSignal;
 		this._onFileSelect = options.onFileSelect;
 
@@ -48,6 +56,32 @@ export class NetflixViewWidget extends Widget
 		if(this._filesSignal)
 		{
 			this._filesSignal.connect(this.onFilesUpdated, this);
+		}
+	}
+
+	protected onAfterAttach(msg: Message): void
+	{
+		super.onAfterAttach(msg);
+
+		this.pillsWidget = new PillSelectorWidget(null, {
+			filesSignal: this._filesSignal,
+			items: this._files,
+			//categories: Array.from(this.availableCategories),
+			activeCategory: this.selectedCategoryPill
+		});
+		this.categorySelected = this.pillsWidget.categorySelected;
+
+		this.styleWidget = new StyleSelectorWidget({
+			categorySelected: this.categorySelected
+		});
+
+		if(this.pillsWidget && !this.pillsWidget.isAttached)
+		{
+			Widget.attach(this.pillsWidget, this.pillsSection);
+		}
+		if(this.styleWidget && !this.styleWidget.isAttached)
+		{
+			Widget.attach(this.styleWidget, this.pillsSection);
 		}
 	}
 
@@ -161,9 +195,13 @@ export class NetflixViewWidget extends Widget
 		carouselWrapper.append(this._btnLeft, this._trackNode, this._btnRight);
 		rowSection.append(rowHeader, carouselWrapper);
 
-		this.node.append(this._backdropNode, overlay, heroContainer, rowSection);
+		this.pillsSection = document.createElement('div');
+		this.pillsSection.className = 'netflix-pill-section';
+
+		this.node.append(this._backdropNode, overlay, heroContainer, this.pillsSection, rowSection);
 
 		this.renderCarousel();
+
 	}
 
 	private renderCarousel(): void

@@ -29,6 +29,7 @@ export interface IPillViewOptions
 	title?: string;
 	categories?: string[];
 	items?: NestedTreeNode[];
+	activeCategory?: string;
 }
 
 const widgetSelf: {
@@ -46,7 +47,7 @@ export class PillSelectorWidget extends Widget
 
 	private _categories: string[] = [];
 	private _activeCategory: string = '';
-	private _title: string = 'Categories';
+	private _title: string | null | undefined = 'Categories';
 
 	private _pillsContainer: HTMLDivElement | null = null;
 	private _leftScrollBtn: HTMLButtonElement | null = null;
@@ -54,7 +55,7 @@ export class PillSelectorWidget extends Widget
 
 	private _filesSignal = new Signal<Widget, WidgetFilesEventArgs>(this);
 
-	constructor(categories: string[] | IPillViewOptions = [], activeCategory?: string)
+	constructor(title: string | undefined | null = 'Categories', categories: string[] | IPillViewOptions = [])
 	{
 		super();
 		this.addClass('pill-selector-widget');
@@ -69,11 +70,16 @@ export class PillSelectorWidget extends Widget
 		{
 			this._categories = categories.categories;
 		}
-		this._title = 'title' in categories && categories.title
-			? categories.title : 'Categories';
-		this._activeCategory = activeCategory
-			?? (categories instanceof Array && categories.length > 0
-				? categories[0] : '');
+		this._title = title
+			?? ('title' in categories && categories.title
+				? categories.title : undefined);
+		if('activeCategory' in categories && typeof categories.activeCategory === 'string')
+		{
+			this._activeCategory = categories.activeCategory;
+		} else if(categories instanceof Array && categories.length > 0)
+		{
+			this._activeCategory = categories[0];
+		}
 
 		if('filesSignal' in categories && categories.filesSignal instanceof Signal)
 		{
@@ -135,12 +141,18 @@ export class PillSelectorWidget extends Widget
 		this.updateScrollOverflowIndicators();
 	}
 
+	protected override onResize(msg: Widget.ResizeMessage): void
+	{
+		super.onResize(msg);
+		this.updateScrollOverflowIndicators();
+	}
+
 	private renderWidget(): void
 	{
 		this.node.innerHTML = `
-      <div class="pill-nav-header">
+      ${this._title ? `<div class="pill-nav-header">
         <h2 class="pill-nav-title">${this._title}</h2>
-      </div>
+      </div>` : ''}
       <div class="pill-carousel-wrapper">
         <button class="pill-scroll-btn left" aria-label="Scroll left">❮</button>
         <div class="pill-scroll-container">
