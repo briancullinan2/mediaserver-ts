@@ -357,7 +357,9 @@
 	min-height: 200px;
 }
 
-.hidden {
+#cloud-inspector-panel.hidden,
+#address-input.hidden,
+#btn-toggle-inspector.hidden {
 	display: none !important;
 }
 

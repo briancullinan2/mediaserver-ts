@@ -1,13 +1,15 @@
 import { Widget } from '@lumino/widgets';
-import { Signal } from '@lumino/signaling';
+import { ISignal, Signal } from '@lumino/signaling';
 import { Message } from '@lumino/messaging';
+import type { IPillSelectedArgs, PillFolderMeta, PillSelectorWidget } from './widget-pill';
+import type { NestedTreeNode } from '../bundle/github-tools';
 
-export interface StyleOption
+export interface IStyleViewOptions
 {
-	id: string;
-	label: string;
-	itemCount?: number;
-	icon?: string;
+	categorySelected?: ISignal<PillSelectorWidget, IPillSelectedArgs>;
+	onStyleSelect?: (file: NestedTreeNode) => void;
+	title?: string;
+	styles?: PillFolderMeta[];
 }
 
 export class StyleSelectorWidget extends Widget
@@ -15,33 +17,49 @@ export class StyleSelectorWidget extends Widget
 	/**
 	 * Emitted when a user selects a style pill.
 	 */
-	readonly styleSelected = new Signal<StyleSelectorWidget, StyleOption>(this);
+	readonly styleSelected = new Signal<StyleSelectorWidget, PillFolderMeta>(this);
 
-	private _styles: StyleOption[] = [];
+	private _styles: PillFolderMeta[] = [];
 	private _activeStyleId: string | null = null;
 	private _focusedIndex: number = -1;
 
-	constructor(styles: StyleOption[] = [])
+	private _categorySelected: Signal<PillSelectorWidget, IPillSelectedArgs> | undefined = undefined;
+
+	constructor(styles: PillFolderMeta[] | IStyleViewOptions = [])
 	{
 		super();
 		this.addClass('art-style-selector-widget');
 		this.node.setAttribute('tabindex', '0'); // Enable focus for keyboard navigation
 
-		if(styles.length > 0)
+		if('items' in styles && styles.items instanceof Array && styles.items.length > 0)
+		{
+			this.setStyles(styles.items);
+		}
+		else if(styles instanceof Array && styles.length > 0)
 		{
 			this.setStyles(styles);
 		}
+		if('categorySelected' in styles && styles.categorySelected instanceof Signal)
+		{
+			this._categorySelected = styles.categorySelected;
+			this._categorySelected.connect(this.selectCategory, this);
+		}
+	}
+
+	private selectCategory(sender: PillSelectorWidget, args: IPillSelectedArgs)
+	{
+		this.setStyles(Object.values(args.styles));
 	}
 
 	/**
 	 * Updates the available styles for the current category and selects a default style.
 	 */
-	public setStyles(styles: StyleOption[], defaultStyleId?: string): void
+	public setStyles(styles: PillFolderMeta[], defaultStyleId?: string): void
 	{
 		this._styles = styles;
 
 		// Hide widget if there are no distinct styles or only a single generic entry
-		if(styles.length === 0 || (styles.length === 1 && styles[0].label.toLowerCase() === 'general'))
+		if(styles.length === 0 || (styles.length === 1 && styles[0].style.toLowerCase() === 'general'))
 		{
 			this.hide();
 			this._activeStyleId = styles[0]?.id ?? null;
@@ -59,7 +77,7 @@ export class StyleSelectorWidget extends Widget
 	/**
 	 * Returns the currently active style option.
 	 */
-	public get activeStyle(): StyleOption | null
+	public get activeStyle(): PillFolderMeta | null
 	{
 		return this._styles.find(s => s.id === this._activeStyleId) ?? null;
 	}
@@ -98,9 +116,7 @@ export class StyleSelectorWidget extends Widget
 	{
 		this.node.innerHTML = `
             <div class="style-selector-header">
-                <span class="style-selector-title">
-                    <span class="folder-icon">📂</span> Styles & Presets
-                </span>
+                <h3 class="style-selector-title">Styles & Presets</h3>
                 <span class="style-selector-count">${this._styles.length} available</span>
             </div>
             <div class="style-pill-grid" role="radiogroup" aria-label="Styles and Presets">
@@ -109,7 +125,7 @@ export class StyleSelectorWidget extends Widget
 				{
 					const isActive = style.id === this._activeStyleId;
 					const isFocused = idx === this._focusedIndex;
-					const icon = style.icon ?? '📁';
+					const icon = style.icon ?? '<i class="bx bx-folder"></i>';
 					const countBadge = style.itemCount !== undefined
 						? `<span class="style-badge">${style.itemCount}</span>`
 						: '';
@@ -124,7 +140,7 @@ export class StyleSelectorWidget extends Widget
                                 tabindex="${isActive ? '0' : '-1'}"
                             >
                                 <span class="style-icon">${icon}</span>
-                                <span class="style-label">${style.label}</span>${countBadge}
+                                <span class="style-label">${style.style}</span>${countBadge}
                             </button>
                         `;
 				})

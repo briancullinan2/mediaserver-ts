@@ -260,10 +260,12 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	pointer-events: none;
 }
 
 .netflix-carousel-wrapper:hover .netflix-nav-arrow {
 	opacity: 1;
+	pointer-events: all;
 }
 
 .netflix-nav-arrow:hover {

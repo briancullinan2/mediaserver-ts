@@ -22,10 +22,13 @@
 .pill-nav-title {
 	font-size: 1.15rem;
 	font-weight: 700;
-	letter-spacing: 0.3px;
 	margin: 0;
-	color: #f8fafc;
 	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 /* Horizontal Carousel Wrapper */
@@ -61,17 +64,22 @@
 
 .pill-grid {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
+	flex-wrap: wrap;
 	align-items: center;
 	gap: 10px;
 	white-space: nowrap;
+	min-height: 40px;
+	max-height: calc(38px + 10px + 38px + 10px + 38px);
+	justify-content: stretch;
+	align-items: normal;
 }
 
 /* Pill Component */
 .art-pill {
 	position: relative;
 	background: rgba(30, 32, 53, 0.7);
-	border: 1px solid rgba(255, 255, 255, 0.08);
+	border: 2px solid rgba(255, 255, 255, 0.08);
 	color: #a0a6cc;
 	padding: 8px 18px;
 	border-radius: 20px;
@@ -81,6 +89,7 @@
 	outline: none;
 	backdrop-filter: blur(8px);
 	transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+	/* flex-grow: 1; */
 }
 
 .art-pill:hover {
@@ -104,13 +113,11 @@
 /* Side Arrows */
 .pill-scroll-btn {
 	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
+	top: 0;
+	bottom: 0;
 	width: 32px;
-	height: 32px;
-	border-radius: 50%;
-	background: rgba(18, 19, 28, 0.85);
-	border: 1px solid rgba(255, 255, 255, 0.15);
+	background: rgba(0, 0, 0, 0.5);
+	border: none;
 	color: #ffffff;
 	font-size: 0.8rem;
 	display: flex;
@@ -121,12 +128,17 @@
 	backdrop-filter: blur(4px);
 	transition: all 0.25s ease;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+	opacity: 0;
+}
+
+.pill-carousel-wrapper:hover .pill-scroll-btn.visible {
+	opacity: 1;
 }
 
 .pill-scroll-btn:hover {
-	background: rgba(59, 130, 246, 0.9);
-	border-color: #60a5fa;
-	transform: translateY(-50%) scale(1.1);
+	background: rgba(0, 0, 0, 0.8);
+	/* border-color: #60a5fa; */
+	transform: scale(1.1);
 }
 
 .pill-scroll-btn.left {

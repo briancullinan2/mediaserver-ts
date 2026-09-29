@@ -18,11 +18,10 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	font-size: 0.85rem;
 	font-weight: 600;
-	color: var(--jp-ui-font-color2, #aaaaaa);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .style-selector-title {
@@ -47,13 +46,15 @@
 	align-items: center;
 	gap: 6px;
 	padding: 5px 10px;
-	border: 1px solid var(--jp-border-color2, #444444);
+	border: 2px solid var(--jp-border-color2, #444444);
 	border-radius: 14px;
 	background-color: var(--jp-layout-color2, #252526);
 	color: var(--jp-ui-font-color1, #dddddd);
 	font-size: 0.8rem;
 	cursor: pointer;
 	transition: all 0.15s ease-in-out;
+	align-items: center;
+	vertical-align: middle;
 }
 
 .style-pill:hover {
@@ -74,7 +75,7 @@
 }
 
 .style-icon {
-	font-size: 0.85rem;
+	font-size: 16px;
 	line-height: 1;
 }
 

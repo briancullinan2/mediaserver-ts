@@ -46,6 +46,8 @@ export class FileviewWidget extends ArtWidget
 	protected pillsWidget!: PillSelectorWidget;
 
 	protected override activeViews: Set<ViewMode> = new Set(['pills', 'styles', 'netflix']);
+	private styleWidget?: StyleSelectorWidget;
+	private categorySelected?: Signal<PillSelectorWidget, import("../art/widget-pill").IPillSelectedArgs>;
 
 
 	constructor(title?: string, sources?: string | string[])
@@ -282,11 +284,15 @@ export class FileviewWidget extends ArtWidget
 				case 'pills':
 					widgetInstance = new PillSelectorWidget({
 						//filesSignal: this.filesChanged,
+						items: this.rawFiles,
 						categories: Array.from(this.availableCategories)
 					}, this.selectedCategoryPill);
+					this.categorySelected = (widgetInstance as PillSelectorWidget).categorySelected;
 					break;
 				case 'styles':
-					widgetInstance = new StyleSelectorWidget();
+					this.styleWidget = widgetInstance = new StyleSelectorWidget({
+						categorySelected: this.categorySelected
+					});
 					break;
 				case 'tree':
 					await this.renderSubtreeWidget(pane);

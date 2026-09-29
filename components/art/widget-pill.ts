@@ -7,23 +7,27 @@ export interface IPillSelectedArgs
 {
 	category: string;
 	index: number;
+	styles: Record<string, PillFolderMeta>;
 }
 
-interface PillFolderMeta
+export interface PillFolderMeta
 {
 	id: string;
 	rawName: string;
 	category: string;
 	style: string;
 	isHttpSource?: boolean;
+	itemCount?: number;
+	icon?: string;
 }
 
 export interface IPillViewOptions
 {
 	filesSignal?: ISignal<Widget, { items: NestedTreeNode[]; }>;
-	onFileSelect?: (file: NestedTreeNode) => void;
+	onPillSelect?: (file: NestedTreeNode) => void;
 	title?: string;
 	categories?: string[];
+	items?: NestedTreeNode[];
 }
 
 const widgetSelf: {
@@ -54,7 +58,10 @@ export class PillSelectorWidget extends Widget
 		super();
 		this.addClass('pill-selector-widget');
 
-		if(categories instanceof Array)
+		if('items' in categories && categories.items instanceof Array)
+		{
+			this.categoryMap = PillSelectorWidget.parseAndBuildCategoryMap(categories.items, false);
+		} else if(categories instanceof Array)
 		{
 			this._categories = categories;
 		} else if('categories' in categories && categories.categories instanceof Array)
@@ -113,7 +120,7 @@ export class PillSelectorWidget extends Widget
 		if(emitSignal)
 		{
 			const index = this._categories.indexOf(category);
-			this.categorySelected.emit({ category, index });
+			this.categorySelected.emit({ category, index, styles: this.categoryMap[category] });
 		}
 	}
 
@@ -146,7 +153,7 @@ export class PillSelectorWidget extends Widget
 		if(!grid) return;
 
 		// Render individual pill buttons
-		grid.innerHTML = this._categories
+		grid.innerHTML = (this.categoryMap ? Object.keys(this.categoryMap) : this._categories)
 			.map(
 				cat => `
         <button class="art-pill ${cat === this._activeCategory ? 'active' : ''}" data-cat="${cat}">
@@ -168,6 +175,7 @@ export class PillSelectorWidget extends Widget
 				this.categorySelected.emit({
 					category: cat,
 					index: idx,
+					styles: this.categoryMap[cat]
 				});
 			});
 		});
@@ -233,14 +241,18 @@ export class PillSelectorWidget extends Widget
 
 		if(this._leftScrollBtn)
 		{
-			this._leftScrollBtn.style.opacity = isAtStart ? '0' : '1';
-			this._leftScrollBtn.style.pointerEvents = isAtStart ? 'none' : 'auto';
+			this._leftScrollBtn.classList.remove(isAtStart ? 'visible' : 'hidden');
+			this._leftScrollBtn.classList.add(isAtStart ? 'hidden' : 'visible');
+			//this._leftScrollBtn.style.opacity = isAtStart ? '0' : '1';
+			//this._leftScrollBtn.style.pointerEvents = isAtStart ? 'none' : 'auto';
 		}
 
 		if(this._rightScrollBtn)
 		{
-			this._rightScrollBtn.style.opacity = isAtEnd ? '0' : '1';
-			this._rightScrollBtn.style.pointerEvents = isAtEnd ? 'none' : 'auto';
+			this._rightScrollBtn.classList.remove(isAtEnd ? 'visible' : 'hidden');
+			this._rightScrollBtn.classList.add(isAtEnd ? 'hidden' : 'visible');
+			//this._rightScrollBtn.style.opacity = isAtEnd ? '0' : '1';
+			//this._rightScrollBtn.style.pointerEvents = isAtEnd ? 'none' : 'auto';
 		}
 	}
 
