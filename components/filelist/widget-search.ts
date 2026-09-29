@@ -4,8 +4,10 @@ import type { GroupedSearchResult } from '../bundle/lumino-search';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow, LuminoMenuWindow } from '../bundle/menu.d';
 import type { GithubWindow } from '../bundle/github.d';
+import type { FilelistWindow } from './widget.d';
 
-const filelistSelf: LuminoLayoutWindow & GlobalToolbarsWindow & GithubWindow & LuminoMenuWindow = self as unknown as any;
+const filelistSelf: LuminoLayoutWindow & FilelistWindow & GlobalToolbarsWindow & GithubWindow
+	& LuminoMenuWindow = self as unknown as any;
 
 export interface HistorySnapshot
 {
@@ -365,3 +367,5 @@ export class SearchListWidget extends FileListWidget
 		super.onBeforeDetach(msg);
 	}
 }
+
+filelistSelf.SearchListWidget = SearchListWidget;

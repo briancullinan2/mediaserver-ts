@@ -4,8 +4,11 @@ import Tree from './tree.js';
 import type { GlobalToolbarsWindow } from "../bundle/menu.d";
 import type { GithubWindow } from "../bundle/github.d";
 import type { BuildWindow } from "../bundle/make.d";
+import type { FileWidgetWindow } from "./widget.d";
 
-const menuSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow = self as unknown as any;
+const menuSelf: GlobalToolbarsWindow & FileWidgetWindow & GithubWindow
+	& BuildWindow = self as unknown as any;
+
 
 export class AssetListWidget extends FileListWidget
 {
@@ -33,9 +36,6 @@ export class AssetListWidget extends FileListWidget
 		const activeTree = menuSelf.trees?.[this.selector];
 		if(!activeTree || !activeTree.nodesById[folderId]) return;
 
-		const owner = (this.node.querySelector('.filelist-owner') as HTMLSelectElement).value;
-		const repo = (this.node.querySelector('.filelist-repository') as HTMLSelectElement).value;
-		const branch = (this.node.querySelector('.filelist-branch') as HTMLSelectElement).value;
 		const parts = folderId.split('/');
 		const database = `${parts[0]}/${parts[1]}`;
 		const baseDir = parts.slice(2).join('/');
@@ -200,3 +200,4 @@ export class AssetListWidget extends FileListWidget
 }
 
 
+menuSelf.AssetListWidget = AssetListWidget;

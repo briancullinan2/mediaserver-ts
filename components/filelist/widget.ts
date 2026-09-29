@@ -15,7 +15,8 @@ import type { BuildWindow } from '../bundle/make.d';
 import type { GitHubFileEntry } from '../bundle/github-types';
 
 
-const filelistSelf: FilelistWindow & LuminoLayoutWindow & GlobalToolbarsWindow & FileSystemWindow & BuildWindow = self as unknown as any;
+const filelistSelf: FilelistWindow & LuminoLayoutWindow & GlobalToolbarsWindow & FileSystemWindow
+	& BuildWindow = self as unknown as any;
 
 
 if(!filelistSelf.fileListWidgets)

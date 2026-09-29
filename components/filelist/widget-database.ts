@@ -3,11 +3,12 @@ import { FileListWidget } from './widget';
 import Tree from './tree.js';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
-import type { FilelistWindow } from './widget.d';
-import { BuildWindow } from '../bundle/make.js';
+import type { FilelistWindow, FileWidgetWindow } from './widget.d';
+import type { BuildWindow } from '../bundle/make.d';
 
 
-const filelistSelf: LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow & BuildWindow = self as unknown as any;
+const filelistSelf: LuminoLayoutWindow & FileWidgetWindow & GlobalToolbarsWindow & FilelistWindow
+	& BuildWindow = self as unknown as any;
 
 
 export class DatabaseListWidget extends FileListWidget
@@ -261,3 +262,5 @@ export class DatabaseListWidget extends FileListWidget
 	}
 
 }
+
+filelistSelf.DatabaseListWidget = DatabaseListWidget;

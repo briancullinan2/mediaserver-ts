@@ -2,6 +2,7 @@ import { Widget } from '@lumino/widgets';
 import { ISignal, Signal } from '@lumino/signaling';
 import { Message } from '@lumino/messaging';
 import type { NestedTreeNode } from '../bundle/github-tools';
+import type { WidgetFilesEventArgs } from '../filelist/widget.d';
 
 export interface IPillSelectedArgs
 {
@@ -23,7 +24,7 @@ export interface PillFolderMeta
 
 export interface IPillViewOptions
 {
-	filesSignal?: ISignal<Widget, { items: NestedTreeNode[]; }>;
+	filesSignal?: ISignal<Widget, WidgetFilesEventArgs>;
 	onPillSelect?: (file: NestedTreeNode) => void;
 	title?: string;
 	categories?: string[];
@@ -51,7 +52,7 @@ export class PillSelectorWidget extends Widget
 	private _leftScrollBtn: HTMLButtonElement | null = null;
 	private _rightScrollBtn: HTMLButtonElement | null = null;
 
-	private _filesSignal = new Signal<Widget, { items: NestedTreeNode[]; }>(this);
+	private _filesSignal = new Signal<Widget, WidgetFilesEventArgs>(this);
 
 	constructor(categories: string[] | IPillViewOptions = [], activeCategory?: string)
 	{
@@ -74,18 +75,22 @@ export class PillSelectorWidget extends Widget
 			?? (categories instanceof Array && categories.length > 0
 				? categories[0] : '');
 
-		if('_filesSignal' in categories && categories._filesSignal instanceof Signal)
+		if('filesSignal' in categories && categories.filesSignal instanceof Signal)
 		{
-			this._filesSignal = categories._filesSignal;
+			this._filesSignal = categories.filesSignal;
 			this._filesSignal.connect(this.onFilesUpdated, this);
 		}
 		this.renderWidget();
 	}
 
 
-	onFilesUpdated(sender: Widget, files: { items: NestedTreeNode[]; })
+	onFilesUpdated(sender: Widget, files: WidgetFilesEventArgs)
 	{
-		this.categoryMap = PillSelectorWidget.parseAndBuildCategoryMap(files.items, false);
+		if(files.items)
+		{
+			this.categoryMap = PillSelectorWidget.parseAndBuildCategoryMap(files.items, false);
+			this.renderWidget();
+		}
 	}
 
 	/**

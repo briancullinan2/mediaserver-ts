@@ -6,10 +6,13 @@ import type { GithubWindow } from "../bundle/github.d";
 import type { BuildWindow } from "../bundle/make.d";
 import type { SettingConfig } from "../bundle/settings.js";
 import { Signal, ISignal } from '@lumino/signaling';
-import type { FilelistWindow, IErrorEvent, IFilesEvent, WidgetErrorEventArgs, WidgetFilesEventArgs } from "./widget.d";
+import type {
+	FilelistWindow, FileWidgetWindow, IErrorEvent,
+	IFilesEvent, WidgetErrorEventArgs, WidgetFilesEventArgs
+} from "./widget.d";
 
-const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & FilelistWindow = self as unknown as any;
-
+const filelistSelf: GlobalToolbarsWindow & FileWidgetWindow & GithubWindow & BuildWindow
+	& FilelistWindow = self as unknown as any;
 
 export interface GoogleDriveFile extends FlatFileNode
 {

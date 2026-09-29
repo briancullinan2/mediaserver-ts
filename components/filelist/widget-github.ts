@@ -5,9 +5,10 @@ import type { GithubService, StagingStatusPayload } from '../bundle/github-worke
 import type { NestedTreeNode } from '../bundle/github-tools';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
-import type { FilelistWindow } from './widget.d';
+import type { FilelistWindow, FileWidgetWindow } from './widget.d';
 
-const filelistSelf: LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow = self as unknown as any;
+const filelistSelf: LuminoLayoutWindow & FileWidgetWindow & GlobalToolbarsWindow
+	& FilelistWindow = self as unknown as any;
 
 export interface StagingDetails
 {
@@ -401,3 +402,4 @@ export class GithubListWidget extends FileListWidget
 	}
 }
 
+filelistSelf.GithubListWidget = GithubListWidget;

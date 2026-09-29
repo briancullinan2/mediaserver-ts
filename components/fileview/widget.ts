@@ -67,7 +67,6 @@ export class FileviewWidget extends ArtWidget
 	{
 		super.onAfterAttach(msg);
 		this.filesChanged.connect(() => this.refreshCurrentFolder());
-		this.renderExplorerShell();
 	}
 
 	protected override onBeforeDetach(msg: Message): void
@@ -154,7 +153,7 @@ export class FileviewWidget extends ArtWidget
 		{
 			this.searchQuery = (e.target as HTMLInputElement).value.toLowerCase();
 			this.applyFiltersAndSort();
-			this.renderActiveViews();
+			this.updateActiveViews();
 		});
 
 		// Ribbon Controls
@@ -162,20 +161,20 @@ export class FileviewWidget extends ArtWidget
 		{
 			this.showHiddenFiles = (e.target as HTMLInputElement).checked;
 			this.applyFiltersAndSort();
-			this.renderActiveViews();
+			this.updateActiveViews();
 		});
 
 		this.node.querySelector('#sort-select')?.addEventListener('change', (e) =>
 		{
 			this.sortBy = (e.target as HTMLSelectElement).value as SortOption;
 			this.applyFiltersAndSort();
-			this.renderActiveViews();
+			this.updateActiveViews();
 		});
 
 		this.node.querySelector('#group-select')?.addEventListener('change', (e) =>
 		{
 			this.groupBy = (e.target as HTMLSelectElement).value as GroupOption;
-			this.renderActiveViews();
+			this.updateActiveViews();
 		});
 
 		// Split View & Inspector
@@ -183,7 +182,7 @@ export class FileviewWidget extends ArtWidget
 		{
 			this.isSplitView = !this.isSplitView;
 			this.node.querySelector('.cloud-explorer-container')?.classList.toggle('split-view-active', this.isSplitView);
-			this.renderActiveViews();
+			this.updateActiveViews();
 		});
 
 		this.node.querySelector('#btn-toggle-inspector')?.addEventListener('click', () =>
@@ -256,7 +255,13 @@ export class FileviewWidget extends ArtWidget
 	 */
 	protected override async renderActiveViews(): Promise<void>
 	{
+		if(!this.viewContainer)
+		{
+			this.renderExplorerShell();
+		}
+
 		this.clearMountedSubWidgets();
+
 		this.viewContainer.innerHTML = '';
 		this.viewContainer.className = `cloud-main-panel views-count-${this.activeViews.size}`;
 
@@ -270,7 +275,9 @@ export class FileviewWidget extends ArtWidget
 			switch(mode)
 			{
 				case 'netflix':
-					widgetInstance = new NetflixViewWidget(pane, this.displayedFiles);
+					widgetInstance = new NetflixViewWidget({
+						filesSignal: this.filesChanged
+					}, this.displayedFiles);
 					break;
 				case 'coverflow':
 					widgetInstance = new CoverflowWidget(pane, this.displayedFiles);
@@ -283,7 +290,7 @@ export class FileviewWidget extends ArtWidget
 					break;
 				case 'pills':
 					widgetInstance = new PillSelectorWidget({
-						//filesSignal: this.filesChanged,
+						filesSignal: this.filesChanged,
 						items: this.rawFiles,
 						categories: Array.from(this.availableCategories)
 					}, this.selectedCategoryPill);
@@ -360,7 +367,7 @@ export class FileviewWidget extends ArtWidget
 		this.extractCategories();
 		this.applyFiltersAndSort();
 		//this.renderBreadcrumbTrail();
-		await this.renderActiveViews();
+		await this.updateActiveViews();
 	}
 
 	private extractCategories(): void

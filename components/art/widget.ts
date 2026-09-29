@@ -11,6 +11,7 @@ import { CoverflowWidget } from './widget-coverflow';
 import { PillSelectorWidget } from './widget-pill';
 import { StyleSelectorWidget } from './widget-style';
 import { ISignal, Signal } from '@lumino/signaling';
+import { index } from 'd3';
 
 export type ViewMode = 'netflix' | 'overflow' | 'grid' | 'details' | 'tree' | 'music' | string;
 
@@ -25,9 +26,11 @@ export interface SourceProviderConfig
 
 export interface ArtWindow
 {
-	ArtWidget: typeof ArtWidget;
-	artWidget: ArtWidget;
+	ArtWidget?: typeof ArtWidget;
+	artWidget?: ArtWidget;
 }
+
+type Constructor<T = any, Args extends any[] = any[]> = new (...args: Args) => T;
 
 const widgetSelf: ArtWindow & LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow = self as unknown as any;
 
@@ -51,6 +54,7 @@ export class ArtWidget extends Widget
 	protected rawFiles: NestedTreeNode[] | undefined = [];
 	protected displayedFiles: NestedTreeNode[] = [];
 	protected selectedFileIds: Set<string> = new Set();
+	public sidebarTitle?: string = 'Generations';
 
 	/**
 	 * Overridable registry of view renderers mapped by mode string
@@ -66,9 +70,11 @@ export class ArtWidget extends Widget
 		return this._errorOccurred;
 	}
 
-	private _filesSignal = new Signal<Widget, { items: NestedTreeNode[]; }>(this);
+	private readonly _filesSignal: Signal<Widget, WidgetFilesEventArgs> = new Signal<Widget, WidgetFilesEventArgs>(this);
 
-	get filesChanged(): ISignal<Widget, { items: NestedTreeNode[]; }>
+	private filesSignals: Record<string, ISignal<Widget, WidgetFilesEventArgs>> = {};
+
+	get filesChanged(): ISignal<any, WidgetFilesEventArgs>
 	{
 		return this._filesSignal;
 	}
@@ -91,8 +97,6 @@ export class ArtWidget extends Widget
 			this.sources = [PUBLIC_GOOGLE_DRIVE_FOLDER_ID, DEFAULT_HTTP_INDEX_URL];
 		}
 
-		// Register default built-in view handlers
-		this.renderActiveViews();
 	}
 
 	protected clearMountedSubWidgets(): void
@@ -141,6 +145,13 @@ export class ArtWidget extends Widget
 	}
 
 
+
+	protected async updateActiveViews(): Promise<void>
+	{
+		// do stuff to update data without rebuilding entire widget
+	}
+
+
 	/**
 	 * Public extension API to add or override a view mode renderer
 	 */
@@ -149,53 +160,98 @@ export class ArtWidget extends Widget
 		this.viewRenderers.set(mode, renderer);
 	}
 
+
+	// TODO: move up to library build
+	public static mediaWidgetFromURL(source?: string): Constructor | undefined
+	{
+		if(source?.startsWith('github:') || source?.includes('github.com'))
+		{
+			return widgetSelf.AssetListWidget;
+		}
+		// Google Drive Protocol / ID
+		else if(source?.startsWith('gdrive://') || source?.startsWith('1') && source?.length > 25)
+		{
+			return widgetSelf.GoogleDriveWidget;
+		}
+		// Google Drive Protocol / ID
+		else if(source?.startsWith('idb://'))
+		{
+			return widgetSelf.DatabaseListWidget;
+		}
+		// HTTP / HTTPS Web Index
+		else if(source?.startsWith('http://') || source?.startsWith('https://'))
+		{
+			return widgetSelf.HttpIndexWidget;
+		}
+		// Local File System / Workspace Fallback
+		else if(source?.startsWith('file://') || source?.startsWith('local://'))
+		{
+			return widgetSelf.FileListWidget;
+		}
+		return undefined;
+	}
+
+
+	// TODO: make API for file extension -> file list associations
+	public static resolveDefaultMediaTitle(widgetType?: Function | string): string | undefined
+	{
+		if(typeof widgetType === 'undefined')
+		{
+			return undefined;
+		}
+		if(typeof widgetType === 'string')
+		{
+			const resolvedType = this.mediaWidgetFromURL(widgetType);
+			if(resolvedType)
+			{
+				widgetType = resolvedType;
+			}
+		}
+		if(typeof widgetType === 'function')
+		{
+			if(widgetType.name === widgetSelf.AssetListWidget?.name)
+			{
+				return 'GitHub Assets';
+			}
+			else if(widgetType.name === widgetSelf.GoogleDriveWidget?.name)
+			{
+				return 'Drive Assets';
+			}
+			else if(widgetType.name === widgetSelf.DatabaseListWidget?.name)
+			{
+				return 'Indexed DB';
+			}
+			else if(widgetType.name === widgetSelf.HttpIndexWidget?.name)
+			{
+				return 'HTTP Index';
+			}
+			else if(widgetType.name === widgetSelf.FileListWidget?.name)
+			{
+				return 'Local Workspace';
+			}
+		}
+
+		return undefined;
+	}
+
+
 	/**
 	 * Resolves source protocol/prefix to determine appropriate sidebar widget provider
 	 */
-	private resolveSourceWidget(source: string): Widget | undefined
+	public static resolveSourceWidget(source: string, title?: string): Widget | undefined
 	{
 		if(!source) return undefined;
 
-		// GitHub Repository / Asset source
-		if(source.startsWith('github:') || source.includes('github.com'))
+		const resolvedType = this.mediaWidgetFromURL(source);
+		let defaultTitle = title;
+		if(!defaultTitle && resolvedType)
 		{
-			if(widgetSelf.AssetListWidget)
-			{
-				return new widgetSelf.AssetListWidget('GitHub Assets', source);
-			}
+			defaultTitle = this.resolveDefaultMediaTitle(resolvedType);
 		}
-		// Google Drive Protocol / ID
-		else if(source.startsWith('gdrive://') || source.startsWith('1') && source.length > 25)
+
+		if(resolvedType)
 		{
-			if(widgetSelf.GoogleDriveWidget)
-			{
-				return new widgetSelf.GoogleDriveWidget('Drive Assets', source);
-			}
-		}
-		// Google Drive Protocol / ID
-		else if(source.startsWith('idb://') || source.startsWith('1') && source.length > 25)
-		{
-			//const cleanId = source.replace('idb://', '') || source;
-			if(widgetSelf.DatabaseListWidget)
-			{
-				return new widgetSelf.DatabaseListWidget('Indexed DB');
-			}
-		}
-		// HTTP / HTTPS Web Index
-		else if(source.startsWith('http://') || source.startsWith('https://'))
-		{
-			if(widgetSelf.HttpIndexWidget)
-			{
-				return new widgetSelf.HttpIndexWidget('HTTP Index', source);
-			}
-		}
-		// Local File System / Workspace Fallback
-		else if(source.startsWith('file://') || source.startsWith('local://'))
-		{
-			if(widgetSelf.FileListWidget)
-			{
-				return new widgetSelf.FileListWidget('Local Workspace', source);
-			}
+			return new resolvedType(title, source);
 		}
 
 		return undefined;
@@ -228,7 +284,7 @@ export class ArtWidget extends Widget
 
 		if(!targetWidget)
 		{
-			targetWidget = this.resolveSourceWidget(currentSource);
+			targetWidget = ArtWidget.resolveSourceWidget(currentSource, this.sidebarTitle);
 		}
 
 		if(!targetWidget)
@@ -256,10 +312,14 @@ export class ArtWidget extends Widget
 
 		if('filesChanged' in targetWidget && typeof (targetWidget as IFilesEvent).filesChanged?.connect === 'function')
 		{
-			(targetWidget as IFilesEvent).filesChanged?.connect((sender: Widget, args: WidgetFilesEventArgs) =>
+			if(!this.filesSignals[index])
+			{
+				this.filesSignals[index] = (targetWidget as IFilesEvent).filesChanged;
+			}
+			this.filesSignals[index]?.connect((sender: Widget, args: WidgetFilesEventArgs) =>
 			{
 				this._filesSignal.emit(args);
-				//this.refreshCurrentFolder();
+				this.refreshCurrentFolder();
 			}, this);
 		}
 
@@ -317,7 +377,7 @@ export class ArtWidget extends Widget
 
 		const fetchPromise = (async () =>
 		{
-			const widget = this.resolveSourceWidget(source);
+			const widget = ArtWidget.resolveSourceWidget(source);
 			if(!widget) return [];
 
 			if('fetchFiles' in widget && typeof widget.fetchFiles === 'function')
@@ -366,6 +426,7 @@ export class ArtWidget extends Widget
 	protected override onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
+		this.renderActiveViews();
 		this.openOutlineWidget(this.widgetIndex);
 		this.setViewMode(this.activeViews);
 		//this.refreshCurrentFolder();

@@ -2,10 +2,16 @@ import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { ISignal } from '@lumino/signaling';
 import type { NestedTreeNode } from '../bundle/github-tools';
+import type { IFileDataProvider, WidgetFilesEventArgs } from '../filelist/widget.d';
+import type { LuminoLayoutWindow } from '../bundle/lumino.d';
+import type { ArtWindow } from '../art/widget';
+
+const netflixSelf: LuminoLayoutWindow & ArtWindow = self as unknown as any;
+
 
 export interface INetflixViewOptions
 {
-	filesSignal?: ISignal<any, NestedTreeNode[]>;
+	filesSignal?: ISignal<any, WidgetFilesEventArgs>;
 	onFileSelect?: (file: NestedTreeNode) => void;
 	title?: string;
 	categoryName?: string;
@@ -14,7 +20,7 @@ export interface INetflixViewOptions
 export class NetflixViewWidget extends Widget
 {
 	private _files: NestedTreeNode[] = [];
-	private _filesSignal?: ISignal<any, NestedTreeNode[]>;
+	private _filesSignal?: ISignal<any, WidgetFilesEventArgs>;
 	private _onFileSelect?: (file: NestedTreeNode) => void;
 	private _activeFile: NestedTreeNode | null = null;
 
@@ -26,6 +32,7 @@ export class NetflixViewWidget extends Widget
 	private _trackNode!: HTMLElement;
 	private _btnLeft!: HTMLButtonElement;
 	private _btnRight!: HTMLButtonElement;
+	private dataProvider?: Function | IFileDataProvider;
 
 	constructor(options: INetflixViewOptions = {}, files?: NestedTreeNode[])
 	{
@@ -50,9 +57,22 @@ export class NetflixViewWidget extends Widget
 		this.renderCarousel();
 	}
 
-	private onFilesUpdated(sender: any, files: NestedTreeNode[]): void
+	private onFilesUpdated(sender: any, files: WidgetFilesEventArgs): void
 	{
-		this.setFiles(files);
+		if(files.items)
+		{
+			this.setFiles(files.items);
+		}
+		if('fetchFiles' in sender && typeof sender.fetchFiles === 'function')
+		{
+			this.dataProvider = sender;
+		}
+		else if(files.source && 'fetchFiles' in files.source
+			&& typeof files.source.fetchFiles === 'function'
+		)
+		{
+			this.dataProvider = files.source as IFileDataProvider;
+		}
 	}
 
 	private renderShell(title: string, category: string): void
@@ -72,7 +92,7 @@ export class NetflixViewWidget extends Widget
 
 		const brandBadge = document.createElement('div');
 		brandBadge.className = 'netflix-brand-badge';
-		brandBadge.textContent = 'N E T F L I X   O R I G I N A L';
+		brandBadge.textContent = 'NETFLIX ORIGINAL';
 
 		this._heroTitleNode = document.createElement('h1');
 		this._heroTitleNode.className = 'netflix-hero-title';
@@ -212,7 +232,7 @@ export class NetflixViewWidget extends Widget
 		this._heroMetaNode.innerHTML = `
       <span class="match-score">98% Match</span>
       <span class="cert-rating">4K Ultra HD</span>
-      <span class="duration">${file.mimeType || 'Media Source'}</span>
+      <span class="duration">${file.mimeType ?? (typeof this.dataProvider?.constructor === 'function' ? netflixSelf.ArtWidget?.resolveDefaultMediaTitle(this.dataProvider.constructor) : undefined) ?? 'Media Source'}</span>
       <span class="hd-badge">HDR</span>
     `;
 		this._heroDescNode.textContent = `File ID: ${file.id}. Streaming ready via active Cloud Data Provider.`;

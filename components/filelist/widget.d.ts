@@ -97,36 +97,36 @@ export interface IFilesEvent
 
 export interface FileWidgetWindow
 {
-	fileListWidget: FileListWidget;
-	FileListWidget: typeof FileListWidget;
+	fileListWidget?: FileListWidget;
+	FileListWidget?: typeof FileListWidget;
 
-	searchListWidget: SearchListWidget;
-	SearchListWidget: typeof SearchListWidget;
+	searchListWidget?: SearchListWidget;
+	SearchListWidget?: typeof SearchListWidget;
 
-	gameListWidget: GameListWidget;
-	GameListWidget: typeof GameListWidget;
+	gameListWidget?: GameListWidget;
+	GameListWidget?: typeof GameListWidget;
 
-	assetListWidget: AssetListWidget;
-	AssetListWidget: typeof AssetListWidget;
+	assetListWidget?: AssetListWidget;
+	AssetListWidget?: typeof AssetListWidget;
 
-	googleDriveWidget: GoogleDriveWidget;
-	GoogleDriveWidget: typeof GoogleDriveWidget;
+	googleDriveWidget?: GoogleDriveWidget;
+	GoogleDriveWidget?: typeof GoogleDriveWidget;
 
-	httpIndexWidget: HttpIndexWidget;
-	HttpIndexWidget: typeof HttpIndexWidget;
+	httpIndexWidget?: HttpIndexWidget;
+	HttpIndexWidget?: typeof HttpIndexWidget;
 
-	githubListWidget: GithubListWidget;
-	GithubListWidget: typeof GithubListWidget;
+	githubListWidget?: GithubListWidget;
+	GithubListWidget?: typeof GithubListWidget;
 
-	databaseListWidget: DatabaseListWidget;
-	DatabaseListWidget: typeof DatabaseListWidget;
+	databaseListWidget?: DatabaseListWidget;
+	DatabaseListWidget?: typeof DatabaseListWidget;
 
 }
 
 
 export interface IFileDataProvider
 {
-	fetchFolders(parentId?: string): Promise<NestedTreeNode[] | undefined>;
+	fetchFolders?(parentId?: string): Promise<NestedTreeNode[] | undefined>;
 	fetchFiles(folderId?: string): Promise<NestedTreeNode[] | undefined>;
 	createFolder?(parentId: string, name: string): Promise<boolean>;
 	createFile?(parentId: string, name: string, content?: Blob): Promise<boolean>;

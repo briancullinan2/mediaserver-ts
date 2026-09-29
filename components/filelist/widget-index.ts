@@ -5,13 +5,11 @@ import type { GlobalToolbarsWindow } from "../bundle/menu.d";
 import type { GithubWindow } from "../bundle/github.d";
 import type { BuildWindow } from "../bundle/make.d";
 import type { SettingConfig, Settings } from "../bundle/settings.js";
-import type { WidgetErrorEventArgs, WidgetFilesEventArgs } from "./widget.d";
+import type { FileWidgetWindow, WidgetErrorEventArgs, WidgetFilesEventArgs } from "./widget.d";
 import { Signal, ISignal } from '@lumino/signaling';
 
-const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & {
-	settingsManager: Settings;
-	HttpIndexWidget: typeof HttpIndexWidget;
-} = self as unknown as any;
+const filelistSelf: GlobalToolbarsWindow & FileWidgetWindow & GithubWindow
+	& BuildWindow = self as unknown as any;
 
 export class HttpIndexWidget extends FileListWidget
 {
@@ -69,7 +67,7 @@ export class HttpIndexWidget extends FileListWidget
 			name = name.replace(/\/$/, '');
 
 			// Ignore parent directory navigations, queries, or anchor targets
-			if(name === '~' || name === '..' || name === '.' || href.startsWith('?') || href.startsWith('#') || seenNames.has(name))
+			if(name === '~' || name === '..' || name === '.' || name.startsWith('!') || href.startsWith('?') || href.startsWith('#') || seenNames.has(name))
 			{
 				continue;
 			}
@@ -189,7 +187,7 @@ export class HttpIndexWidget extends FileListWidget
 				const title = doc.querySelector('title')?.textContent?.trim() || doc.querySelector('h1')?.textContent?.trim();
 				if(title)
 				{
-					return 'Drive: ' + title.replace(/^listing directory/i, '').replace(/[\/~]/g, '').trim() || baseUrl;
+					return 'HTTP: ' + title.replace(/^listing directory/i, '').replace(/[\/~]/g, '').trim() || baseUrl;
 				}
 			}
 
