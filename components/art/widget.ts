@@ -2,7 +2,7 @@ import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
-import type { FilelistWindow, IErrorEvent, IFileDataProvider, WidgetErrorEventArgs } from '../filelist/widget.d';
+import type { FilelistWindow, IErrorEvent, IFileDataProvider, IFilesEvent, WidgetErrorEventArgs, WidgetFilesEventArgs } from '../filelist/widget.d';
 import { PUBLIC_GOOGLE_DRIVE_FOLDER_ID } from '../filelist/widget-google';
 import { DEFAULT_HTTP_INDEX_URL } from '../filelist/widget-index';
 import type { NestedTreeNode } from '../bundle/github-tools';
@@ -10,6 +10,7 @@ import type { FileListWidget } from '../filelist/widget';
 import { CoverflowWidget } from './widget-coverflow';
 import { PillSelectorWidget } from './widget-pill';
 import { StyleSelectorWidget } from './widget-style';
+import { ISignal, Signal } from '@lumino/signaling';
 
 export type ViewMode = 'netflix' | 'overflow' | 'grid' | 'details' | 'tree' | 'music' | string;
 
@@ -56,6 +57,21 @@ export class ArtWidget extends Widget
 	 */
 	protected viewRenderers: Map<string, ViewRenderer> = new Map();
 	errorHandlers: ((sender: Widget, args: WidgetErrorEventArgs) => void)[] = [];
+
+	private _errorOccurred = new Signal<Widget, WidgetErrorEventArgs>(this);
+	private widgetIndex: number = 0;
+
+	get errorOccurred(): ISignal<Widget, WidgetErrorEventArgs>
+	{
+		return this._errorOccurred;
+	}
+
+	private _filesSignal = new Signal<Widget, { items: NestedTreeNode[]; }>(this);
+
+	get filesChanged(): ISignal<Widget, { items: NestedTreeNode[]; }>
+	{
+		return this._filesSignal;
+	}
 
 	constructor(title?: string, sources?: string | string[])
 	{
@@ -222,10 +238,11 @@ export class ArtWidget extends Widget
 		}
 
 		this.activeWidget = targetWidget;
+		this.widgetIndex = index;
 		if('fetchFiles' in targetWidget && typeof targetWidget.fetchFiles === 'function')
 		{
 			this.dataProvider = targetWidget;
-			this.refreshCurrentFolder();
+			//this.refreshCurrentFolder();
 		}
 
 		if('errorOccurred' in targetWidget && typeof (targetWidget as IErrorEvent).errorOccurred?.connect === 'function')
@@ -236,6 +253,16 @@ export class ArtWidget extends Widget
 			}
 			(targetWidget as IErrorEvent).errorOccurred?.connect(this.errorHandlers[index], this);
 		}
+
+		if('filesChanged' in targetWidget && typeof (targetWidget as IFilesEvent).filesChanged?.connect === 'function')
+		{
+			(targetWidget as IFilesEvent).filesChanged?.connect((sender: Widget, args: WidgetFilesEventArgs) =>
+			{
+				this._filesSignal.emit(args);
+				//this.refreshCurrentFolder();
+			}, this);
+		}
+
 		this.showOutline();
 	}
 
@@ -295,7 +322,9 @@ export class ArtWidget extends Widget
 
 			if('fetchFiles' in widget && typeof widget.fetchFiles === 'function')
 			{
-				return await widget.fetchFiles();
+				const nodes = await widget.fetchFiles();
+				this.sourcePromises.delete(source);
+				return nodes;
 			}
 			return [];
 		})();
@@ -337,9 +366,9 @@ export class ArtWidget extends Widget
 	protected override onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
-		this.openOutlineWidget(0);
+		this.openOutlineWidget(this.widgetIndex);
 		this.setViewMode(this.activeViews);
-		this.refreshCurrentFolder();
+		//this.refreshCurrentFolder();
 	}
 
 	protected async refreshCurrentFolder(): Promise<void>
@@ -350,13 +379,13 @@ export class ArtWidget extends Widget
 	protected override onActivateRequest(msg: Message): void
 	{
 		super.onActivateRequest(msg);
-		this.openOutlineWidget(0);
+		this.openOutlineWidget(this.widgetIndex);
 	}
 
 	protected override onAfterShow(msg: Message): void
 	{
 		super.onAfterShow(msg);
-		this.openOutlineWidget(0);
+		this.openOutlineWidget(this.widgetIndex);
 	}
 
 	protected override onBeforeDetach(msg: Message): void

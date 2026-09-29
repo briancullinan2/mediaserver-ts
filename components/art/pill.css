@@ -100,18 +100,6 @@
 	transform: translateY(-1px);
 }
 
-.art-pill.active::after {
-	content: '';
-	position: absolute;
-	inset: -1px;
-	border-radius: 20px;
-	padding: 1px;
-	background: linear-gradient(135deg, #ff007f, #00dfd8);
-	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-	-webkit-mask-composite: xor;
-	mask-composite: exclude;
-	pointer-events: none;
-}
 
 /* Side Arrows */
 .pill-scroll-btn {

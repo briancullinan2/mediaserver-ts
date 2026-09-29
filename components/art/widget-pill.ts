@@ -1,6 +1,7 @@
 import { Widget } from '@lumino/widgets';
-import { Signal } from '@lumino/signaling';
+import { ISignal, Signal } from '@lumino/signaling';
 import { Message } from '@lumino/messaging';
+import type { NestedTreeNode } from '../bundle/github-tools';
 
 export interface IPillSelectedArgs
 {
@@ -17,8 +18,16 @@ interface PillFolderMeta
 	isHttpSource?: boolean;
 }
 
+export interface IPillViewOptions
+{
+	filesSignal?: ISignal<Widget, { items: NestedTreeNode[]; }>;
+	onFileSelect?: (file: NestedTreeNode) => void;
+	title?: string;
+	categories?: string[];
+}
+
 const widgetSelf: {
-	parseAndBuildCategoryMap(folders: { id: string; name: string; }[], isHttpSource: boolean): void;
+	parseAndBuildCategoryMap(folders: { id: string; text: string; }[], isHttpSource: boolean): void;
 } = self as unknown as any;
 
 
@@ -38,16 +47,38 @@ export class PillSelectorWidget extends Widget
 	private _leftScrollBtn: HTMLButtonElement | null = null;
 	private _rightScrollBtn: HTMLButtonElement | null = null;
 
-	constructor(categories: string[] = [], activeCategory?: string, title?: string)
+	private _filesSignal = new Signal<Widget, { items: NestedTreeNode[]; }>(this);
+
+	constructor(categories: string[] | IPillViewOptions = [], activeCategory?: string)
 	{
 		super();
 		this.addClass('pill-selector-widget');
 
-		this._categories = categories;
-		this._title = title ?? 'Categories';
-		this._activeCategory = activeCategory || (categories.length > 0 ? categories[0] : '');
+		if(categories instanceof Array)
+		{
+			this._categories = categories;
+		} else if('categories' in categories && categories.categories instanceof Array)
+		{
+			this._categories = categories.categories;
+		}
+		this._title = 'title' in categories && categories.title
+			? categories.title : 'Categories';
+		this._activeCategory = activeCategory
+			?? (categories instanceof Array && categories.length > 0
+				? categories[0] : '');
 
+		if('_filesSignal' in categories && categories._filesSignal instanceof Signal)
+		{
+			this._filesSignal = categories._filesSignal;
+			this._filesSignal.connect(this.onFilesUpdated, this);
+		}
 		this.renderWidget();
+	}
+
+
+	onFilesUpdated(sender: Widget, files: { items: NestedTreeNode[]; })
+	{
+		this.categoryMap = PillSelectorWidget.parseAndBuildCategoryMap(files.items, false);
 	}
 
 	/**
@@ -217,14 +248,14 @@ export class PillSelectorWidget extends Widget
 	/**
 	 * Parses folder names dynamically based on prefix frequency analysis across all available folders.
 	 */
-	public static parseAndBuildCategoryMap(folders: { id: string; name: string; }[], isHttpSource: boolean): void
+	public static parseAndBuildCategoryMap(folders: { id: string; text: string; }[], isHttpSource: boolean): { [category: string]: { [style: string]: PillFolderMeta; }; }
 	{
 		const categoryMap: { [category: string]: { [style: string]: PillFolderMeta; }; } = {};
 
 		// Tokenize clean words for frequency scoring
 		const folderTokenList = folders.map(f =>
 		{
-			const clean = f.name.trim();
+			const clean = f.text.trim();
 			const tokens = clean.split(/[\s_\-]+/).filter(t => t.length > 0);
 			return { folder: f, tokens, rawName: clean };
 		});
@@ -325,6 +356,8 @@ export class PillSelectorWidget extends Widget
 				isHttpSource
 			}, categoryMap);
 		});
+
+		return categoryMap;
 	}
 
 	private static addCategoryMeta(meta: PillFolderMeta, categoryMap: { [category: string]: { [style: string]: PillFolderMeta; }; }): void

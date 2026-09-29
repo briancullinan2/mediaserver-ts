@@ -1,5 +1,6 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
+import { Signal } from '@lumino/signaling';
 import { ArtWidget } from '../art/widget';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import { FileListWidget } from '../filelist/widget';
@@ -63,8 +64,8 @@ export class FileviewWidget extends ArtWidget
 	protected override onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
+		this.filesChanged.connect(() => this.refreshCurrentFolder());
 		this.renderExplorerShell();
-		this.attachEventListeners();
 	}
 
 	protected override onBeforeDetach(msg: Message): void
@@ -79,6 +80,10 @@ export class FileviewWidget extends ArtWidget
 	 */
 	private renderExplorerShell(): void
 	{
+		if(this.viewContainer)
+		{
+			// TODO: detach?
+		}
 		this.node.innerHTML = `
 			<div class="cloud-explorer-container ${this.isSplitView ? 'split-view-active' : ''}">
 
@@ -125,6 +130,7 @@ export class FileviewWidget extends ArtWidget
 	}
 
 	/**
+	 * TODO: remove
 	 * Attach UI Action Listeners
 	 */
 	private attachEventListeners(): void
@@ -274,7 +280,10 @@ export class FileviewWidget extends ArtWidget
 					widgetInstance = new DetailsViewWidget(pane, this.displayedFiles);
 					break;
 				case 'pills':
-					widgetInstance = new PillSelectorWidget(Array.from(this.availableCategories), this.selectedCategoryPill);
+					widgetInstance = new PillSelectorWidget({
+						//filesSignal: this.filesChanged,
+						categories: Array.from(this.availableCategories)
+					}, this.selectedCategoryPill);
 					break;
 				case 'styles':
 					widgetInstance = new StyleSelectorWidget();
@@ -325,6 +334,11 @@ export class FileviewWidget extends ArtWidget
 	 */
 	protected override async refreshCurrentFolder(): Promise<void>
 	{
+		if(!this.viewContainer)
+		{
+			this.renderExplorerShell();
+		}
+
 		if(this.dataProvider)
 		{
 			this.rawFiles = await this.dataProvider.fetchFiles(this.activeFolderId);
@@ -346,6 +360,7 @@ export class FileviewWidget extends ArtWidget
 	private extractCategories(): void
 	{
 		this.availableCategories.clear();
+
 		this.rawFiles?.forEach(file =>
 		{
 			if(file.mimeType)
@@ -354,6 +369,12 @@ export class FileviewWidget extends ArtWidget
 				this.availableCategories.add(mainType);
 			}
 		});
+
+		const pills = Object.keys(PillSelectorWidget.parseAndBuildCategoryMap(this.rawFiles ?? [], false));
+		for(const pill of pills)
+		{
+			this.availableCategories.add(pill);
+		}
 	}
 
 	private applyFiltersAndSort(): void

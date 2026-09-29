@@ -5,7 +5,7 @@ import type { GlobalToolbarsWindow } from "../bundle/menu.d";
 import type { GithubWindow } from "../bundle/github.d";
 import type { BuildWindow } from "../bundle/make.d";
 import type { SettingConfig, Settings } from "../bundle/settings.js";
-import type { WidgetErrorEventArgs } from "./widget.d";
+import type { WidgetErrorEventArgs, WidgetFilesEventArgs } from "./widget.d";
 import { Signal, ISignal } from '@lumino/signaling';
 
 const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & {
@@ -21,6 +21,13 @@ export class HttpIndexWidget extends FileListWidget
 	get errorOccurred(): ISignal<HttpIndexWidget, WidgetErrorEventArgs>
 	{
 		return this._errorOccurred;
+	}
+
+	private _filesSignal = new Signal<HttpIndexWidget, WidgetFilesEventArgs>(this);
+
+	get filesChanged(): ISignal<HttpIndexWidget, WidgetFilesEventArgs>
+	{
+		return this._filesSignal;
 	}
 
 	/**
@@ -349,10 +356,20 @@ export class HttpIndexWidget extends FileListWidget
 			try
 			{
 				rootChildren = await this.fetchFiles(baseUrl) ?? [];
-
-				for(const child of rootChildren)
+				if(rootChildren.length === 0)
 				{
-					this.loadedDatabases[child.id] = child;
+					// TODO: ?
+				} else
+				{
+					for(const child of rootChildren)
+					{
+						this.loadedDatabases[child.id] = child;
+					}
+
+					this._filesSignal.emit({
+						source: this,
+						items: rootChildren
+					});
 				}
 			}
 			catch(err)

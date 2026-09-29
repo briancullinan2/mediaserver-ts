@@ -6,7 +6,7 @@ import type { GithubWindow } from "../bundle/github.d";
 import type { BuildWindow } from "../bundle/make.d";
 import type { SettingConfig } from "../bundle/settings.js";
 import { Signal, ISignal } from '@lumino/signaling';
-import type { FilelistWindow, IErrorEvent, WidgetErrorEventArgs } from "./widget.d";
+import type { FilelistWindow, IErrorEvent, IFilesEvent, WidgetErrorEventArgs, WidgetFilesEventArgs } from "./widget.d";
 
 const filelistSelf: GlobalToolbarsWindow & GithubWindow & BuildWindow & FilelistWindow = self as unknown as any;
 
@@ -19,14 +19,20 @@ export interface GoogleDriveFile extends FlatFileNode
 }
 
 
-export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
+export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IFilesEvent
 {
 	private rootFolderName: string | null = null;
 	private _errorOccurred = new Signal<GoogleDriveWidget, WidgetErrorEventArgs>(this);
+	private _filesSignal = new Signal<GoogleDriveWidget, WidgetFilesEventArgs>(this);
 
 	get errorOccurred(): ISignal<GoogleDriveWidget, WidgetErrorEventArgs>
 	{
 		return this._errorOccurred;
+	}
+
+	get filesChanged(): ISignal<GoogleDriveWidget, WidgetFilesEventArgs>
+	{
+		return this._filesSignal;
 	}
 
 	constructor(titleStr?: string, source?: string)
@@ -291,7 +297,6 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 			this._errorOccurred.emit({
 				source: this,
 				error: err instanceof Error ? err : String(err),
-				fallbackType: 'http-index'
 			});
 			this.loadedDatabases[folderId] = {
 				children: [{
@@ -355,6 +360,16 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 			{
 				this.handleKey = rawFolderId;
 				rootChildren = await this.fetchFiles('');
+				if(rootChildren.length === 0)
+				{
+					// TODO?
+				} else
+				{
+					this._filesSignal.emit({
+						source: this,
+						items: rootChildren
+					});
+				}
 			}
 			catch(err)
 			{
@@ -362,7 +377,6 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent
 				this._errorOccurred.emit({
 					source: this,
 					error: err instanceof Error ? err : String(err),
-					fallbackType: 'http-index'
 				});
 				return;
 			}

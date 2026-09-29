@@ -18,7 +18,7 @@ import type { GoogleDriveWidget } from "./widget-google";
 import type { GithubListWidget } from "./widget-github";
 import type { DatabaseListWidget } from "./widget-database";
 import type { AssetListWidget } from "./widget-assets";
-import { NestedTreeNode } from "../bundle/github-tools";
+import type { NestedTreeNode } from "../bundle/github-tools";
 
 type PermissionState = 'granted' | 'denied' | 'prompt';
 
@@ -74,13 +74,24 @@ export interface WidgetErrorEventArgs
 {
 	source: Widget;
 	error: Error | string;
-	fallbackType?: string;
+	// fallbackType?: string;
+}
+
+export interface WidgetFilesEventArgs
+{
+	source: Widget;
+	items: NestedTreeNode[];
 }
 
 
 export interface IErrorEvent
 {
 	get errorOccurred(): ISignal<Widget, WidgetErrorEventArgs>;
+}
+
+export interface IFilesEvent
+{
+	get filesChanged(): ISignal<Widget, WidgetFilesEventArgs>;
 }
 
 
