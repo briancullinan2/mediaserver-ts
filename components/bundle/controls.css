@@ -150,11 +150,13 @@ ul.toolbar button:hover,
 	display: inline-flex;
 	padding: 0;
 	font-weight: bold;
+	font-family: inherit;
 	background-color: var(--ace-gutter-bg);
 	border: 2px solid var(--ace-blue);
 	height: calc(var(--global-height) + 4px);
 	transition: box-shadow ease-in-out 0.3s;
 	zoom: 1;
+	align-items: center;
 }
 
 #app-top-header-row #reload-container {
@@ -181,6 +183,7 @@ ul.toolbar button:hover,
 	box-shadow: -1px -2px 5px inset rgb(from var(--ace-gutter-bg) r g b / 50%);
 	width: calc(var(--global-height) - 4px);
 	height: calc(var(--global-height) - 4px);
+	vertical-align: middle;
 }
 
 #ace_settingsmenu input[type="checkbox"]::after,

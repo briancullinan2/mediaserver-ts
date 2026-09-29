@@ -173,7 +173,7 @@ export class ViewToolbar extends Widget
             <div class="ribbon-group view-controls">
                 <label class="toggle-switch" for="toggle-hidden-files" title="Show/Hide Hidden Files">
                     <input type="checkbox" id="toggle-hidden-files" ${this.showHiddenFiles ? 'checked' : ''} />
-                    <span class="toggle-label"><i class="bx bx-eye-slash"></i> Hidden</span>
+                    <span class="toggle-label">Hidden</span>
                 </label>
                 <select id="sort-select" class="ribbon-select" title="Sort Items">
                     <option value="name-asc" ${this.currentSort === 'name-asc' ? 'selected' : ''}>Name (A-Z)</option>

@@ -360,3 +360,19 @@
 .hidden {
 	display: none !important;
 }
+
+#app-top-header-row #toggle-hidden-files::before {
+	font-family: boxicons !important;
+	content: '\f3f5';
+	line-height: 1.4em;
+	text-align: center;
+	font-style: normal;
+	font-weight: 400;
+	font-variant: normal;
+	text-transform: none;
+	color: var(--ace-foreground);
+}
+
+#app-top-header-row #toggle-hidden-files:checked::before {
+	content: '\f3f6';
+}
