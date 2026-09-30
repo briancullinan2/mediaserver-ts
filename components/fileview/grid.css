@@ -5,9 +5,9 @@
 .explorer-grid-widget {
 	width: 100%;
 	height: 100%;
-	background: #121212;
+	/* background: #121212;
 	color: #e0e0e0;
-	font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+	font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; */
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -86,12 +86,19 @@
 	overflow: auto;
 	padding: 16px;
 	outline: none;
+	max-height: 100%;
 }
 
 .egw-grid-container {
 	display: grid;
 	gap: 12px;
 	align-content: start;
+}
+
+.egw-grid-container[data-flow="column-first"] {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
 }
 
 /* Default Row-First Wrap */

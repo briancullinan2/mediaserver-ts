@@ -39,7 +39,7 @@ export class ExplorerGridWidget extends Widget
 	private _dragStartY: number = 0;
 
 	// ResizeObserver for Column-First Dynamic Calculations
-	private _resizeObserver: ResizeObserver;
+	//private _resizeObserver: ResizeObserver;
 
 	constructor(title?: string | null, options: IExplorerGridOptions = {})
 	{
@@ -53,13 +53,13 @@ export class ExplorerGridWidget extends Widget
 
 		this.renderLayout();
 
-		this._resizeObserver = new ResizeObserver(() =>
-		{
-			if(this._flow === 'column-first')
-			{
-				this.recalculateColumnFlow();
-			}
-		});
+		//this._resizeObserver = new ResizeObserver(() =>
+		//{
+		//	if(this._flow === 'column-first')
+		//	{
+		//		this.recalculateColumnFlow();
+		//	}
+		//});
 
 		this.attachEvents();
 	}
@@ -67,12 +67,12 @@ export class ExplorerGridWidget extends Widget
 	protected onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
-		this._resizeObserver.observe(this._gridViewport);
+		//this._resizeObserver.observe(this._gridViewport);
 	}
 
 	protected onBeforeDetach(msg: Message): void
 	{
-		this._resizeObserver.unobserve(this._gridViewport);
+		//this._resizeObserver.unobserve(this._gridViewport);
 		super.onBeforeDetach(msg);
 	}
 
@@ -90,7 +90,7 @@ export class ExplorerGridWidget extends Widget
 		this._gridContainer.setAttribute('data-icon-size', size);
 		if(this._flow === 'column-first')
 		{
-			this.recalculateColumnFlow();
+			//this.recalculateColumnFlow();
 		}
 	}
 
@@ -100,7 +100,7 @@ export class ExplorerGridWidget extends Widget
 		this._gridContainer.setAttribute('data-flow', flow);
 		if(flow === 'column-first')
 		{
-			this.recalculateColumnFlow();
+			//this.recalculateColumnFlow();
 		} else
 		{
 			this._gridContainer.style.removeProperty('grid-template-rows');
@@ -237,7 +237,7 @@ export class ExplorerGridWidget extends Widget
 
 		if(this._flow === 'column-first')
 		{
-			this.recalculateColumnFlow();
+			//this.recalculateColumnFlow();
 		}
 	}
 
