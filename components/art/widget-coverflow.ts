@@ -1,14 +1,25 @@
 import { Widget } from '@lumino/widgets';
-import { Signal } from '@lumino/signaling';
+import { ISignal, Signal } from '@lumino/signaling';
 import { Message } from '@lumino/messaging';
 import type { GithubWindow } from '../bundle/github.d';
+import type { NestedTreeNode } from '../bundle/github-tools';
 
 export interface CoverflowItem
 {
 	id: string;
-	name: string;
+	text: string;
 	imageUrl?: string;
 	rawMetadata?: Record<string, unknown>;
+	[key: string]: any;
+}
+
+
+export interface ICoverViewOptions
+{
+	filesSignal?: ISignal<unknown, { items: NestedTreeNode[]; }>;
+	items?: CoverflowItem[],
+	imageResolver?: (item: CoverflowItem) => Promise<string>,
+	styleSelectionChanged?: Signal<unknown, { styles?: unknown[]; selectedStyle?: string; } | string>;
 }
 
 const widgetSelf: GithubWindow = self as unknown as any;
@@ -31,25 +42,24 @@ export class CoverflowWidget extends Widget
 	 * @param imageResolver Optional async callback to resolve high-res or blob URLs dynamically.
 	 * @param styleSelectionChanged Optional Signal to subscribe to style/category changes externally.
 	 */
-	constructor(
-		items: CoverflowItem[] = [],
-		imageResolver?: (item: CoverflowItem) => Promise<string>,
-		styleSelectionChanged?: Signal<unknown, { styles?: unknown[]; selectedStyle?: string; } | string>
-	)
+	constructor(title?: string | null, options?: ICoverViewOptions)
 	{
 		super();
 		this.addClass('art-coverflow-widget');
 		this.node.setAttribute('tabindex', '0');
-		this._items = items;
-		this._imageResolver = imageResolver;
+		this._items = options?.items ?? [];
+		this._imageResolver = options?.imageResolver;
 
 		// Subscribe to incoming style selection events if provided via constructor
-		if(styleSelectionChanged)
+		if(options?.styleSelectionChanged)
 		{
-			styleSelectionChanged.connect(this.onExternalStyleChange, this);
+			options.styleSelectionChanged.connect(this.onExternalStyleChange, this);
 		}
-
-		this.loading = widgetSelf.getGitShaBrowser?.(JSON.stringify(items)).then(sha => this.cid = sha);
+		if(options?.filesSignal)
+		{
+			options.filesSignal.connect(this.onExternalStyleChange, this);
+		}
+		this.loading = widgetSelf.getGitShaBrowser?.(JSON.stringify(this._items)).then(sha => this.cid = sha);
 	}
 
 	/**
@@ -144,15 +154,11 @@ export class CoverflowWidget extends Widget
             <div class="coverflow-stage">
                 <button type="button" class="coverflow-btn prev" aria-label="Previous Item">❮</button>
                 <div class="coverflow-container">
-                    ${this._items
-				.map(
-					(item, idx) => `
-                        <div class="coverflow-card" data-idx="${idx}" id="cf-card-${this.cid}-${idx}">
-                            <div class="coverflow-card-label" title="${item.name}">${item.name}</div>
+                    ${this._items.map((item, idx) => `
+                        <div class="coverflow-card" data-icon="${(item.mode >> 12 === 4) ? 'bx bx-folder' : ''}" data-idx="${idx}" id="cf-card-${this.cid}-${idx}">
+                            <div class="coverflow-card-label" title="${item.text}">${item.text}</div>
                         </div>
-                    `
-				)
-				.join('')}
+                    `).join('')}
                 </div>
                 <button type="button" class="coverflow-btn next" aria-label="Next Item">❯</button>
             </div>
@@ -164,6 +170,10 @@ export class CoverflowWidget extends Widget
 
 		this.node.querySelectorAll('.coverflow-card').forEach(card =>
 		{
+			const hue = Math.abs(this.hashCode((card.children[0] as HTMLDivElement).innerText)) % 360;
+			(card as HTMLDivElement).style.textShadow = `5px 10px 15px hsl(${hue}, 70%, 20%), 10px 20px 30px hsl(${hue}, 70%, 20%)`;
+
+
 			card.addEventListener('click', e =>
 			{
 				const idx = parseInt((e.currentTarget as HTMLElement).dataset.idx || '0', 10);
@@ -172,6 +182,17 @@ export class CoverflowWidget extends Widget
 		});
 
 		this.applyTransforms();
+	}
+
+	private hashCode(str: string): number
+	{
+		let hash = 0;
+		for(let i = 0; i < str.length; i++)
+		{
+			hash = (hash << 5) - hash + str.charCodeAt(i);
+			hash |= 0;
+		}
+		return hash;
 	}
 
 	private applyTransforms(): void
@@ -202,6 +223,11 @@ export class CoverflowWidget extends Widget
 			{
 				card.classList.add('hidden');
 			}
+
+			if(card.dataset.icon)
+			{
+				card.classList.add(...card.dataset.icon.split(' '));
+			}
 		});
 
 		this.updateTags();
@@ -223,7 +249,7 @@ export class CoverflowWidget extends Widget
 					url = await this._imageResolver(item);
 				} catch(err)
 				{
-					console.error(`Failed resolving coverflow image for ${item.name}:`, err);
+					console.error(`Failed resolving coverflow image for ${item.text}:`, err);
 				}
 			}
 
@@ -247,7 +273,7 @@ export class CoverflowWidget extends Widget
 			return;
 		}
 
-		const tokens = activeItem.name
+		const tokens = activeItem.text
 			.toLowerCase()
 			.split(/[^a-z0-9]/gi)
 			.filter((v, i, a) => v.length > 2 && a.indexOf(v) === i);

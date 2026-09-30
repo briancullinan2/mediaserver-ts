@@ -7,7 +7,7 @@
 	color: #e2e8f0;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 	box-sizing: border-box;
-	padding: 10px 0;
+	padding: 0;
 	user-select: none;
 }
 
@@ -37,6 +37,7 @@
 	display: flex;
 	align-items: center;
 	width: 100%;
+	padding: 10px;
 }
 
 .pill-scroll-container {
@@ -47,15 +48,33 @@
 	/* Firefox */
 	-ms-overflow-style: none;
 	/* IE/Edge */
-	padding: 8px 4px;
+	padding: 10px;
 	width: 100%;
 }
 
-/* Edge gradients for smooth fading */
-.pill-scroll-container:hover {
+
+.pill-carousel-wrapper:hover .left.hidden~.pill-scroll-container:has(~.right.hidden),
+.pill-carousel-wrapper .pill-scroll-container {
 	mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
 	-webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
 }
+
+/* Edge gradients for smooth fading */
+.pill-carousel-wrapper:hover .pill-scroll-container {
+	mask-image: linear-gradient(to right, transparent 30px, black 60px, black calc(100% - 60px), transparent calc(100% - 30px));
+	-webkit-mask-image: linear-gradient(to right, transparent 30px, black 60px, black calc(100% - 60px), transparent calc(100% - 30px));
+}
+
+.pill-carousel-wrapper:hover .left.hidden~.pill-scroll-container {
+	mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 60px), transparent calc(100% - 30px));
+	-webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 60px), transparent calc(100% - 30px));
+}
+
+.pill-carousel-wrapper:hover .pill-scroll-container:has(~.right.hidden) {
+	mask-image: linear-gradient(to right, transparent 30px, black 60px, black calc(100% - 15px), transparent);
+	-webkit-mask-image: linear-gradient(to right, transparent 30px, black 60px, black calc(100% - 15px), transparent);
+}
+
 
 .pill-scroll-container::-webkit-scrollbar {
 	display: none;
@@ -70,9 +89,10 @@
 	gap: 10px;
 	white-space: nowrap;
 	min-height: 40px;
-	max-height: calc(38px + 10px + 38px + 10px + 38px);
+	max-height: calc(38px + 10px + 38px + 10px + 38px + 20px);
 	justify-content: stretch;
 	align-items: normal;
+	padding: 0;
 }
 
 /* Pill Component */

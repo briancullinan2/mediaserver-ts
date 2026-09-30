@@ -36,7 +36,7 @@ const widgetSelf: ArtWindow & LuminoLayoutWindow & GlobalToolbarsWindow & Fileli
 
 export class ArtWidget extends Widget
 {
-	private sources: string[];
+	protected sources: string[];
 	private activeWidget: Widget | undefined;
 	private sourcePromises: Map<string, Promise<NestedTreeNode[]>> = new Map();
 
@@ -60,10 +60,10 @@ export class ArtWidget extends Widget
 	 * Overridable registry of view renderers mapped by mode string
 	 */
 	protected viewRenderers: Map<string, ViewRenderer> = new Map();
-	errorHandlers: ((sender: Widget, args: WidgetErrorEventArgs) => void)[] = [];
+	private errorHandlers: ((sender: Widget, args: WidgetErrorEventArgs) => void)[] = [];
 
 	private _errorOccurred = new Signal<Widget, WidgetErrorEventArgs>(this);
-	private widgetIndex: number = 0;
+	protected widgetIndex: number = 0;
 
 	get errorOccurred(): ISignal<Widget, WidgetErrorEventArgs>
 	{
@@ -125,7 +125,9 @@ export class ArtWidget extends Widget
 			switch(mode)
 			{
 				case 'coverflow':
-					widgetInstance = new CoverflowWidget(pane, this.displayedFiles);
+					widgetInstance = new CoverflowWidget(null, {
+						filesSignal: this._filesSignal
+					});
 					break;
 				case 'pills':
 					widgetInstance = new PillSelectorWidget(null, {
@@ -298,6 +300,8 @@ export class ArtWidget extends Widget
 
 		this.activeWidget = targetWidget;
 		this.widgetIndex = index;
+
+		// subscribe to widget
 		if('fetchFiles' in targetWidget && typeof targetWidget.fetchFiles === 'function')
 		{
 			this.dataProvider = targetWidget;
@@ -362,10 +366,14 @@ export class ArtWidget extends Widget
 	{
 		console.warn(`Source failed [${(sender as any)._source}]:`, args.error);
 		(sender as unknown as IErrorEvent).errorOccurred?.disconnect(this.errorHandlers[index]);
-		this.activeWidget?.close();
-		this.activeWidget = undefined;
+		sender.close();
+		if(sender === this.activeWidget)
+		{
+			this.activeWidget = undefined;
+		}
 
 		this.openOutlineWidget(index + 1);
+		this._errorOccurred.emit(args);
 	}
 
 	/**
@@ -399,7 +407,7 @@ export class ArtWidget extends Widget
 	/**
 	 * Dynamically swaps out views based on view mode via the lookup table
 	 */
-	public setViewMode(mode: ViewMode | ViewMode[] | Set<ViewMode>, files: NestedTreeNode[] = []): void
+	public setViewMode(mode: ViewMode | ViewMode[] | Set<ViewMode> | string, files: NestedTreeNode[] = []): void
 	{
 		this.activeViews = new Set<ViewMode>(mode instanceof Set ? Array.from(mode) : mode instanceof Array ? mode : [mode]);
 		this.renderActiveViews();
@@ -452,18 +460,16 @@ export class ArtWidget extends Widget
 		this.openOutlineWidget(this.widgetIndex);
 	}
 
-	protected override onBeforeDetach(msg: Message): void
+	public processMessage(msg: Message): void
 	{
-		this.activeWidget?.close();
-		this.sourcePromises.clear();
-		super.onBeforeDetach(msg);
+		if(msg.type === 'close-request')
+		{
+			this.activeWidget?.close();
+		}
+
+		super.processMessage(msg);
 	}
 
-	protected override onBeforeHide(msg: Message): void
-	{
-		this.activeWidget?.close();
-		super.onBeforeHide(msg);
-	}
 }
 
 widgetSelf.ArtWidget = ArtWidget;

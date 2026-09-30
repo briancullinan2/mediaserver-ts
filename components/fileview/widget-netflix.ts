@@ -1,4 +1,4 @@
-import { Message } from '@lumino/messaging';
+import { Message, MessageLoop } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { ISignal, Signal } from '@lumino/signaling';
 import type { NestedTreeNode } from '../bundle/github-tools';
@@ -56,6 +56,21 @@ export class NetflixViewWidget extends Widget
 		if(this._filesSignal)
 		{
 			this._filesSignal.connect(this.onFilesUpdated, this);
+		}
+	}
+
+	protected override onResize(msg: Widget.ResizeMessage): void
+	{
+		super.onResize(msg);
+		if(this.pillsWidget)
+		{
+			this.pillsWidget.fit();
+			MessageLoop.sendMessage(this.pillsWidget, msg);
+		}
+		if(this.styleWidget)
+		{
+			this.styleWidget.fit();
+			MessageLoop.sendMessage(this.styleWidget, msg);
 		}
 	}
 
@@ -287,12 +302,17 @@ export class NetflixViewWidget extends Widget
 		return hash;
 	}
 
-	protected override onBeforeDetach(msg: Message): void
+	public processMessage(msg: Message): void
 	{
-		if(this._filesSignal)
+		if(msg.type === 'close-request')
 		{
-			this._filesSignal.disconnect(this.onFilesUpdated, this);
+			if(this._filesSignal)
+			{
+				this._filesSignal.disconnect(this.onFilesUpdated, this);
+			}
 		}
-		super.onBeforeDetach(msg);
+
+		super.processMessage(msg);
 	}
+
 }

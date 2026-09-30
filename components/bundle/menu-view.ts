@@ -4,6 +4,7 @@ import { MenuConfig, MenuManager } from "./menu-manager";
 import type { GlobalToolbarsWindow, LuminoMenuWindow } from "./menu.d";
 import type { EditorWindow } from "../editor/widget.d";
 import type { FileSystemWindow, LuminoLayoutWindow } from "./lumino.d";
+import type { ViewMode } from "../art/widget";
 
 type ExtendedWindow = LuminoMenuWindow & FileSystemWindow & LuminoLayoutWindow
 	& GlobalToolbarsWindow & EditorWindow;
@@ -138,7 +139,7 @@ export class ViewToolbar extends Widget
 	private _commands: CommandRegistry | null = null;
 
 	public showHiddenFiles: boolean = false;
-	public activeViews: Set<string> = new Set(['grid']);
+	public activeViews: Set<ViewMode> = new Set(['grid']);
 	public currentSort: string = 'name-asc';
 	public currentGroup: string = 'none';
 
@@ -184,8 +185,10 @@ export class ViewToolbar extends Widget
                 </select>
                 <select id="group-select" class="ribbon-select" title="Group Items">
                     <option value="none" ${this.currentGroup === 'none' ? 'selected' : ''}>No Grouping</option>
+					<option value="name" ${this.currentGroup === 'name' ? 'selected' : ''}>Group by Name</option>
                     <option value="type" ${this.currentGroup === 'type' ? 'selected' : ''}>Group by Type</option>
                     <option value="date" ${this.currentGroup === 'date' ? 'selected' : ''}>Group by Date</option>
+					<option value="date" ${this.currentGroup === 'size' ? 'selected' : ''}>Group by Size</option>
                 </select>
             </div>
 
@@ -248,15 +251,16 @@ export class ViewToolbar extends Widget
 		});
 	}
 
-	public setViewMode(view: string): void
+	public setViewMode(mode: ViewMode | ViewMode[] | Set<ViewMode> | string): void
 	{
-		if(this.activeViews.has(view))
-		{
-			this.activeViews.delete(view);
-		} else
-		{
-			this.activeViews.add(view);
-		}
+		// if(this.activeViews.has(mode))
+		// {
+		// 	this.activeViews.delete(mode);
+		// } else
+		// {
+		// 	this.activeViews.add(mode);
+		// }
+		this.activeViews = new Set<ViewMode>(mode instanceof Set ? Array.from(mode) : mode instanceof Array ? mode : [mode]);
 		this._updateUIState();
 	}
 
@@ -275,7 +279,13 @@ export class ViewToolbar extends Widget
 			const viewMode = btn.getAttribute('data-view');
 			if(viewMode)
 			{
-				btn.classList.toggle('active', this.activeViews.has(viewMode));
+				if(this.activeViews.has(viewMode))
+				{
+					btn.classList.add('active');
+				} else
+				{
+					btn.classList.remove('active');
+				}
 			}
 		});
 	}

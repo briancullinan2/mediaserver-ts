@@ -1,12 +1,9 @@
-import { Message } from '@lumino/messaging';
+import { Message, MessageLoop } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import { Signal } from '@lumino/signaling';
 import { ArtWidget } from '../art/widget';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
-import { FileListWidget } from '../filelist/widget';
-import { GoogleDriveFile, GoogleDriveWidget } from '../filelist/widget-google';
-import { HttpIndexWidget } from '../filelist/widget-index';
-import { AssetListWidget } from '../filelist/widget-assets';
+import type { GoogleDriveFile } from '../filelist/widget-google';
 import type { FlatFileNode, NestedTreeNode } from '../bundle/github-tools';
 import type mime from 'mime';
 import { NetflixViewWidget } from './widget-netflix';
@@ -15,6 +12,7 @@ import { ExplorerGridWidget } from './widget-grid';
 import { DetailsViewWidget } from './widget-details';
 import { IPillSelectedArgs, PillSelectorWidget } from '../art/widget-pill';
 import { StyleSelectorWidget } from '../art/widget-style';
+import type { IFileDataProvider } from '../filelist/widget.d';
 
 
 export type ViewMode = 'netflix' | 'coverflow' | 'grid' | 'details' | 'tree' | 'pills' | 'styles';
@@ -30,9 +28,6 @@ export class FileviewWidget extends ArtWidget
 {
 	// Active Display State
 	private isSplitView: boolean = false;
-	private activeFolderId: string = 'root';
-	private activeFolderPath: string = '/Home';
-	private activeFolderName: string = 'Home';
 
 	// Filtering & Category Pills
 	private searchQuery: string = '';
@@ -63,10 +58,29 @@ export class FileviewWidget extends ArtWidget
 		//}
 	}
 
+	protected override onResize(msg: Widget.ResizeMessage): void
+	{
+		super.onResize(msg);
+		const widgets: Widget[] = Array.from(this.mountedSubWidgets.values());
+		for(const w of widgets)
+		{
+			w.fit();
+			MessageLoop.sendMessage(w, msg);
+		}
+	}
+
 	protected override onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
 		this.filesChanged.connect(() => this.refreshCurrentFolder());
+		this.errorOccurred.connect((sender) =>
+		{
+			if(this.dataProvider as any !== sender)
+			{
+				this.refreshCurrentFolder();
+			}
+		});
+		this.refreshCurrentFolder();
 	}
 
 	protected override onBeforeDetach(msg: Message): void
@@ -96,7 +110,7 @@ export class FileviewWidget extends ArtWidget
 					<div class="address-bar-wrapper">
 						<i class="bx bx-folder address-icon"></i>
 						<div class="breadcrumb-trail" id="breadcrumb-trail"></div>
-						<input type="text" class="address-input hidden" id="address-input" value="${this.activeFolderPath}" />
+						<input type="text" class="address-input hidden" id="address-input" value="${this.sources[this.widgetIndex]}" />
 					</div>
 
 					<div class="search-bar-wrapper">
@@ -277,18 +291,25 @@ export class FileviewWidget extends ArtWidget
 				case 'netflix':
 					widgetInstance = new NetflixViewWidget(undefined, {
 						filesSignal: this.filesChanged,
-						files: this.displayedFiles
+						files: this.rawFiles
 					});
 					this.categorySelected = (widgetInstance as NetflixViewWidget).categorySelected;
 					break;
 				case 'coverflow':
-					widgetInstance = new CoverflowWidget(pane, this.displayedFiles);
+					widgetInstance = new CoverflowWidget(null, {
+						filesSignal: this.filesChanged,
+						items: this.rawFiles
+					});
 					break;
 				case 'grid':
-					widgetInstance = new ExplorerGridWidget(pane, this.displayedFiles);
+					widgetInstance = new ExplorerGridWidget(null, {
+						files: this.rawFiles
+					});
 					break;
 				case 'details':
-					widgetInstance = new DetailsViewWidget(pane, this.displayedFiles);
+					widgetInstance = new DetailsViewWidget(null, {
+						files: this.rawFiles
+					});
 					break;
 				case 'pills':
 					widgetInstance = new PillSelectorWidget(null, {
@@ -324,24 +345,12 @@ export class FileviewWidget extends ArtWidget
 	 */
 	private async renderSubtreeWidget(container: HTMLElement): Promise<void>
 	{
-		let widgetInstance: Widget;
-
-		if(this.activeFolderPath.startsWith('/Drive'))
+		const widgetInstance = ArtWidget.resolveSourceWidget(this.sources[this.widgetIndex]);
+		if(widgetInstance)
 		{
-			widgetInstance = new GoogleDriveWidget();
-		} else if(this.activeFolderPath.startsWith('/Http'))
-		{
-			widgetInstance = new HttpIndexWidget();
-		} else if(this.activeFolderPath.startsWith('/Asset'))
-		{
-			widgetInstance = new AssetListWidget();
-		} else
-		{
-			widgetInstance = new FileListWidget();
+			Widget.attach(widgetInstance, container);
+			this.mountedSubWidgets.set(container, widgetInstance);
 		}
-
-		Widget.attach(widgetInstance, container);
-		this.mountedSubWidgets.set(container, widgetInstance);
 	}
 
 
@@ -357,7 +366,23 @@ export class FileviewWidget extends ArtWidget
 
 		if(this.dataProvider)
 		{
-			this.rawFiles = await this.dataProvider.fetchFiles(this.activeFolderId);
+			while(this.widgetIndex < this.sources.length)
+			{
+				try
+				{
+					const dp = ArtWidget.resolveSourceWidget(this.sources[this.widgetIndex]);
+					if(dp && 'fetchFiles' in dp && typeof dp.fetchFiles === 'function')
+					{
+						this.dataProvider = dp as IFileDataProvider;
+						this.rawFiles = await dp.fetchFiles(this.sources[this.widgetIndex]);
+					}
+					break;
+				} catch(e)
+				{
+					console.error('Drive fetch failed: ', e);
+					this.widgetIndex++;
+				}
+			}
 			for(const file of this.rawFiles ?? [])
 			{
 				if(!file.mimeType)
@@ -442,7 +467,7 @@ export class FileviewWidget extends ArtWidget
 					<ul class="inspector-meta-list">
 						<li><strong>ID:</strong> ${file.id}</li>
 						<li><strong>Type:</strong> ${file.mimeType ?? 'File'}</li>
-						<li><strong>Path:</strong> ${this.activeFolderPath}/${file.text}</li>
+						<li><strong>Path:</strong> ${this.sources[this.widgetIndex]}/${file.text}</li>
 					</ul>
 				</div>
 			`;
@@ -489,10 +514,10 @@ export class FileviewWidget extends ArtWidget
 
 	private async navigateToPath(path: string): Promise<void>
 	{
-		this.activeFolderPath = path;
-		const parts = path.split('/').filter(Boolean);
-		this.activeFolderName = parts[parts.length - 1] ?? 'Home';
-		await this.refreshCurrentFolder();
+		//this.activeFolderPath = path;
+		//const parts = path.split('/').filter(Boolean);
+		//this.activeFolderName = parts[parts.length - 1] ?? 'Home';
+		//await this.refreshCurrentFolder();
 	}
 
 	private getFileIconClass(file: FlatFileNode | NestedTreeNode | GoogleDriveFile): string

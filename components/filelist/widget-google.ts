@@ -10,6 +10,7 @@ import type {
 	FilelistWindow, FileWidgetWindow, IErrorEvent,
 	IFilesEvent, WidgetErrorEventArgs, WidgetFilesEventArgs
 } from "./widget.d";
+import { Message } from "@lumino/messaging";
 
 const filelistSelf: GlobalToolbarsWindow & FileWidgetWindow & GithubWindow & BuildWindow
 	& FilelistWindow = self as unknown as any;
@@ -27,6 +28,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IF
 	private rootFolderName: string | null = null;
 	private _errorOccurred = new Signal<GoogleDriveWidget, WidgetErrorEventArgs>(this);
 	private _filesSignal = new Signal<GoogleDriveWidget, WidgetFilesEventArgs>(this);
+	private static _debounceQueries: Record<string, Promise<GoogleDriveFile[] | undefined>> = {};
 
 	get errorOccurred(): ISignal<GoogleDriveWidget, WidgetErrorEventArgs>
 	{
@@ -46,6 +48,16 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IF
 			return existing as GoogleDriveWidget;
 		}
 		super(titleStr, source);
+	}
+
+	public processMessage(msg: Message): void
+	{
+		if(msg.type === 'close-request')
+		{
+			this._errorOccurred = new Signal<GoogleDriveWidget, WidgetErrorEventArgs>(this);
+		}
+
+		super.processMessage(msg);
 	}
 
 	/**
@@ -75,28 +87,45 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IF
 			supportsAllDrives: 'true'
 		});
 
-		const url = `https://www.googleapis.com/drive/v3/files?${params.toString()}`;
+		const paramsStr = params.toString();
 
-		const response = await fetch(url, {
+		if(typeof this._debounceQueries[paramsStr] !== 'undefined')
+		{
+			const results = await this._debounceQueries[paramsStr];
+			if(results)
+			{
+				return results;
+			}
+		}
+
+		const url = `https://www.googleapis.com/drive/v3/files?${paramsStr}`;
+
+		const debounced = fetch(url, {
 			method: 'GET',
 			mode: 'cors',
 			credentials: 'omit'
+		}).then(async response =>
+		{
+			if(!response.ok)
+			{
+				const errJson = await response.json().catch(() => ({}));
+				throw new Error(errJson.error?.message || `HTTP ${response.status}`);
+			}
+
+			const data = await response.json();
+
+			if(!data.files.length)
+			{
+				throw new Error(`No Drive files! status: ${response.status}`);
+			}
+
+			delete this._debounceQueries[paramsStr];
+			return data.files || [];
 		});
 
-		if(!response.ok)
-		{
-			const errJson = await response.json().catch(() => ({}));
-			throw new Error(errJson.error?.message || `HTTP ${response.status}`);
-		}
+		this._debounceQueries[paramsStr] = debounced;
 
-		const data = await response.json();
-
-		if(!data.files.length)
-		{
-			throw new Error(`No Drive files! status: ${response.status}`);
-		}
-
-		return data.files || [];
+		return await debounced;
 	}
 
 	/**
@@ -331,6 +360,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IF
 		const database = this.defaultRepository;
 
 		// Fetch folder name if not resolved yet
+		/*
 		if(!this.rootFolderName)
 		{
 			this.rootFolderName = await this.fetchFolderName(rawFolderId);
@@ -354,6 +384,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IF
 				}
 			}
 		}
+		*/
 
 		const rootDisplayText = this.rootFolderName || database;
 		let rootChildren: NestedTreeNode[] = [];

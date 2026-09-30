@@ -19,6 +19,7 @@ export interface IDetailsOptions
 {
 	title?: string;
 	onFileSelect?: (file: NestedTreeNode) => void;
+	files?: NestedTreeNode[];
 }
 
 export class DetailsViewWidget extends Widget
@@ -44,11 +45,11 @@ export class DetailsViewWidget extends Widget
 	private _groupsContainer!: HTMLElement;
 	private _resultCountNode!: HTMLElement;
 
-	constructor(options: IDetailsOptions = {}, files?: NestedTreeNode[])
+	constructor(title?: string | null, options: IDetailsOptions = {})
 	{
 		super();
 		this.addClass('netflix-details-widget');
-		this._files = files || [];
+		this._files = options?.files || [];
 		this._onFileSelect = options.onFileSelect;
 
 		this.renderShell();

@@ -205,6 +205,7 @@ export class PillSelectorWidget extends Widget
 		{
 			this.updateScrollOverflowIndicators();
 		});
+		requestAnimationFrame(this.updateScrollOverflowIndicators.bind(this));
 	}
 
 	private updatePillStates(): void

@@ -12,6 +12,7 @@ export interface IExplorerGridOptions
 	flow?: GridFlow;
 	onSelectionChange?: (selectedFiles: NestedTreeNode[]) => void;
 	onFileActivate?: (file: NestedTreeNode) => void;
+	files?: NestedTreeNode[];
 }
 
 export class ExplorerGridWidget extends Widget
@@ -40,11 +41,11 @@ export class ExplorerGridWidget extends Widget
 	// ResizeObserver for Column-First Dynamic Calculations
 	private _resizeObserver: ResizeObserver;
 
-	constructor(options: IExplorerGridOptions = {}, files?: NestedTreeNode[])
+	constructor(title?: string | null, options: IExplorerGridOptions = {})
 	{
 		super();
 		this.addClass('explorer-grid-widget');
-		this._files = files || [];
+		this._files = options?.files || [];
 		this._iconSize = options.iconSize || 'medium';
 		this._flow = options.flow || 'row-first';
 		this._onSelectionChange = options.onSelectionChange;
