@@ -102,16 +102,13 @@ export class DetailsViewWidget extends Widget
 		const controlsWrapper = document.createElement('div');
 		controlsWrapper.className = 'ndw-controls-wrapper';
 
-		const modeToggleBtn = document.createElement('button');
-		modeToggleBtn.className = 'ndw-btn ndw-mode-btn';
-		modeToggleBtn.innerHTML = `<i class="bx ${this._displayMode === 'details' ? 'bx-carousel' : 'bx-list-ul'}"></i> Switch View`;
-		modeToggleBtn.title = 'Toggle between Table Details and Netflix Row Carousels';
-		modeToggleBtn.addEventListener('click', () =>
-		{
-			this._displayMode = this._displayMode === 'details' ? 'carousel' : 'details';
-			modeToggleBtn.innerHTML = `<i class="bx ${this._displayMode === 'details' ? 'bx-carousel' : 'bx-list-ul'}"></i> ${this._displayMode === 'details' ? 'Row View' : 'Table View'}`;
-			this.renderGroupSections();
-		});
+		// const modeToggleBtn = document.createElement('button');
+		// modeToggleBtn.className = 'ndw-btn ndw-mode-btn';
+		// modeToggleBtn.innerHTML = `<i class="bx ${this._displayMode === 'details' ? 'bx-carousel' : 'bx-list-ul'}"></i> Switch View`;
+		// modeToggleBtn.title = 'Toggle between Table Details and Netflix Row Carousels';
+		// modeToggleBtn.addEventListener('click', () =>
+		// {
+		// });
 
 		// topBar.append(searchWrapper, this._resultCountNode, controlsWrapper);
 
@@ -158,19 +155,25 @@ export class DetailsViewWidget extends Widget
 		const closeIconNode = tabNode.querySelector('.lm-TabBar-tabCloseIcon');
 		if(!closeIconNode || tabNode.querySelector('.custom-toggle-btn')) return;
 
+		const renderToggleBtn = (toggle: HTMLDivElement) =>
+		{
+			toggle.innerHTML = `<i class="bx ${this._displayMode === 'details' ? 'bx-gallery-horizontal' : 'bx-list-ul'}"></i>`;
+			toggle.title = this._displayMode === 'details' ? 'Row View' : 'Table View';
+
+		};
+
 		// Create custom toggle button
 		const toggleBtn = document.createElement('div');
 		toggleBtn.className = 'lm-TabBar-tabIcon custom-toggle-btn';
-		toggleBtn.innerText = '★'; // Replace with SVG or icon class
-		toggleBtn.title = 'Toggle state';
-
+		renderToggleBtn(toggleBtn);
 		const that = this;
 		toggleBtn.addEventListener('click', (event) =>
 		{
 			// TODO: toggle netflix view
 			event.stopPropagation(); // Stop event bubbling to tab selection
-			toggleBtn.classList.toggle('active');
-			console.log('Toggled state for:', that.title.label);
+			this._displayMode = this._displayMode === 'details' ? 'carousel' : 'details';
+			renderToggleBtn(toggleBtn);
+			this.renderGroupSections();
 		});
 
 		// Insert toggle right before the close icon

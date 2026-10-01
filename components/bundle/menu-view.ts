@@ -48,7 +48,7 @@ export const VIEW_MENU: MenuConfig = {
 				{
 					name: "Coverflow",
 					target: "view/mode.coverflow",
-					iconClass: "bx bx-gallery-horizontal"
+					iconClass: "bx bx-album-covers"
 				},
 				{
 					name: "Grid",
@@ -197,7 +197,7 @@ export class ViewToolbar extends Widget
 					<i class="bx bx-film"></i> Netflix
 				</button>
 				<button class="view-btn ${this.activeViews.has('coverflow') ? 'active' : ''}" data-view="coverflow" title="Coverflow">
-					<i class="bx bx-gallery-horizontal"></i> Coverflow
+					<i class="bx bx-album-covers"></i> Coverflow
 				</button>
 				<button class="view-btn ${this.activeViews.has('grid') ? 'active' : ''}" data-view="grid" title="Icon Grid">
 					<i class="bx bx-grid"></i> Grid

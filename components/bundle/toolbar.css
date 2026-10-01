@@ -167,3 +167,15 @@ ul.toolbar>li {
 		overflow-y: scroll;
 	}
 }
+
+.custom-toggle-btn {
+	cursor: pointer;
+}
+
+.lm-TabBar-tabCloseIcon:hover {
+	color: var(--ace-pink);
+}
+
+.custom-toggle-btn:hover {
+	color: var(--ace-blue);
+}

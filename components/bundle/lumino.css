@@ -71,6 +71,8 @@ html {
 	overflow: hidden;
 	margin: 0;
 	box-sizing: border-box;
+	vertical-align: middle;
+	align-items: center;
 }
 
 .lm-TabBar-tab:hover {
@@ -86,7 +88,7 @@ html {
 
 .lm-TabBar-tabCloseIcon::before {
 	content: '×';
-	font-size: 14px;
+	font-size: 16px;
 	margin-left: 6px;
 	cursor: pointer;
 }
@@ -155,7 +157,7 @@ html {
 #tabs a:empty::before,
 #toolbar a:empty::before {
 	text-shadow: 1px 2px 3px rgb(from var(--ace-gutter-bg) r g b / 100%);
-	color: var(--ace-foreground);
+	/* color: var(--ace-foreground); */
 	font-family: boxicons !important;
 }
 
@@ -173,6 +175,10 @@ html {
 	min-width: 0;
 }
 
-.lm-TabBar-tabIcon {
-	margin: 0 4px;
+.lm-TabBar-tabIcon:has(>*),
+.lm-TabBar-tabIcon:not(:empty) {
+	margin: 0 8px;
+	vertical-align: middle;
+	align-items: center;
+	display: flex;
 }
