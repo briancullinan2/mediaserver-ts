@@ -479,6 +479,7 @@ export class ArtWidget extends Widget
 			this.filesSignals[index]?.connect((sender: Widget, args: WidgetFilesEventArgs) =>
 			{
 				this._filesSignal.emit(args);
+				this.rawFiles = args.items;
 				this.refreshCurrentFolder();
 			}, this);
 		}

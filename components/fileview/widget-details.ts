@@ -54,7 +54,6 @@ export class DetailsViewWidget extends Widget
 		super();
 		this.addClass('netflix-details-widget');
 		this.id = 'details-widget-view';
-		debugger;
 		this._files = options?.files || [];
 		this._onFileSelect = options.onFileSelect;
 
@@ -130,7 +129,6 @@ export class DetailsViewWidget extends Widget
 
 	private attachToggleIcon(): void
 	{
-		debugger;
 		// Locate the DOM node for the specific tab item
 		let tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.id})`) as HTMLElement;
 		if(!tabNode && this.node.parentElement?.id)
@@ -141,6 +139,19 @@ export class DetailsViewWidget extends Widget
 		{
 			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.node.parentElement.parentElement.id})`) as HTMLElement;
 		}
+		if(!tabNode && this.parent?.id)
+		{
+			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.parent.id})`) as HTMLElement;
+		}
+		if(!tabNode)
+		{
+			const parentWidgetId = (this.parent?.node ?? this.node.parentElement?.closest('.lm-Widget'))?.id;
+			if(parentWidgetId)
+			{
+				tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${parentWidgetId})`) as HTMLElement;
+			}
+		}
+
 		if(!tabNode) return;
 
 		// Find Lumino's native close icon container
@@ -156,6 +167,7 @@ export class DetailsViewWidget extends Widget
 		const that = this;
 		toggleBtn.addEventListener('click', (event) =>
 		{
+			// TODO: toggle netflix view
 			event.stopPropagation(); // Stop event bubbling to tab selection
 			toggleBtn.classList.toggle('active');
 			console.log('Toggled state for:', that.title.label);

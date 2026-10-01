@@ -363,7 +363,6 @@ export class FileviewWidget extends ArtWidget
 			switch(mode)
 			{
 				case 'netflix':
-
 					this.categorySelected = (widgetInstance as NetflixViewWidget).categorySelected;
 					break;
 				case 'coverflow':
