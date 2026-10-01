@@ -3,19 +3,126 @@ import { Widget } from '@lumino/widgets';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
 import type { FilelistWindow, IErrorEvent, IFileDataProvider, IFilesEvent, WidgetErrorEventArgs, WidgetFilesEventArgs } from '../filelist/widget.d';
-import { PUBLIC_GOOGLE_DRIVE_FOLDER_ID } from '../filelist/widget-google';
-import { DEFAULT_HTTP_INDEX_URL } from '../filelist/widget-index';
 import type { NestedTreeNode } from '../bundle/github-tools';
 import type { FileListWidget } from '../filelist/widget';
-import { CoverflowWidget } from './widget-coverflow';
-import { PillSelectorWidget } from './widget-pill';
-import { StyleSelectorWidget } from './widget-style';
+import type { CoverflowWidget } from './widget-coverflow';
+import type { IPillSelectedArgs, IPillViewOptions, PillSelectorWidget } from './widget-pill';
+import type { IStyleViewOptions, StyleSelectorWidget } from './widget-style';
+import type { NetflixViewWidget } from '../fileview/widget-netflix';
+import type { ExplorerGridWidget } from '../fileview/widget-grid';
+import type { DetailsViewWidget } from '../fileview/widget-details';
 import { ISignal, Signal } from '@lumino/signaling';
 import { index } from 'd3';
 
 export type ViewMode = 'netflix' | 'overflow' | 'grid' | 'details' | 'tree' | 'music' | string;
 
 export type ViewRenderer = (this: ArtWidget, files: NestedTreeNode[], container: HTMLElement) => void;
+
+export interface KnownFileViews
+{
+	ArtWidget?: typeof ArtWidget;
+	artWidget?: ArtWidget;
+
+	CoverflowWidget?: typeof CoverflowWidget;
+	coverflowWidget?: CoverflowWidget;
+
+	PillSelectorWidget?: typeof PillSelectorWidget;
+	pillSelectorWidget?: PillSelectorWidget;
+
+	StyleSelectorWidget?: typeof StyleSelectorWidget;
+	styleSelectorWidget?: StyleSelectorWidget;
+
+	NetflixViewWidget: typeof NetflixViewWidget;
+	netflixViewWidget: NetflixViewWidget;
+
+	ExplorerGridWidget: typeof ExplorerGridWidget;
+	explorerGridWidget: ExplorerGridWidget;
+
+	DetailsViewWidget: typeof DetailsViewWidget;
+	detailsViewWidget: DetailsViewWidget;
+
+}
+
+export function modeToWindowType(mode: string, source?: string): Constructor | undefined
+{
+
+	switch(mode)
+	{
+		case 'netflix':
+			return widgetSelf.NetflixViewWidget;
+			break;
+		case 'coverflow':
+			return widgetSelf.CoverflowWidget;
+			break;
+		case 'grid':
+			return widgetSelf.ExplorerGridWidget;
+			break;
+		case 'details':
+			return widgetSelf.DetailsViewWidget;
+			break;
+		case 'pills':
+			return widgetSelf.PillSelectorWidget;
+			break;
+		case 'styles':
+			return widgetSelf.StyleSelectorWidget;
+			break;
+		case 'tree':
+			return ArtWidget.mediaWidgetFromURL(source);
+	}
+}
+
+
+export function modeToWidgetURI(mode: string, source?: string): string | undefined
+{
+
+	switch(mode)
+	{
+		case 'netflix':
+			return '/components/fileview/widget-netflix.ts';
+			break;
+		case 'coverflow':
+			return '/components/art/widget-cover.ts';
+			break;
+		case 'grid':
+			return '/components/fileview/widget-grid.ts';
+			break;
+		case 'details':
+			return '/components/fileview/widget-details.ts';
+			break;
+		case 'pills':
+			return '/components/fileview/widget-pill.ts';
+			break;
+		case 'styles':
+			return '/components/fileview/widget-style.ts';
+			break;
+		case 'tree':
+			if(source?.startsWith('github:') || source?.includes('github.com'))
+			{
+				return '/components/filelist/widget-assets.ts';
+			}
+			// Google Drive Protocol / ID
+			else if(source?.startsWith('gdrive://') || source?.startsWith('1') && source?.length > 25)
+			{
+				return '/components/filelist/widget-google.ts';
+			}
+			// Google Drive Protocol / ID
+			else if(source?.startsWith('idb://'))
+			{
+				return '/components/filelist/widget-database.ts';
+			}
+			// HTTP / HTTPS Web Index
+			else if(source?.startsWith('http://') || source?.startsWith('https://'))
+			{
+				return '/components/filelist/widget-index.ts';
+			}
+			// Local File System / Workspace Fallback
+			else if(source?.startsWith('file://') || source?.startsWith('local://'))
+			{
+				return '/components/filelist/widget.ts';
+			}
+			break;
+	}
+}
 
 export interface SourceProviderConfig
 {
@@ -24,15 +131,13 @@ export interface SourceProviderConfig
 	getWidget: (source: string) => Widget;
 }
 
-export interface ArtWindow
-{
-	ArtWidget?: typeof ArtWidget;
-	artWidget?: ArtWidget;
-}
+// export interface ArtWindow
+// {
+// }
 
 type Constructor<T = any, Args extends any[] = any[]> = new (...args: Args) => T;
 
-const widgetSelf: ArtWindow & LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow = self as unknown as any;
+const widgetSelf: KnownFileViews & LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow = self as unknown as any;
 
 export class ArtWidget extends Widget
 {
@@ -64,6 +169,7 @@ export class ArtWidget extends Widget
 
 	private _errorOccurred = new Signal<Widget, WidgetErrorEventArgs>(this);
 	protected widgetIndex: number = 0;
+	protected categorySelected?: Signal<PillSelectorWidget, IPillSelectedArgs>;
 
 	get errorOccurred(): ISignal<Widget, WidgetErrorEventArgs>
 	{
@@ -94,7 +200,10 @@ export class ArtWidget extends Widget
 			this.sources = [sources];
 		} else
 		{
-			this.sources = [PUBLIC_GOOGLE_DRIVE_FOLDER_ID, DEFAULT_HTTP_INDEX_URL];
+			this.sources = [
+				widgetSelf.settingsManager?.get('filelist', 'google_drives')?.[0],
+				widgetSelf.settingsManager?.get('filelist', 'http_indexes')?.[0]
+			].filter(Boolean);
 		}
 
 	}
@@ -121,22 +230,50 @@ export class ArtWidget extends Widget
 			pane.className = `view-pane view-pane-${mode}`;
 			this.viewContainer.appendChild(pane);
 			let widgetInstance: Widget | undefined = undefined;
+			let viewWidget = modeToWindowType(mode);
+			if(!viewWidget)
+			{
+				const widgetURI = modeToWidgetURI(mode, this.sources[this.widgetIndex]);
+				if(widgetSelf.loadScript && widgetURI)
+				{
+					await widgetSelf.preloadDependencies?.([widgetURI]);
+					const targetUrl = widgetURI.replace(/\.ts$/, '.js').replace(/^\.\//, '/base/');
+					const modulePromise = await import(/* webpackIgnore: true */ targetUrl + '?t=' + Date.now() + '&local-csp=true');
+					viewWidget = modeToWindowType(mode, this.sources[this.widgetIndex]);
+				}
+			}
+
+			if(!viewWidget)
+			{
+				continue;
+			}
+
+			const instantiationVars = {
+				filesSignal: this.filesChanged,
+				items: this.rawFiles
+			};
 
 			switch(mode)
 			{
 				case 'coverflow':
-					widgetInstance = new CoverflowWidget(null, {
-						filesSignal: this._filesSignal
-					});
 					break;
 				case 'pills':
-					widgetInstance = new PillSelectorWidget(null, {
-						categories: Array.from(this.availableCategories),
-						activeCategory: this.selectedCategoryPill,
-					});
+					(instantiationVars as IPillViewOptions).categories = Array.from(this.availableCategories);
+					(instantiationVars as IPillViewOptions).activeCategory = this.selectedCategoryPill;
 					break;
 				case 'styles':
-					widgetInstance = new StyleSelectorWidget();
+					(instantiationVars as IStyleViewOptions).categorySelected = this.categorySelected;
+					break;
+			}
+
+			widgetInstance = new viewWidget(undefined, instantiationVars);
+
+			switch(mode)
+			{
+				case 'pills':
+					this.categorySelected = (widgetInstance as PillSelectorWidget).categorySelected;
+					break;
+				case 'styles':
 					break;
 			}
 
@@ -243,15 +380,27 @@ export class ArtWidget extends Widget
 	/**
 	 * Resolves source protocol/prefix to determine appropriate sidebar widget provider
 	 */
-	public static resolveSourceWidget(source: string, title?: string): Widget | undefined
+	public static async resolveSourceWidget(source: string, title?: string): Promise<Widget | undefined>
 	{
 		if(!source) return undefined;
 
-		const resolvedType = this.mediaWidgetFromURL(source);
+		let resolvedType = this.mediaWidgetFromURL(source);
 		let defaultTitle = title;
 		if(!defaultTitle && resolvedType)
 		{
 			defaultTitle = this.resolveDefaultMediaTitle(resolvedType);
+		}
+
+		if(!resolvedType)
+		{
+			const widgetURI = modeToWidgetURI('tree', source);
+			if(widgetSelf.loadScript && widgetURI)
+			{
+				await widgetSelf.preloadDependencies?.([widgetURI]);
+				const targetUrl = widgetURI.replace(/\.ts$/, '.js').replace(/^\.\//, '/base/');
+				const modulePromise = await import(/* webpackIgnore: true */ targetUrl + '?t=' + Date.now() + '&local-csp=true');
+				resolvedType = this.mediaWidgetFromURL(source);
+			}
 		}
 
 		if(resolvedType)
@@ -265,7 +414,7 @@ export class ArtWidget extends Widget
 	/**
 	 * Opens target widget or fallback widgets sequentially as outline panels
 	 */
-	private openOutlineWidget(index: number = 0): void
+	private async openOutlineWidget(index: number = 0): Promise<void>
 	{
 		if(index >= this.sources.length) return;
 
@@ -289,7 +438,7 @@ export class ArtWidget extends Widget
 
 		if(!targetWidget)
 		{
-			targetWidget = ArtWidget.resolveSourceWidget(currentSource, this.sidebarTitle);
+			targetWidget = await ArtWidget.resolveSourceWidget(currentSource, this.sidebarTitle);
 		}
 
 		if(!targetWidget)
@@ -437,10 +586,12 @@ export class ArtWidget extends Widget
 	protected override onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
-		this.renderActiveViews();
 		this.openOutlineWidget(this.widgetIndex);
-		this.setViewMode(this.activeViews);
 		//this.refreshCurrentFolder();
+		requestAnimationFrame(() =>
+		{
+			this.setViewMode(this.activeViews);
+		});
 	}
 
 	protected async refreshCurrentFolder(): Promise<void>

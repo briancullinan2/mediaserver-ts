@@ -659,6 +659,16 @@ for(let i = 0; i < process.argv.length; i++)
 
 if(runServer)
 {
+	process.on('unhandledRejection', (reason, promise) =>
+	{
+		console.error('\x1b[31m[UNHANDLED REJECTION / 500]\x1b[0m', reason);
+	});
+
+	// Log uncaught synchronous exceptions before process exits
+	process.on('uncaughtException', (err) =>
+	{
+		console.error('\x1b[31m[UNCAUGHT EXCEPTION / 500]\x1b[0m', err.stack || err);
+	});
 	/*
 	const os = require("os");
 	const cluster = require("cluster");

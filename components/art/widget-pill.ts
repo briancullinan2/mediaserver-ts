@@ -3,6 +3,9 @@ import { ISignal, Signal } from '@lumino/signaling';
 import { Message } from '@lumino/messaging';
 import type { NestedTreeNode } from '../bundle/github-tools';
 import type { WidgetFilesEventArgs } from '../filelist/widget.d';
+import type { IFileViewOptions } from '../fileview/widget';
+import type { LuminoLayoutWindow } from '../bundle/lumino.d';
+import type { KnownFileViews } from './widget';
 
 export interface IPillSelectedArgs
 {
@@ -22,17 +25,16 @@ export interface PillFolderMeta
 	icon?: string;
 }
 
-export interface IPillViewOptions
+export interface IPillViewOptions extends IFileViewOptions
 {
-	filesSignal?: ISignal<Widget, WidgetFilesEventArgs>;
 	onPillSelect?: (file: NestedTreeNode) => void;
 	title?: string;
 	categories?: string[];
-	items?: NestedTreeNode[];
 	activeCategory?: string;
 }
 
-const widgetSelf: {
+
+const widgetSelf: LuminoLayoutWindow & KnownFileViews & {
 	parseAndBuildCategoryMap(folders: { id: string; text: string; }[], isHttpSource: boolean): void;
 } = self as unknown as any;
 
@@ -60,9 +62,9 @@ export class PillSelectorWidget extends Widget
 		super();
 		this.addClass('pill-selector-widget');
 
-		if('items' in categories && categories.items instanceof Array)
+		if('files' in categories && categories.files instanceof Array)
 		{
-			this.categoryMap = PillSelectorWidget.parseAndBuildCategoryMap(categories.items, false);
+			this.categoryMap = PillSelectorWidget.parseAndBuildCategoryMap(categories.files, false);
 		} else if(categories instanceof Array)
 		{
 			this._categories = categories;
@@ -401,3 +403,5 @@ export class PillSelectorWidget extends Widget
 }
 
 widgetSelf.parseAndBuildCategoryMap = PillSelectorWidget.parseAndBuildCategoryMap;
+
+widgetSelf.PillSelectorWidget = PillSelectorWidget;

@@ -153,7 +153,7 @@ export class ServiceWorkerManager
 	{
 		if(!serverVersion || !registration.active) return;
 
-		workerSelf.splashScreen?.setStatus('Verifying Service');
+		workerSelf.splashScreen?.setStatus('Verifying Service...');
 		const swVersion = await this.queryWorkerValue(registration.active, 'GET_VERSION', 'VERSION_REPORT', 'version');
 
 		if(swVersion && new Date(serverVersion).getTime() !== new Date(swVersion).getTime())
@@ -174,7 +174,7 @@ export class ServiceWorkerManager
 	{
 		return new Promise((resolve) =>
 		{
-			let percent = 0;
+			let percent = 100;
 			let resolved = false;
 			const messageChannel = new MessageChannel();
 
@@ -206,7 +206,7 @@ export class ServiceWorkerManager
 							workerSelf.splashScreen?.setProgress(100, 'Service Ready!');
 						} else
 						{
-							workerSelf.splashScreen?.setProgress(event.data.percent, `Fetching ${event.data.previous}...`);
+							workerSelf.splashScreen?.setProgress(event.data.percent, `Fetching ${event.data.loaded}/${event.data.total} ${event.data.previous}...`);
 						}
 					}
 				};

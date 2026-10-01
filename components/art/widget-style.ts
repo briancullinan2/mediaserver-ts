@@ -3,6 +3,10 @@ import { ISignal, Signal } from '@lumino/signaling';
 import { Message } from '@lumino/messaging';
 import type { IPillSelectedArgs, PillFolderMeta, PillSelectorWidget } from './widget-pill';
 import type { NestedTreeNode } from '../bundle/github-tools';
+import type { LuminoLayoutWindow } from '../bundle/lumino.d';
+import type { KnownFileViews } from './widget';
+
+const widgetSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
 
 export interface IStyleViewOptions
 {
@@ -31,9 +35,9 @@ export class StyleSelectorWidget extends Widget
 		this.addClass('art-style-selector-widget');
 		this.node.setAttribute('tabindex', '0'); // Enable focus for keyboard navigation
 
-		if('items' in styles && styles.items instanceof Array && styles.items.length > 0)
+		if('files' in styles && styles.files instanceof Array && styles.files.length > 0)
 		{
-			this.setStyles(styles.items);
+			this.setStyles(styles.files);
 		}
 		else if(styles instanceof Array && styles.length > 0)
 		{
@@ -199,3 +203,5 @@ export class StyleSelectorWidget extends Widget
 		}
 	};
 }
+
+widgetSelf.StyleSelectorWidget = StyleSelectorWidget;

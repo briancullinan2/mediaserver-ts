@@ -3,6 +3,9 @@ import { ISignal, Signal } from '@lumino/signaling';
 import { Message } from '@lumino/messaging';
 import type { GithubWindow } from '../bundle/github.d';
 import type { NestedTreeNode } from '../bundle/github-tools';
+import type { IFileViewOptions } from '../fileview/widget';
+import type { KnownFileViews } from './widget';
+import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 
 export interface CoverflowItem
 {
@@ -14,15 +17,13 @@ export interface CoverflowItem
 }
 
 
-export interface ICoverViewOptions
+export interface ICoverViewOptions extends IFileViewOptions
 {
-	filesSignal?: ISignal<unknown, { items: NestedTreeNode[]; }>;
-	items?: CoverflowItem[],
 	imageResolver?: (item: CoverflowItem) => Promise<string>,
 	styleSelectionChanged?: Signal<unknown, { styles?: unknown[]; selectedStyle?: string; } | string>;
 }
 
-const widgetSelf: GithubWindow = self as unknown as any;
+const widgetSelf: LuminoLayoutWindow & KnownFileViews & GithubWindow = self as unknown as any;
 
 export class CoverflowWidget extends Widget
 {
@@ -47,7 +48,7 @@ export class CoverflowWidget extends Widget
 		super();
 		this.addClass('art-coverflow-widget');
 		this.node.setAttribute('tabindex', '0');
-		this._items = options?.items ?? [];
+		this._items = options?.files ?? [];
 		this._imageResolver = options?.imageResolver;
 
 		// Subscribe to incoming style selection events if provided via constructor
@@ -303,3 +304,5 @@ export class CoverflowWidget extends Widget
 		}
 	};
 }
+
+widgetSelf.CoverflowWidget = CoverflowWidget;

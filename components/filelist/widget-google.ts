@@ -74,7 +74,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IF
 
 	public static async fetchDriveFiles(query: string): Promise<GoogleDriveFile[]>
 	{
-		const apiKey = filelistSelf.settingsManager?.get('filelist', 'google_key') || GOOGLE_CLOUD_API_KEY;
+		const apiKey = filelistSelf.settingsManager?.get('filelist', 'google_key');
 		// Added thumbnailLink to requested fields
 		const fields = 'files(id, name, mimeType, size, thumbnailLink, webContentLink, parents)';
 
@@ -191,7 +191,7 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IF
 	private async fetchFolderName(folderId: string): Promise<string>
 	{
 		const googleDrives = filelistSelf.settingsManager?.get('filelist', 'google_drives') || DEFAULT_DRIVES;
-		const apiKey = filelistSelf.settingsManager?.get('filelist', 'google_key') || GOOGLE_CLOUD_API_KEY;
+		const apiKey = filelistSelf.settingsManager?.get('filelist', 'google_key');
 		if(!apiKey || !folderId || folderId === 'Root') return 'GoogleDrive/Root';
 
 		const cleanFolderId = folderId.includes('/folders/')
@@ -427,21 +427,18 @@ export class GoogleDriveWidget extends FileListWidget implements IErrorEvent, IF
 filelistSelf.GoogleDriveWidget = GoogleDriveWidget;
 
 
-export const GOOGLE_CLOUD_API_KEY = 'AIzaSyAsZR_uPzhdnkNktP8CGKbooWndEUYaq9I';
-export const PUBLIC_GOOGLE_DRIVE_FOLDER_ID = 'gdrive://1iZXcde4zeQmFJoCedo70wu0ouZ1QF0Se';
 const DEFAULT_DRIVES: Record<string, string> = {};
-DEFAULT_DRIVES[PUBLIC_GOOGLE_DRIVE_FOLDER_ID] = 'txt2img';
 const LOCAL_SETTINGS: Record<string, Record<string, SettingConfig>> = {
 	filelist: {
 		googleDriveKey: {
 			key: 'google_key',
-			default: GOOGLE_CLOUD_API_KEY,
+			default: 'AIzaSyAsZR_uPzhdnkNktP8CGKbooWndEUYaq9I',
 			type: 'json',
 			description: 'google drive API key.',
 		},
 		googleDriveList: {
 			key: 'google_drives',
-			default: DEFAULT_DRIVES,
+			default: ['gdrive://1iZXcde4zeQmFJoCedo70wu0ouZ1QF0Se'],
 			type: 'json',
 			description: 'json record of folder ids and folder names.',
 			set: (val: string[]): void =>

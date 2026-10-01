@@ -1,28 +1,38 @@
 import { Message, MessageLoop } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
-import { Signal } from '@lumino/signaling';
-import { ArtWidget } from '../art/widget';
+import { ISignal, Signal } from '@lumino/signaling';
+import { ArtWidget, modeToWidgetURI, modeToWindowType, type KnownFileViews } from '../art/widget';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GoogleDriveFile } from '../filelist/widget-google';
 import type { FlatFileNode, NestedTreeNode } from '../bundle/github-tools';
 import type mime from 'mime';
-import { NetflixViewWidget } from './widget-netflix';
-import { CoverflowWidget } from '../art/widget-coverflow';
-import { ExplorerGridWidget } from './widget-grid';
-import { DetailsViewWidget } from './widget-details';
-import { IPillSelectedArgs, PillSelectorWidget } from '../art/widget-pill';
-import { StyleSelectorWidget } from '../art/widget-style';
-import type { IFileDataProvider } from '../filelist/widget.d';
+import type { NetflixViewWidget } from './widget-netflix';
+import type { CoverflowWidget } from '../art/widget-coverflow';
+import type { ExplorerGridWidget } from './widget-grid';
+import type { DetailsViewWidget } from './widget-details';
+import { IPillSelectedArgs, IPillViewOptions, PillSelectorWidget } from '../art/widget-pill';
+import type { IStyleViewOptions, StyleSelectorWidget } from '../art/widget-style';
+import type { IFileDataProvider, WidgetFilesEventArgs } from '../filelist/widget.d';
 
 
 export type ViewMode = 'netflix' | 'coverflow' | 'grid' | 'details' | 'tree' | 'pills' | 'styles';
 export type SortOption = 'name-asc' | 'name-desc' | 'date-desc' | 'size-desc' | 'type';
 export type GroupOption = 'none' | 'type' | 'date' | 'size';
+type Constructor<T = any, Args extends any[] = any[]> = new (...args: Args) => T;
 
-const fileviewSelf: LuminoLayoutWindow & {
-	isShiftPressed?: boolean;
+const fileviewSelf: LuminoLayoutWindow & KnownFileViews & {
 	mime: typeof mime;
 } = self as unknown as any;
+
+
+export interface IFileViewOptions
+{
+	filesSignal?: ISignal<any, WidgetFilesEventArgs>;
+	files?: NestedTreeNode[];
+	onFileSelect?: (file: NestedTreeNode) => void;
+	title?: string;
+}
+
 
 export class FileviewWidget extends ArtWidget
 {
@@ -42,7 +52,6 @@ export class FileviewWidget extends ArtWidget
 
 	protected override activeViews: Set<ViewMode> = new Set(['netflix']);
 	private styleWidget?: StyleSelectorWidget;
-	private categorySelected?: Signal<PillSelectorWidget, IPillSelectedArgs>;
 	public parentTabBar?: HTMLElement;
 
 
@@ -270,6 +279,8 @@ export class FileviewWidget extends ArtWidget
 	}
 
 
+
+
 	/**
 	 * Render Active View Modes Parallelly
 	 */
@@ -292,44 +303,58 @@ export class FileviewWidget extends ArtWidget
 			this.viewContainer.appendChild(pane);
 			let widgetInstance: Widget | undefined = undefined;
 
+			let viewWidget = modeToWindowType(mode, this.sources[this.widgetIndex]);
+			if(!viewWidget)
+			{
+				const widgetURI = modeToWidgetURI(mode, this.sources[this.widgetIndex]);
+				if(fileviewSelf.loadScript && widgetURI)
+				{
+					await fileviewSelf.preloadDependencies?.([widgetURI]);
+					const targetUrl = widgetURI.replace(/\.ts$/, '.js').replace(/^\.\//, '/base/');
+					const modulePromise = await import(/* webpackIgnore: true */ targetUrl + '?t=' + Date.now() + '&local-csp=true');
+					viewWidget = modeToWindowType(mode, this.sources[this.widgetIndex]);
+				}
+			}
+
+			if(!viewWidget)
+			{
+				continue;
+			}
+
+			const instantiationVars = {
+				filesSignal: this.filesChanged,
+				items: this.rawFiles
+			};
+
+			switch(mode)
+			{
+				case 'coverflow':
+					break;
+				case 'pills':
+					(instantiationVars as IPillViewOptions).categories = Array.from(this.availableCategories);
+					(instantiationVars as IPillViewOptions).activeCategory = this.selectedCategoryPill;
+					break;
+				case 'styles':
+					(instantiationVars as IStyleViewOptions).categorySelected = this.categorySelected;
+					break;
+			}
+
+
+			widgetInstance = new viewWidget(undefined, instantiationVars);
+
+
 			switch(mode)
 			{
 				case 'netflix':
-					widgetInstance = new NetflixViewWidget(undefined, {
-						filesSignal: this.filesChanged,
-						files: this.rawFiles
-					});
+
 					this.categorySelected = (widgetInstance as NetflixViewWidget).categorySelected;
 					break;
 				case 'coverflow':
-					widgetInstance = new CoverflowWidget(null, {
-						filesSignal: this.filesChanged,
-						items: this.rawFiles
-					});
-					break;
-				case 'grid':
-					widgetInstance = new ExplorerGridWidget(null, {
-						files: this.rawFiles
-					});
-					break;
-				case 'details':
-					widgetInstance = new DetailsViewWidget(null, {
-						files: this.rawFiles
-					});
 					break;
 				case 'pills':
-					widgetInstance = new PillSelectorWidget(null, {
-						filesSignal: this.filesChanged,
-						items: this.rawFiles,
-						categories: Array.from(this.availableCategories),
-						activeCategory: this.selectedCategoryPill
-					});
 					this.categorySelected = (widgetInstance as PillSelectorWidget).categorySelected;
 					break;
 				case 'styles':
-					this.styleWidget = widgetInstance = new StyleSelectorWidget({
-						categorySelected: this.categorySelected
-					});
 					break;
 				case 'tree':
 					await this.renderSubtreeWidget(pane);
@@ -351,7 +376,7 @@ export class FileviewWidget extends ArtWidget
 	 */
 	private async renderSubtreeWidget(container: HTMLElement): Promise<void>
 	{
-		const widgetInstance = ArtWidget.resolveSourceWidget(this.sources[this.widgetIndex]);
+		const widgetInstance = await ArtWidget.resolveSourceWidget(this.sources[this.widgetIndex]);
 		if(widgetInstance)
 		{
 			Widget.attach(widgetInstance, container);

@@ -1,6 +1,12 @@
 import { Message } from '@lumino/messaging';
 import { TabBar, Widget } from '@lumino/widgets';
 import type { NestedTreeNode } from '../bundle/github-tools';
+import type { IFileViewOptions } from './widget';
+import type { KnownFileViews } from '../art/widget';
+import type { LuminoLayoutWindow } from '../bundle/lumino.d';
+
+
+const widgetSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
 
 
 export const SORT_KEY_MAP: Record<SortColumn, keyof NestedTreeNode> = {
@@ -15,11 +21,9 @@ export type SortDirection = 'asc' | 'desc';
 export type GroupByOption = 'alphabetical' | 'date' | 'type' | 'size';
 export type DisplayMode = 'details' | 'carousel';
 
-export interface IDetailsOptions
+export interface IDetailsOptions extends IFileViewOptions
 {
 	title?: string;
-	onFileSelect?: (file: NestedTreeNode) => void;
-	files?: NestedTreeNode[];
 }
 
 export class DetailsViewWidget extends Widget
@@ -490,3 +494,5 @@ export class DetailsViewWidget extends Widget
 		return hash;
 	}
 }
+
+widgetSelf.DetailsViewWidget = DetailsViewWidget;

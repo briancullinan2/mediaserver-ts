@@ -140,7 +140,7 @@ export class HttpIndexWidget extends FileListWidget
 		if(folderId)
 		{
 			const parts = folderId.replace(/.*:\/\//, '').split('/');
-			const replaceCount = (this._source ?? DEFAULT_HTTP_INDEX_URL).replace(/.*?:\/\//, '').split('/').length;
+			const replaceCount = (this._source ?? filelistSelf.settingsManager?.get('filelist', 'http_indexes')).replace(/.*?:\/\//, '').split('/').length;
 			const relativePathSegments = parts.slice(replaceCount);
 			fetchUrl = new URL(relativePathSegments.join('/'), rootUrl).href;
 		}
@@ -396,15 +396,13 @@ export class HttpIndexWidget extends FileListWidget
 
 filelistSelf.HttpIndexWidget = HttpIndexWidget;
 
-export const DEFAULT_HTTP_INDEX_URL = window.location.origin + '/clipart';
 export const DEFAULT_INDEXES: Record<string, string> = {};
-DEFAULT_INDEXES[DEFAULT_HTTP_INDEX_URL] = 'clipart';
 
 const LOCAL_SETTINGS: Record<string, Record<string, SettingConfig>> = {
 	filelist: {
 		httpIndexList: {
 			key: 'http_indexes',
-			default: DEFAULT_INDEXES,
+			default: ['http:/clipart'],
 			type: 'json',
 			description: 'json record of index URLs and display names.'
 		}

@@ -512,58 +512,67 @@ async function installAssets()
 	assetsInstalled = 0;
 	assetsFailed = 0;
 	assetsInstalling = assets.length;
-	return await Promise.all(assets.map(async asset =>
+	const batchSize = 10;
+	for(let i = 0; i < assets.length; i += batchSize)
 	{
-		asset = asset.replace(/^\/?assets\//ig, '');
-		let localName = '/base' + (asset.startsWith('/') ? '' : '/') + asset;
-		if(!localName.includes('.'))
-		{
-			debugger;
-			console.error("WHAT THE FUCK IS WRONG WITH YOU? " + localName);
-		}
-		console.log(`🔍 [SW-CACHE-CHECK] Checking if asset exists inside IndexedDB cache: "${localName}"`);
+		const chunk = assets.slice(i, i + batchSize);
 
-		try
+		const chunkResults = await Promise.all(chunk.map(async asset =>
 		{
-			const files = await serviceSelf.getRecord?.(serviceSelf.DB_STORE_NAME ?? '', localName, serviceSelf.api?.environmentRepository);
-			if(files && files.contents)
+			asset = asset.replace(/^\/?assets\//ig, '');
+			let localName = '/base' + (asset.startsWith('/') ? '' : '/') + asset;
+			if(!localName.includes('.'))
 			{
-				console.log(`✨ [SW-CACHE-HIT] Asset already mapped locally inside DB. Skipping download for: "${localName}"`);
-				previousAsset = localName;
-				assetsInstalled++;
-				reportProgress();
-				return;
+				debugger;
+				console.error("WHAT THE FUCK IS WRONG WITH YOU? " + localName);
 			}
-		} catch(e)
-		{
-			console.error(`❌ [SW-DATABASE] Failed to execute cache validation lookup for "${localName}":`, e);
-		}
+			console.log(`🔍 [SW-CACHE-CHECK] Checking if asset exists inside IndexedDB cache: "${localName}"`);
 
-		try
-		{
-			console.log(`📥 [SW-INSTALL] Cache miss or empty binary payload. Triggering download request routing for: "${asset}"`);
-			return await fetchAsset(asset, localName, serviceSelf.api?.environmentRepository).catch(e =>
+			try
 			{
-				console.error(`❌ [SW-INSTALL] Target download execution block failed for asset "${asset}":`, e);
+				const files = await serviceSelf.getRecord?.(serviceSelf.DB_STORE_NAME ?? '', localName, serviceSelf.api?.environmentRepository);
+				if(files && files.contents)
+				{
+					console.log(`✨ [SW-CACHE-HIT] Asset already mapped locally inside DB. Skipping download for: "${localName}"`);
+					previousAsset = localName;
+					assetsInstalled++;
+					reportProgress();
+					return;
+				}
+			} catch(e)
+			{
+				console.error(`❌ [SW-DATABASE] Failed to execute cache validation lookup for "${localName}":`, e);
+			}
+
+			try
+			{
+				console.log(`📥 [SW-INSTALL] Cache miss or empty binary payload. Triggering download request routing for: "${asset}"`);
+				return await fetchAsset(asset, localName, serviceSelf.api?.environmentRepository).then(() =>
+				{
+					previousAsset = localName;
+					assetsInstalled++;
+					reportProgress();
+				}).catch(e =>
+				{
+					console.error(`❌ [SW-INSTALL] Target download execution block failed for asset "${asset}":`, e);
+					console.warn("Offline asset failed: " + asset);
+					previousAsset = localName;
+					assetsFailed++;
+					reportProgress();
+				});
+			} catch(e)
+			{
+				console.error(`❌ [SW-INSTALL] Synchronous catch block hit for download processor pipeline for "${asset}":`, e);
 				console.warn("Offline asset failed: " + asset);
-			}).then(() =>
-			{
 				previousAsset = localName;
-				assetsInstalled++;
+				assetsFailed++;
 				reportProgress();
-			});
-		} catch(e)
-		{
-			console.error(`❌ [SW-INSTALL] Synchronous catch block hit for download processor pipeline for "${asset}":`, e);
-			console.warn("Offline asset failed: " + asset);
-		}
-		previousAsset = localName;
-		assetsFailed++;
-		reportProgress();
-	})).then(() =>
-	{
-		installing = false;
-	});
+			}
+		}));
+
+	}
+
+	installing = false;
 }
 
 /** @type {Record<number, MessagePort>} */
@@ -890,7 +899,7 @@ serviceSelf.addEventListener('message', async (event) =>
 	}
 	else if(event.data && event.data.type === 'GET_VERSION')
 	{
-		console.log('✉️ [SW-MESSAGE] Command route identified: GET_VERSION parameter data report request.');
+		originalConsole.log('✉️ [SW-MESSAGE] Command route identified: GET_VERSION parameter data report request.');
 		SHUTUP = !!event.data.shutup;
 
 		//if(!localVersion || !api.environmentRepository)
@@ -900,14 +909,19 @@ serviceSelf.addEventListener('message', async (event) =>
 
 		if(event.ports && event.ports[0])
 		{
-			waitingPorts[Date.now()] = event.ports[0];
+			originalConsole.log(`✉️ [SW-MESSAGE] Dispatching configuration report data frame. Version string: ${localVersion}`);
+			for(const port of event.ports)
+			{
+				waitingPorts[Date.now()] = port;
+			}
 			reportProgress();
-
-			console.log(`✉️ [SW-MESSAGE] Dispatching configuration report data frame. Version string: ${localVersion}`);
-			event.ports[0].postMessage({
-				type: 'VERSION_REPORT',
-				version: localVersion
-			});
+			for(const port of event.ports)
+			{
+				port.postMessage({
+					type: 'VERSION_REPORT',
+					version: localVersion
+				});
+			}
 		}
 
 		console.log('✉️ [SW-MESSAGE] Queueing secondary checkStatus validation task routine...');

@@ -150,6 +150,8 @@ const componentScripts = [
 	'./components/bundle/github-settings.ts',
 	'./components/bundle/lumino.ts',
 	'./components/editor/widget-settings.ts',
+	'./components/filelist/widget-google.ts',
+	'./components/filelist/widget-index.ts',
 	'./components/terminal/widget.ts',
 	'./components/paint/widget-settings.ts',
 	'./components/map-loader/widget.ts',

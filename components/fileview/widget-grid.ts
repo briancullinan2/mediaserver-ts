@@ -1,18 +1,20 @@
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { NestedTreeNode } from '../bundle/github-tools';
+import type { IFileViewOptions } from './widget';
+import type { LuminoLayoutWindow } from '../bundle/lumino.d';
+import type { KnownFileViews } from '../art/widget';
 
+const widgetSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
 
 export type GridFlow = 'row-first' | 'column-first';
 export type IconSize = 'small' | 'medium' | 'large' | 'huge';
 
-export interface IExplorerGridOptions
+export interface IExplorerGridOptions extends IFileViewOptions
 {
 	iconSize?: IconSize;
 	flow?: GridFlow;
 	onSelectionChange?: (selectedFiles: NestedTreeNode[]) => void;
-	onFileActivate?: (file: NestedTreeNode) => void;
-	files?: NestedTreeNode[];
 }
 
 export class ExplorerGridWidget extends Widget
@@ -49,7 +51,7 @@ export class ExplorerGridWidget extends Widget
 		this._iconSize = options.iconSize || 'medium';
 		this._flow = options.flow || 'row-first';
 		this._onSelectionChange = options.onSelectionChange;
-		this._onFileActivate = options.onFileActivate;
+		this._onFileActivate = options.onFileSelect;
 
 		this.renderLayout();
 
@@ -480,3 +482,5 @@ export class ExplorerGridWidget extends Widget
 		return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 	}
 }
+
+widgetSelf.ExplorerGridWidget = ExplorerGridWidget;

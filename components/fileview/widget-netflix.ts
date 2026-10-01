@@ -4,20 +4,17 @@ import type { ISignal, Signal } from '@lumino/signaling';
 import type { NestedTreeNode } from '../bundle/github-tools';
 import type { IFileDataProvider, WidgetFilesEventArgs } from '../filelist/widget.d';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
-import type { ArtWindow } from '../art/widget';
+import type { KnownFileViews } from '../art/widget';
 import { IPillSelectedArgs, PillSelectorWidget } from '../art/widget-pill';
 import { StyleSelectorWidget } from '../art/widget-style';
+import type { IFileViewOptions } from './widget';
 
-const netflixSelf: LuminoLayoutWindow & ArtWindow = self as unknown as any;
+const netflixSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
 
 
-export interface INetflixViewOptions
+export interface INetflixViewOptions extends IFileViewOptions
 {
-	filesSignal?: ISignal<any, WidgetFilesEventArgs>;
-	onFileSelect?: (file: NestedTreeNode) => void;
-	title?: string;
 	categoryName?: string;
-	files?: NestedTreeNode[];
 }
 
 export class NetflixViewWidget extends Widget
@@ -80,7 +77,7 @@ export class NetflixViewWidget extends Widget
 
 		this.pillsWidget = new PillSelectorWidget(null, {
 			filesSignal: this._filesSignal,
-			items: this._files,
+			files: this._files,
 			//categories: Array.from(this.availableCategories),
 			activeCategory: this.selectedCategoryPill
 		});
@@ -314,5 +311,6 @@ export class NetflixViewWidget extends Widget
 
 		super.processMessage(msg);
 	}
-
 }
+
+netflixSelf.NetflixViewWidget = NetflixViewWidget;

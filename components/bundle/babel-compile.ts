@@ -186,6 +186,7 @@ export async function preloadDependencies(dependenciesToFetch: string[]): Promis
 	console.log('Finishing bullshit: ' + JSON.stringify(dependenciesToFetch));
 }
 
+compileSelf.preloadDependencies = preloadDependencies;
 compileSelf.loadScript = loadScript;
 
 
