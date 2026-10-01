@@ -402,7 +402,7 @@ const LOCAL_SETTINGS: Record<string, Record<string, SettingConfig>> = {
 	filelist: {
 		httpIndexList: {
 			key: 'http_indexes',
-			default: ['http:/clipart'],
+			default: ['${window.location.origin}/clipart'],
 			type: 'json',
 			description: 'json record of index URLs and display names.'
 		}

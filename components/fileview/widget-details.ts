@@ -59,6 +59,11 @@ export class DetailsViewWidget extends Widget
 
 		this.renderShell();
 		this.applyFilterAndSort();
+	}
+
+	protected onAfterAttach(msg: Message): void
+	{
+		super.onAfterAttach(msg);
 		this.attachToggleIcon();
 	}
 
@@ -150,6 +155,7 @@ export class DetailsViewWidget extends Widget
 
 	private attachToggleIcon(): void
 	{
+		debugger;
 		// Locate the DOM node for the specific tab item
 		let tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.id})`) as HTMLElement;
 		if(!tabNode && this.parent?.id)
@@ -312,7 +318,7 @@ export class DetailsViewWidget extends Widget
 		{
 			this._groupsContainer.innerHTML = `
         <div class="ndw-empty-state">
-          <i class="bx bx-ghost"></i>
+          <i class="bx bx-eye-slash"></i>
           <p>No cloud items found matching query.</p>
         </div>`;
 			return;
