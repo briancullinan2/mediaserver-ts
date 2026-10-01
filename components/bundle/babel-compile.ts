@@ -158,6 +158,8 @@ export async function preloadDependencies(dependenciesToFetch: string[]): Promis
 		if(existingPromise)
 		{
 			console.log('Skipping, already preloaded: ' + url);
+			// circular dependencies
+			//allPromises.push(existingPromise);
 			continue;
 		}
 

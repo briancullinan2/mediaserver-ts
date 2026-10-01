@@ -7,6 +7,7 @@ textarea {
 }
 
 
+#search-widget,
 #search-terminal,
 #popups .popup .buttons button,
 #popups select,
@@ -44,7 +45,7 @@ ul.toolbar button,
 	font-family: inherit;
 	cursor: pointer;
 	box-shadow: none;
-	padding: 0;
+	padding: 2px 4px;
 }
 
 #popups input[type="radio"],
@@ -54,6 +55,8 @@ ul.toolbar button,
 }
 
 
+#search-widget:focus,
+#search-widget:hover,
 #search-terminal:focus,
 #search-terminal:hover,
 #popups .popup input:focus,
@@ -109,7 +112,7 @@ ul.toolbar button:hover,
 }
 
 .view-switcher-buttons .view-btn {
-	padding: 0px;
+	padding: 0px 4px;
 	cursor: pointer;
 	background: transparent;
 	align-items: center;
@@ -252,6 +255,7 @@ select:not(:has(option[value=""]:checked)),
 #search:not(:placeholder-shown),
 #list-wrapper ul.toolbar input:not(:placeholder-shown),
 #toolbar input:not(:placeholder-shown),
+#search-widget:not(:placeholder-shown),
 #search-terminal:not(:placeholder-shown) {
 	border-color: var(--ace-blue);
 	background: var(--ace-bg);
@@ -259,6 +263,7 @@ select:not(:has(option[value=""]:checked)),
 
 #popups input::placeholder,
 #gh-token-input::placeholder,
+#search-widget::placeholder,
 #search-terminal::placeholder,
 #token-modal input::placeholder,
 #list-wrapper ul.toolbar input::placeholder,

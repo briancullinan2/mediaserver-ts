@@ -7,12 +7,10 @@ import type { GoogleDriveFile } from '../filelist/widget-google';
 import type { FlatFileNode, NestedTreeNode } from '../bundle/github-tools';
 import type mime from 'mime';
 import type { NetflixViewWidget } from './widget-netflix';
-import type { CoverflowWidget } from '../art/widget-coverflow';
-import type { ExplorerGridWidget } from './widget-grid';
-import type { DetailsViewWidget } from './widget-details';
 import { IPillSelectedArgs, IPillViewOptions, PillSelectorWidget } from '../art/widget-pill';
 import type { IStyleViewOptions, StyleSelectorWidget } from '../art/widget-style';
 import type { IFileDataProvider, WidgetFilesEventArgs } from '../filelist/widget.d';
+import { WidgetSearchBar } from '../art/widget-search';
 
 
 export type ViewMode = 'netflix' | 'coverflow' | 'grid' | 'details' | 'tree' | 'pills' | 'styles';
@@ -28,7 +26,7 @@ const fileviewSelf: LuminoLayoutWindow & KnownFileViews & {
 export interface IFileViewOptions
 {
 	filesSignal?: ISignal<any, WidgetFilesEventArgs>;
-	files?: NestedTreeNode[];
+	files?: NestedTreeNode[]; // this just means the file widget comes with a file interpreter of its own
 	onFileSelect?: (file: NestedTreeNode) => void;
 	title?: string;
 }
@@ -52,7 +50,11 @@ export class FileviewWidget extends ArtWidget
 
 	protected override activeViews: Set<ViewMode> = new Set(['netflix']);
 	private styleWidget?: StyleSelectorWidget;
+
 	public parentTabBar?: HTMLElement;
+	public searchContainer?: HTMLDivElement;
+	public searchInput?: HTMLInputElement;
+	public searchObserver?: ResizeObserver;
 
 
 	constructor(title?: string, sources?: string | string[])
@@ -61,6 +63,7 @@ export class FileviewWidget extends ArtWidget
 		this.addClass('cloud-drive-explorer-widget');
 		this.addClass(`${this.constructor.name.toLowerCase()}-frame`);
 		this.id = 'fileview';
+		this.title.className = this.id;
 
 		//const theme = Array.from(document.body.classList.values()).find(c => c.startsWith('theme-'));
 		//if(theme)
@@ -95,15 +98,29 @@ export class FileviewWidget extends ArtWidget
 		this.parentTabBar = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.id})`) as HTMLElement;
 		if(this.isVisible)
 		{
+			WidgetSearchBar.onAfterAttach(this);
 		}
 	}
 
 	protected override onBeforeDetach(msg: Message): void
 	{
 		this.clearMountedSubWidgets();
+		WidgetSearchBar.onBeforeDetach(this);
 		super.onBeforeDetach(msg);
 	}
 
+
+	protected override onAfterShow(msg: Message): void
+	{
+		super.onAfterShow(msg);
+		WidgetSearchBar.onAfterShow(this);
+	}
+
+	protected onAfterHide(msg: any): void
+	{
+		super.onAfterHide(msg);
+		WidgetSearchBar.onAfterHide(this);
+	}
 
 	/**
 	 * Main UI Shell Construction
@@ -321,9 +338,9 @@ export class FileviewWidget extends ArtWidget
 				continue;
 			}
 
-			const instantiationVars = {
+			const instantiationVars: IFileViewOptions = {
 				filesSignal: this.filesChanged,
-				items: this.rawFiles
+				files: this.rawFiles
 			};
 
 			switch(mode)
@@ -390,46 +407,27 @@ export class FileviewWidget extends ArtWidget
 	 */
 	protected override async refreshCurrentFolder(): Promise<void>
 	{
+		super.refreshCurrentFolder();
+
 		if(!this.viewContainer)
 		{
 			this.renderExplorerShell();
 		}
 
-		if(this.dataProvider)
+		for(const file of this.rawFiles ?? [])
 		{
-			while(this.widgetIndex < this.sources.length)
+			if(!file.mimeType)
 			{
-				try
-				{
-					const dp = ArtWidget.resolveSourceWidget(this.sources[this.widgetIndex]);
-					if(dp && 'fetchFiles' in dp && typeof dp.fetchFiles === 'function')
-					{
-						this.dataProvider = dp as IFileDataProvider;
-						this.rawFiles = await dp.fetchFiles(this.sources[this.widgetIndex]);
-					}
-					break;
-				} catch(e)
-				{
-					console.error('Drive fetch failed: ', e);
-					this.widgetIndex++;
-				}
-			}
-			for(const file of this.rawFiles ?? [])
-			{
-				if(!file.mimeType)
-				{
-					file.mimeType = fileviewSelf.mime.getType(file.path);
-				}
+				file.mimeType = fileviewSelf.mime.getType(file.path);
 			}
 		}
 
-		this.extractCategories();
 		this.applyFiltersAndSort();
 		//this.renderBreadcrumbTrail();
 		await this.updateActiveViews();
 	}
 
-	private extractCategories(): void
+	protected override extractCategories(): void
 	{
 		this.availableCategories.clear();
 
@@ -449,6 +447,7 @@ export class FileviewWidget extends ArtWidget
 		}
 	}
 
+	// TODO: update this to parent class
 	private applyFiltersAndSort(): void
 	{
 		this.displayedFiles = this.rawFiles?.filter(file =>

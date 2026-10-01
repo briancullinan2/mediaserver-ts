@@ -857,8 +857,8 @@ async function lookupLocalVersion()
 			}
 		} catch(e)
 		{
-			console.log(`⚠️ [SW-MESSAGE] Version lookup failed, using fallback: ${localVersion}`);
-			console.error(e);
+			originalConsole.log(`⚠️ [SW-MESSAGE] Version lookup failed, using fallback: ${localVersion}`);
+			originalConsole.error(e);
 			localVersion ||= newestVersionFile.timestamp || null;
 			if(serviceSelf.api)
 			{
@@ -867,12 +867,12 @@ async function lookupLocalVersion()
 		}
 	} else
 	{
-		console.log(`⚠️ [SW-MESSAGE] No version file found across any databases. Fallback: ${localVersion}`);
+		originalConsole.log(`⚠️ [SW-MESSAGE] No version file found across any databases. Fallback: ${localVersion}`);
 	}
 	if(!serviceSelf.api?.environmentRepository)
 	{
 		debugger;
-		console.log('You\'re a fucking idiot.');
+		originalConsole.log('You\'re a fucking idiot.');
 	}
 }
 

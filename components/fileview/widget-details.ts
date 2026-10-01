@@ -54,6 +54,7 @@ export class DetailsViewWidget extends Widget
 		super();
 		this.addClass('netflix-details-widget');
 		this.id = 'details-widget-view';
+		debugger;
 		this._files = options?.files || [];
 		this._onFileSelect = options.onFileSelect;
 
@@ -81,51 +82,26 @@ export class DetailsViewWidget extends Widget
 		const topBar = document.createElement('div');
 		topBar.className = 'ndw-top-bar';
 
-		const searchWrapper = document.createElement('div');
-		searchWrapper.className = 'ndw-search-wrapper';
-		searchWrapper.innerHTML = `<i class="bx bx-search search-icon"></i>`;
+		// const searchWrapper = document.createElement('div');
+		// searchWrapper.className = 'ndw-search-wrapper';
+		// searchWrapper.innerHTML = `<i class="bx bx-search search-icon"></i>`;
 
-		this._searchInput = document.createElement('input');
-		this._searchInput.type = 'text';
-		this._searchInput.className = 'ndw-search-input';
-		this._searchInput.placeholder = 'Filter cloud files...';
-		this._searchInput.addEventListener('input', () =>
-		{
-			this._searchQuery = this._searchInput.value.trim().toLowerCase();
-			this.applyFilterAndSort();
-		});
-		searchWrapper.appendChild(this._searchInput);
+		// this._searchInput = document.createElement('input');
+		// this._searchInput.type = 'text';
+		// this._searchInput.className = 'ndw-search-input';
+		// this._searchInput.placeholder = 'Filter cloud files...';
+		// this._searchInput.addEventListener('input', () =>
+		// {
+		// 	this._searchQuery = this._searchInput.value.trim().toLowerCase();
+		// 	this.applyFilterAndSort();
+		// });
+		// searchWrapper.appendChild(this._searchInput);
 
 		this._resultCountNode = document.createElement('span');
 		this._resultCountNode.className = 'ndw-result-count';
 
 		const controlsWrapper = document.createElement('div');
 		controlsWrapper.className = 'ndw-controls-wrapper';
-
-		// const gearBtn = document.createElement('button');
-		// gearBtn.className = 'ndw-btn ndw-gear-btn';
-		// gearBtn.innerHTML = `<i class="bx bx-slider-alt"></i> Controls`;
-		// gearBtn.addEventListener('click', (e) =>
-		// {
-		// 	e.stopPropagation();
-		// 	this._controlsOpen = !this._controlsOpen;
-		// 	this._popoverNode.classList.toggle('visible', this._controlsOpen);
-		// });
-
-		// // Popover Menu for Sorting and Grouping
-		// this._popoverNode = document.createElement('div');
-		// this._popoverNode.className = 'ndw-popover-menu';
-		// this.renderPopoverContent();
-
-		// // Close popover when clicking outside
-		// document.addEventListener('click', (e) =>
-		// {
-		// 	if(this._controlsOpen && !this._popoverNode.contains(e.target as Node))
-		// 	{
-		// 		this._controlsOpen = false;
-		// 		this._popoverNode.classList.remove('visible');
-		// 	}
-		// });
 
 		const modeToggleBtn = document.createElement('button');
 		modeToggleBtn.className = 'ndw-btn ndw-mode-btn';
@@ -138,8 +114,7 @@ export class DetailsViewWidget extends Widget
 			this.renderGroupSections();
 		});
 
-		//controlsWrapper.append(gearBtn, this._popoverNode, modeToggleBtn);
-		topBar.append(searchWrapper, this._resultCountNode, controlsWrapper);
+		// topBar.append(searchWrapper, this._resultCountNode, controlsWrapper);
 
 		// 2. Season-Inspired Scrubber Toolbar
 		this._scrubberNode = document.createElement('div');
@@ -158,13 +133,13 @@ export class DetailsViewWidget extends Widget
 		debugger;
 		// Locate the DOM node for the specific tab item
 		let tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.id})`) as HTMLElement;
-		if(!tabNode && this.parent?.id)
+		if(!tabNode && this.node.parentElement?.id)
 		{
-			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.parent.id})`) as HTMLElement;
+			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.node.parentElement.id})`) as HTMLElement;
 		}
-		if(!tabNode && this.parent?.parent?.id)
+		if(!tabNode && this.node.parentElement?.parentElement?.id)
 		{
-			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.parent.parent.id})`) as HTMLElement;
+			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.node.parentElement.parentElement.id})`) as HTMLElement;
 		}
 		if(!tabNode) return;
 

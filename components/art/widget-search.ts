@@ -1,17 +1,21 @@
 
 export interface ISearchable
 {
-	searchContainer: HTMLDivElement;
-	searchInput: HTMLInputElement;
 	node: HTMLElement;
-	searchObserver: ResizeObserver;
+	searchContainer?: HTMLDivElement;
+	searchInput?: HTMLInputElement;
+	searchObserver?: ResizeObserver;
 	parentTabBar?: HTMLElement;
 	id?: string;
 	executeFindQuery?(pooledCtx: any, event?: KeyboardEvent | null): void;
 }
 
+
+// TODO: replace terminal search attachment with this widget
 export class WidgetSearchBar
 {
+	static readonly resizeListeners: EventListener[] = [];
+	static readonly seenContexts: ISearchable[] = [];
 
 	private static createSearchElement(context: ISearchable): void
 	{
@@ -26,7 +30,7 @@ export class WidgetSearchBar
 
 		context.searchInput = document.createElement('input');
 		context.searchInput.type = 'search';
-		context.searchInput.id = 'search-terminal';
+		context.searchInput.id = 'search-widget';
 		context.searchInput.placeholder = 'Search...';
 		context.searchInput.autocomplete = 'off';
 
@@ -85,7 +89,7 @@ export class WidgetSearchBar
 
 		if(typeof context === 'object')
 		{
-			(context as any).parentTabBar = parentTabBar;
+			context.parentTabBar = parentTabBar;
 		}
 
 
@@ -167,8 +171,19 @@ export class WidgetSearchBar
 			});
 
 			// Listen for window resizing to keep the width updated
-			window.removeEventListener('resize', WidgetSearchBar.resizeSearchContainer.bind(context, context));
-			window.addEventListener('resize', WidgetSearchBar.resizeSearchContainer.bind(context, context));
+			let contextId = WidgetSearchBar.seenContexts.indexOf(context);
+			if(contextId > -1)
+			{
+				window.removeEventListener('resize', WidgetSearchBar.resizeListeners[contextId]);
+				WidgetSearchBar.seenContexts.splice(contextId, 1);
+				WidgetSearchBar.resizeListeners.splice(contextId, 1);
+			} else
+			{
+				contextId = WidgetSearchBar.resizeListeners.length;
+			}
+			WidgetSearchBar.seenContexts[contextId] = context;
+			WidgetSearchBar.resizeListeners[contextId] = WidgetSearchBar.resizeSearchContainer.bind(context, context);
+			window.addEventListener('resize', WidgetSearchBar.resizeListeners[contextId]);
 			context.searchObserver?.observe(context.node);
 		}
 	}
@@ -185,7 +200,13 @@ export class WidgetSearchBar
 				context.searchContainer.parentNode.removeChild(context.searchContainer);
 			}
 			context.searchContainer.style.display = 'none';
-			window.removeEventListener('resize', WidgetSearchBar.resizeSearchContainer.bind(context, context));
+			let contextId = WidgetSearchBar.seenContexts.indexOf(context);
+			if(contextId > -1)
+			{
+				window.removeEventListener('resize', WidgetSearchBar.resizeListeners[contextId]);
+				WidgetSearchBar.seenContexts.splice(contextId, 1);
+				WidgetSearchBar.resizeListeners.splice(contextId, 1);
+			}
 			context.searchObserver?.unobserve(context.node);
 		}
 	}

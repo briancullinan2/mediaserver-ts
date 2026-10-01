@@ -2,17 +2,18 @@ import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GlobalToolbarsWindow } from '../bundle/menu.d';
-import type { FilelistWindow, IErrorEvent, IFileDataProvider, IFilesEvent, WidgetErrorEventArgs, WidgetFilesEventArgs } from '../filelist/widget.d';
+import type { FilelistWindow, FilesUpdated, IErrorEvent, IFileDataProvider, IFilesEvent, WidgetErrorEventArgs, WidgetFilesEventArgs } from '../filelist/widget.d';
 import type { NestedTreeNode } from '../bundle/github-tools';
-import type { FileListWidget } from '../filelist/widget';
 import type { CoverflowWidget } from './widget-coverflow';
-import type { IPillSelectedArgs, IPillViewOptions, PillSelectorWidget } from './widget-pill';
+import { IPillSelectedArgs, IPillViewOptions, PillSelectorWidget } from './widget-pill';
 import type { IStyleViewOptions, StyleSelectorWidget } from './widget-style';
 import type { NetflixViewWidget } from '../fileview/widget-netflix';
 import type { ExplorerGridWidget } from '../fileview/widget-grid';
 import type { DetailsViewWidget } from '../fileview/widget-details';
 import { ISignal, Signal } from '@lumino/signaling';
 import { index } from 'd3';
+import type mime from 'mime';
+import type { IFileViewOptions } from '../fileview/widget';
 
 export type ViewMode = 'netflix' | 'overflow' | 'grid' | 'details' | 'tree' | 'music' | string;
 
@@ -40,7 +41,6 @@ export interface KnownFileViews
 
 	DetailsViewWidget: typeof DetailsViewWidget;
 	detailsViewWidget: DetailsViewWidget;
-
 }
 
 export function modeToWindowType(mode: string, source?: string): Constructor | undefined
@@ -137,7 +137,9 @@ export interface SourceProviderConfig
 
 type Constructor<T = any, Args extends any[] = any[]> = new (...args: Args) => T;
 
-const widgetSelf: KnownFileViews & LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow = self as unknown as any;
+const widgetSelf: KnownFileViews & LuminoLayoutWindow & GlobalToolbarsWindow & FilelistWindow & {
+	mime: typeof mime;
+} = self as unknown as any;
 
 export class ArtWidget extends Widget
 {
@@ -189,6 +191,7 @@ export class ArtWidget extends Widget
 	{
 		super();
 		this.addClass('art-widget-container');
+		this.title.className = this.id;
 		this.title.label = title ?? 'Art Gallery';
 		this.title.closable = true;
 
@@ -248,9 +251,9 @@ export class ArtWidget extends Widget
 				continue;
 			}
 
-			const instantiationVars = {
+			const instantiationVars: IFileViewOptions = {
 				filesSignal: this.filesChanged,
-				items: this.rawFiles
+				files: this.rawFiles
 			};
 
 			switch(mode)
@@ -426,7 +429,7 @@ export class ArtWidget extends Widget
 
 		const currentSource = this.sources[index];
 
-		let targetWidget: Widget | FileListWidget | undefined;
+		let targetWidget: Widget | undefined;
 		for(const w of widgetSelf.fileListWidgets ?? [])
 		{
 			if(w._source === currentSource)
@@ -453,7 +456,8 @@ export class ArtWidget extends Widget
 		// subscribe to widget
 		if('fetchFiles' in targetWidget && typeof targetWidget.fetchFiles === 'function')
 		{
-			this.dataProvider = targetWidget;
+			this.dataProvider = targetWidget as { fetchFiles: FilesUpdated; };
+			// triggered by files signal event or already on the correct index
 			//this.refreshCurrentFolder();
 		}
 
@@ -597,6 +601,49 @@ export class ArtWidget extends Widget
 	protected async refreshCurrentFolder(): Promise<void>
 	{
 
+		if(this.dataProvider)
+		{
+			while(this.widgetIndex < this.sources.length)
+			{
+				try
+				{
+					const dp = ArtWidget.resolveSourceWidget(this.sources[this.widgetIndex]);
+					if(dp && 'fetchFiles' in dp && typeof dp.fetchFiles === 'function')
+					{
+						this.dataProvider = dp as IFileDataProvider;
+						this.rawFiles = await dp.fetchFiles(this.sources[this.widgetIndex]);
+					}
+					break;
+				} catch(e)
+				{
+					console.error('Drive fetch failed: ', e);
+					this.widgetIndex++;
+				}
+			}
+
+			for(const file of this.rawFiles ?? [])
+			{
+				if(!file.mimeType)
+				{
+					file.mimeType = widgetSelf.mime.getType(file.path);
+				}
+			}
+
+		}
+
+		this.extractCategories();
+	}
+
+
+	protected extractCategories()
+	{
+		this.availableCategories.clear();
+
+		const pills = Object.keys(PillSelectorWidget.parseAndBuildCategoryMap(this.rawFiles ?? [], false));
+		for(const pill of pills)
+		{
+			this.availableCategories.add(pill);
+		}
 	}
 
 	protected override onActivateRequest(msg: Message): void
