@@ -346,8 +346,8 @@
 
 /* 5. Netflix Row Carousel View */
 .ndw-carousel-wrapper {
-	padding: 30px 0;
-	/* overflow: hidden; */
+	padding: 15px 30px 30px 30px;
+	overflow: visible;
 	overflow-x: auto;
 }
 

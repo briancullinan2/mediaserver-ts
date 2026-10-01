@@ -446,10 +446,25 @@ async function fetchAsset(urlInput, key, selected)
 
 
 let assetLookup = null;
-
+let assetsInstalling = 10;
+let assetsInstalled = 0;
+let assetsFailed = 0;
+let assetsStart = new Date();
+let previousAsset = '';
+/** @type {boolean | Promise<void>} */
+let installing = false;
+/**
+ *
+ * @returns {Promise<void>}
+ */
 async function installAssets()
 {
 	console.log('⚙️ [SW-INSTALL] Executing asset installer verification.');
+
+	if(installing instanceof Promise)
+	{
+		return await installing;
+	}
 
 	if(!serviceSelf.api?.environmentRepository)
 	{
@@ -493,6 +508,10 @@ async function installAssets()
 
 	console.log(`⚙️ [SW-INSTALL] Filtering finalized. ${assets.length} out of ${uniqueAssets.length} assets queued for download.`);
 
+	assetsStart = new Date;
+	assetsInstalled = 0;
+	assetsFailed = 0;
+	assetsInstalling = assets.length;
 	return await Promise.all(assets.map(async asset =>
 	{
 		asset = asset.replace(/^\/?assets\//ig, '');
@@ -510,6 +529,9 @@ async function installAssets()
 			if(files && files.contents)
 			{
 				console.log(`✨ [SW-CACHE-HIT] Asset already mapped locally inside DB. Skipping download for: "${localName}"`);
+				previousAsset = localName;
+				assetsInstalled++;
+				reportProgress();
 				return;
 			}
 		} catch(e)
@@ -524,15 +546,59 @@ async function installAssets()
 			{
 				console.error(`❌ [SW-INSTALL] Target download execution block failed for asset "${asset}":`, e);
 				console.warn("Offline asset failed: " + asset);
+			}).then(() =>
+			{
+				previousAsset = localName;
+				assetsInstalled++;
+				reportProgress();
 			});
 		} catch(e)
 		{
 			console.error(`❌ [SW-INSTALL] Synchronous catch block hit for download processor pipeline for "${asset}":`, e);
 			console.warn("Offline asset failed: " + asset);
 		}
-	}));
+		previousAsset = localName;
+		assetsFailed++;
+		reportProgress();
+	})).then(() =>
+	{
+		installing = false;
+	});
 }
 
+/** @type {Record<number, MessagePort>} */
+const waitingPorts = {};
+function reportProgress()
+{
+	const percent = assetsInstalling > 0
+		? Math.min(100, Math.round(((assetsInstalled + assetsFailed) / assetsInstalling) * 100))
+		: 0;
+	const payload = {
+		type: 'PROGRESS',
+		loaded: assetsInstalled,
+		total: assetsInstalling,
+		failed: assetsFailed,
+		previous: previousAsset,
+		percent
+	};
+	// TODO:
+	//originalConsole.warn('Progress', waitingPorts, payload);
+
+	for(const key of Object.keys(waitingPorts))
+	{
+		/** @type {number} */
+		const time = typeof key === 'number' ? key : parseInt(key);
+		if(time < assetsStart.getTime() - 30)
+		{
+			delete waitingPorts[time];
+			continue;
+		}
+
+		/** @type {MessagePort} */
+		const port = waitingPorts[time];
+		port.postMessage(payload);
+	}
+}
 
 
 
@@ -542,7 +608,6 @@ serviceSelf.addEventListener('install', (event) =>
 
 	event.waitUntil((async () =>
 	{
-
 		if(!localVersion || !serviceSelf.api?.environmentRepository)
 		{
 			await lookupLocalVersion();
@@ -551,7 +616,7 @@ serviceSelf.addEventListener('install', (event) =>
 		console.log('🚀 [SW-LIFECYCLE] Install waitUntil execution promise chain starting.');
 		try
 		{
-			await installAssets();
+			installing = installAssets();
 			console.log('🚀 [SW-LIFECYCLE] installAssets layout execution loop completed successfully.');
 		} catch(installErr)
 		{
@@ -591,7 +656,7 @@ serviceSelf.addEventListener('activate', event =>
 		try
 		{
 			console.log('⚙️ [SW-ASYNC] Running scheduled installAssets post-activation validation routine.');
-			await installAssets();
+			installing = installAssets();
 		} catch(err)
 		{
 			console.error('❌ [SW-CRITICAL] Failure encountered during core activation block:', err);
@@ -835,6 +900,9 @@ serviceSelf.addEventListener('message', async (event) =>
 
 		if(event.ports && event.ports[0])
 		{
+			waitingPorts[Date.now()] = event.ports[0];
+			reportProgress();
+
 			console.log(`✉️ [SW-MESSAGE] Dispatching configuration report data frame. Version string: ${localVersion}`);
 			event.ports[0].postMessage({
 				type: 'VERSION_REPORT',
@@ -847,6 +915,11 @@ serviceSelf.addEventListener('message', async (event) =>
 	} else if(event.data && event.data.type === 'CLAIM_CLIENTS')
 	{
 		serviceSelf.clients.claim();
+		if(event.ports && event.ports[0])
+		{
+			waitingPorts[Date.now()] = event.ports[0];
+			reportProgress();
+		}
 	}
 });
 

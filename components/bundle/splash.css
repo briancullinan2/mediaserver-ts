@@ -1,0 +1,160 @@
+/* Container Overlay */
+.lm-SplashOverlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 9999;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	color: #ffffff;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	overflow: hidden;
+
+	/* Animated 'Dancing' Gradient Background */
+	background: linear-gradient(-45deg, #0f172a, #1e1b4b, #311042, #0284c7);
+	background-size: 400% 400%;
+	animation: gradientAnimation 12s ease infinite;
+}
+
+@keyframes gradientAnimation {
+	0% {
+		background-position: 0% 50%;
+	}
+
+	50% {
+		background-position: 100% 50%;
+	}
+
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+/* Ambient Radial Glow */
+.lm-SplashOverlay-ambientGlow {
+	position: absolute;
+	width: 600px;
+	height: 600px;
+	background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+	border-radius: 50%;
+	animation: pulseGlow 4s ease-in-out infinite alternate;
+	pointer-events: none;
+}
+
+@keyframes pulseGlow {
+	0% {
+		transform: scale(0.8);
+		opacity: 0.5;
+	}
+
+	100% {
+		transform: scale(1.2);
+		opacity: 1;
+	}
+}
+
+/* Spinner Outer Container */
+.lm-SplashOverlay-spinnerContainer {
+	position: relative;
+	width: 80px;
+	height: 80px;
+	margin-bottom: 28px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+/* Dual-Ring Spinner */
+.lm-SplashOverlay-spinnerRing {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	border: 3px solid transparent;
+	border-top-color: #38bdf8;
+	border-right-color: rgba(56, 189, 248, 0.2);
+	animation: spinRing 1.2s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+}
+
+.lm-SplashOverlay-spinnerRingInner {
+	position: absolute;
+	width: 65%;
+	height: 65%;
+	border-radius: 50%;
+	border: 3px solid transparent;
+	border-bottom-color: #c084fc;
+	border-left-color: rgba(192, 132, 252, 0.2);
+	animation: spinRingReverse 0.9s linear infinite;
+}
+
+@keyframes spinRing {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes spinRingReverse {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(-360deg);
+	}
+}
+
+/* Label & Status Text */
+.lm-SplashOverlay-title {
+	font-size: 1.15rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: #93c5fd;
+	margin-bottom: 8px;
+	text-shadow: 0 0 12px rgba(147, 197, 253, 0.3);
+}
+
+.lm-SplashOverlay-status {
+	font-size: 0.95rem;
+	font-weight: 400;
+	color: rgba(255, 255, 255, 0.85);
+	background: rgba(15, 23, 42, 0.4);
+	backdrop-filter: blur(8px);
+	padding: 6px 16px;
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	max-width: 80%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	transition: all 0.2s ease-in-out;
+}
+
+/* Progress Track & Fill */
+.lm-SplashOverlay-progressTrack {
+	width: 260px;
+	height: 6px;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 3px;
+	margin-top: 14px;
+	overflow: hidden;
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.lm-SplashOverlay-progressBar {
+	height: 100%;
+	width: 0%;
+	background: linear-gradient(90deg, #38bdf8, #c084fc);
+	border-radius: 3px;
+	box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+	transition: width 0.25s ease-out;
+}

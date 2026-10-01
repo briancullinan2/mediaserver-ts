@@ -43,6 +43,7 @@ export class FileviewWidget extends ArtWidget
 	protected override activeViews: Set<ViewMode> = new Set(['netflix']);
 	private styleWidget?: StyleSelectorWidget;
 	private categorySelected?: Signal<PillSelectorWidget, IPillSelectedArgs>;
+	public parentTabBar?: HTMLElement;
 
 
 	constructor(title?: string, sources?: string | string[])
@@ -50,6 +51,7 @@ export class FileviewWidget extends ArtWidget
 		super(title ?? 'Explorer Workspace', sources);
 		this.addClass('cloud-drive-explorer-widget');
 		this.addClass(`${this.constructor.name.toLowerCase()}-frame`);
+		this.id = 'fileview';
 
 		//const theme = Array.from(document.body.classList.values()).find(c => c.startsWith('theme-'));
 		//if(theme)
@@ -81,6 +83,10 @@ export class FileviewWidget extends ArtWidget
 			}
 		});
 		this.refreshCurrentFolder();
+		this.parentTabBar = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.id})`) as HTMLElement;
+		if(this.isVisible)
+		{
+		}
 	}
 
 	protected override onBeforeDetach(msg: Message): void

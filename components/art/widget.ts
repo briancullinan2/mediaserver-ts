@@ -472,4 +472,5 @@ export class ArtWidget extends Widget
 
 }
 
+
 widgetSelf.ArtWidget = ArtWidget;

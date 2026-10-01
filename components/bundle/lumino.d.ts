@@ -15,6 +15,7 @@ import type { GlobalToolbarsWindow, RepositorySettingsWindow } from "./menu.d";
 import type { GithubWindow } from "./github.d";
 import type { BuildWindow } from "../bundle/make.d";
 import type { FileSystemWindow, LuminoLayoutWindow } from "./lumino.d";
+import type { SplashScreenWidget } from "./splash";
 
 /**
  * Lumino Dock Panel containers, active widget interaction states, and global event handlers.
@@ -40,6 +41,7 @@ export interface LuminoLayoutWindow
 	statusBar?: StatusBarWidget;
 	envStatusNode?: HTMLDivElement;
 	currentOpenFileId?: string | null | undefined;
+	splashScreen?: SplashScreenWidget;
 
 	layoutState?: LayoutState;
 	resizeHandler?: () => void;

@@ -11,10 +11,10 @@ import
 	, putRecord, setupDatabase
 } from "./local";
 import { FileRecord } from './local.d';
-import type { FileSystemWindow } from "./lumino.d";
+import type { FileSystemWindow, LuminoLayoutWindow } from "./lumino.d";
 import { SettingsManager } from "./settings";
 
-const workerSelf: FileSystemWindow = self as unknown as any;
+const workerSelf: FileSystemWindow & LuminoLayoutWindow = self as unknown as any;
 
 export class ServiceWorkerManager
 {
@@ -51,6 +51,7 @@ export class ServiceWorkerManager
 			});
 
 			// Ask the active SW to take control via postMessage
+			workerSelf.splashScreen?.setStatus('Reclaiming Service');
 			registration.active.postMessage({ type: 'CLAIM_CLIENTS' });
 
 			await controlledPromise;
@@ -152,12 +153,14 @@ export class ServiceWorkerManager
 	{
 		if(!serverVersion || !registration.active) return;
 
+		workerSelf.splashScreen?.setStatus('Verifying Service');
 		const swVersion = await this.queryWorkerValue(registration.active, 'GET_VERSION', 'VERSION_REPORT', 'version');
 
 		if(swVersion && new Date(serverVersion).getTime() !== new Date(swVersion).getTime())
 		{
 			console.warn(`Version Mismatch! Server: ${serverVersion}, SW: ${swVersion}. Unregistering...`);
 			await this.queryWorkerValue(registration.active, 'DEREGISTER', 'DEREGISTERED');
+			workerSelf.splashScreen?.setStatus('Service Stale');
 		} else
 		{
 			console.warn('Skipping Service-Worker because: ' + serverVersion + ' reg: ' + registration + ' active: ' + registration?.active);
@@ -171,25 +174,42 @@ export class ServiceWorkerManager
 	{
 		return new Promise((resolve) =>
 		{
+			let percent = 0;
 			let resolved = false;
 			const messageChannel = new MessageChannel();
 
-			messageChannel.port1.onmessage = (event) =>
-			{
-				if(event.data?.type === expectedAckType)
+			messageChannel.port2.onmessage =
+				messageChannel.port1.onmessage = async (event) =>
 				{
-					resolved = true;
-					clearInterval(pollInterval);
+					if(event.data?.type === expectedAckType)
+					{
+						resolved = true;
+						clearInterval(pollInterval);
 
-					if(dataKey && event.data[dataKey])
-					{
-						try { resolve(new Date(event.data[dataKey])); } catch { resolve(null); }
-					} else
-					{
-						resolve(true);
+						if(dataKey && event.data[dataKey])
+						{
+							try { resolve(new Date(event.data[dataKey])); } catch { resolve(null); }
+						} else
+						{
+							if(percent === 100)
+							{
+								resolve(true);
+							}
+						}
 					}
-				}
-			};
+
+					if(event.data?.type === 'PROGRESS')
+					{
+						percent = event.data.percent;
+						if(event.data?.percent === 100)
+						{
+							workerSelf.splashScreen?.setProgress(100, 'Service Ready!');
+						} else
+						{
+							workerSelf.splashScreen?.setProgress(event.data.percent, `Fetching ${event.data.previous}...`);
+						}
+					}
+				};
 
 			worker.postMessage({ type: msgType, shutup: true }, [messageChannel.port2]);
 
@@ -201,7 +221,7 @@ export class ServiceWorkerManager
 				if(Date.now() - startTime > 10000)
 				{
 					clearInterval(pollInterval);
-					console.warn(`SW transaction timeout reached on pathway assignment: [${msgType}]`);
+					console.warn(`SW transaction timeout reached for command: [${msgType}]`);
 					resolve(null);
 				}
 			}, 100);
@@ -213,6 +233,7 @@ export class ServiceWorkerManager
 	 */
 	private async registerNewWorker(): Promise<ServiceWorkerRegistration | undefined>
 	{
+		workerSelf.splashScreen?.setStatus('Registering Service');
 		const swUrl = `/service-worker.js?t=${Date.now()}`;
 		try
 		{

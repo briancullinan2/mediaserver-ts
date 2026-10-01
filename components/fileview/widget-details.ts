@@ -1,5 +1,5 @@
 import { Message } from '@lumino/messaging';
-import { Widget } from '@lumino/widgets';
+import { TabBar, Widget } from '@lumino/widgets';
 import type { NestedTreeNode } from '../bundle/github-tools';
 
 
@@ -49,11 +49,13 @@ export class DetailsViewWidget extends Widget
 	{
 		super();
 		this.addClass('netflix-details-widget');
+		this.id = 'details-widget-view';
 		this._files = options?.files || [];
 		this._onFileSelect = options.onFileSelect;
 
 		this.renderShell();
 		this.applyFilterAndSort();
+		this.attachToggleIcon();
 	}
 
 	public setFiles(files: NestedTreeNode[]): void
@@ -91,30 +93,30 @@ export class DetailsViewWidget extends Widget
 		const controlsWrapper = document.createElement('div');
 		controlsWrapper.className = 'ndw-controls-wrapper';
 
-		const gearBtn = document.createElement('button');
-		gearBtn.className = 'ndw-btn ndw-gear-btn';
-		gearBtn.innerHTML = `<i class="bx bx-slider-alt"></i> Controls`;
-		gearBtn.addEventListener('click', (e) =>
-		{
-			e.stopPropagation();
-			this._controlsOpen = !this._controlsOpen;
-			this._popoverNode.classList.toggle('visible', this._controlsOpen);
-		});
+		// const gearBtn = document.createElement('button');
+		// gearBtn.className = 'ndw-btn ndw-gear-btn';
+		// gearBtn.innerHTML = `<i class="bx bx-slider-alt"></i> Controls`;
+		// gearBtn.addEventListener('click', (e) =>
+		// {
+		// 	e.stopPropagation();
+		// 	this._controlsOpen = !this._controlsOpen;
+		// 	this._popoverNode.classList.toggle('visible', this._controlsOpen);
+		// });
 
-		// Popover Menu for Sorting and Grouping
-		this._popoverNode = document.createElement('div');
-		this._popoverNode.className = 'ndw-popover-menu';
-		this.renderPopoverContent();
+		// // Popover Menu for Sorting and Grouping
+		// this._popoverNode = document.createElement('div');
+		// this._popoverNode.className = 'ndw-popover-menu';
+		// this.renderPopoverContent();
 
-		// Close popover when clicking outside
-		document.addEventListener('click', (e) =>
-		{
-			if(this._controlsOpen && !this._popoverNode.contains(e.target as Node))
-			{
-				this._controlsOpen = false;
-				this._popoverNode.classList.remove('visible');
-			}
-		});
+		// // Close popover when clicking outside
+		// document.addEventListener('click', (e) =>
+		// {
+		// 	if(this._controlsOpen && !this._popoverNode.contains(e.target as Node))
+		// 	{
+		// 		this._controlsOpen = false;
+		// 		this._popoverNode.classList.remove('visible');
+		// 	}
+		// });
 
 		const modeToggleBtn = document.createElement('button');
 		modeToggleBtn.className = 'ndw-btn ndw-mode-btn';
@@ -127,7 +129,7 @@ export class DetailsViewWidget extends Widget
 			this.renderGroupSections();
 		});
 
-		controlsWrapper.append(gearBtn, this._popoverNode, modeToggleBtn);
+		//controlsWrapper.append(gearBtn, this._popoverNode, modeToggleBtn);
 		topBar.append(searchWrapper, this._resultCountNode, controlsWrapper);
 
 		// 2. Season-Inspired Scrubber Toolbar
@@ -141,77 +143,43 @@ export class DetailsViewWidget extends Widget
 		this.node.append(topBar, this._scrubberNode, this._groupsContainer);
 	}
 
-	private renderPopoverContent(): void
+
+	private attachToggleIcon(): void
 	{
-		this._popoverNode.innerHTML = `
-      <div class="popover-section">
-        <label><i class="bx bx-layer"></i> Group By</label>
-        <div class="popover-btn-grid">
-          ${(['alphabetical', 'date', 'type', 'size'] as GroupByOption[])
-				.map(
-					(g) => `
-            <button class="popover-chip ${this._groupBy === g ? 'active' : ''}" data-group="${g}">
-              ${g.toUpperCase()}
-            </button>
-          `
-				)
-				.join('')}
-        </div>
-      </div>
-      <div class="popover-divider"></div>
-      <div class="popover-section">
-        <label><i class="bx bx-sort"></i> Sort Column</label>
-        <div class="popover-btn-grid">
-          ${(['name', 'type', 'size', 'modifiedTime'] as SortColumn[])
-				.map(
-					(s) => `
-            <button class="popover-chip ${this._sortBy === s ? 'active' : ''}" data-sort="${s}">
-              ${s.replace('modifiedTime', 'Date').toUpperCase()}
-            </button>
-          `
-				)
-				.join('')}
-        </div>
-      </div>
-      <div class="popover-section">
-        <label><i class="bx bx-transfer-alt"></i> Order</label>
-        <div class="popover-btn-grid">
-          <button class="popover-chip ${this._sortDir === 'asc' ? 'active' : ''}" data-dir="asc">ASC</button>
-          <button class="popover-chip ${this._sortDir === 'desc' ? 'active' : ''}" data-dir="desc">DESC</button>
-        </div>
-      </div>
-    `;
-
-		this._popoverNode.querySelectorAll('[data-group]').forEach((btn) =>
+		// Locate the DOM node for the specific tab item
+		let tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.id})`) as HTMLElement;
+		if(!tabNode && this.parent?.id)
 		{
-			btn.addEventListener('click', (e) =>
-			{
-				this._groupBy = (e.currentTarget as HTMLElement).dataset.group as GroupByOption;
-				this.renderPopoverContent();
-				this.applyFilterAndSort();
-			});
+			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.parent.id})`) as HTMLElement;
+		}
+		if(!tabNode && this.parent?.parent?.id)
+		{
+			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.parent.parent.id})`) as HTMLElement;
+		}
+		if(!tabNode) return;
+
+		// Find Lumino's native close icon container
+		const closeIconNode = tabNode.querySelector('.lm-TabBar-tabCloseIcon');
+		if(!closeIconNode || tabNode.querySelector('.custom-toggle-btn')) return;
+
+		// Create custom toggle button
+		const toggleBtn = document.createElement('div');
+		toggleBtn.className = 'lm-TabBar-tabIcon custom-toggle-btn';
+		toggleBtn.innerText = '★'; // Replace with SVG or icon class
+		toggleBtn.title = 'Toggle state';
+
+		const that = this;
+		toggleBtn.addEventListener('click', (event) =>
+		{
+			event.stopPropagation(); // Stop event bubbling to tab selection
+			toggleBtn.classList.toggle('active');
+			console.log('Toggled state for:', that.title.label);
 		});
 
-		this._popoverNode.querySelectorAll('[data-sort]').forEach((btn) =>
-		{
-			btn.addEventListener('click', (e) =>
-			{
-				this._sortBy = (e.currentTarget as HTMLElement).dataset.sort as SortColumn;
-				this.renderPopoverContent();
-				this.applyFilterAndSort();
-			});
-		});
-
-		this._popoverNode.querySelectorAll('[data-dir]').forEach((btn) =>
-		{
-			btn.addEventListener('click', (e) =>
-			{
-				this._sortDir = (e.currentTarget as HTMLElement).dataset.dir as SortDirection;
-				this.renderPopoverContent();
-				this.applyFilterAndSort();
-			});
-		});
+		// Insert toggle right before the close icon
+		closeIconNode.parentNode?.insertBefore(toggleBtn, closeIconNode);
 	}
+
 
 	private applyFilterAndSort(): void
 	{

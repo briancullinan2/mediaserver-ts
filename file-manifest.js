@@ -1182,19 +1182,59 @@ self.__assetsManifest = [
   },
   {
     "path": "/app.bundle.js",
-    "size": 14692498
+    "size": 15766760
   },
   {
     "path": "/babel.min.js",
     "size": 2331591
   },
   {
+    "path": "/components/art/art.css",
+    "size": 1219
+  },
+  {
+    "path": "/components/art/coverflow.css",
+    "size": 3966
+  },
+  {
+    "path": "/components/art/middleware.js",
+    "size": 3249
+  },
+  {
+    "path": "/components/art/pill.css",
+    "size": 4421
+  },
+  {
+    "path": "/components/art/style.css",
+    "size": 1870
+  },
+  {
+    "path": "/components/art/widget-coverflow.ts",
+    "size": 8209
+  },
+  {
+    "path": "/components/art/widget-pill.ts",
+    "size": 11829
+  },
+  {
+    "path": "/components/art/widget-search.ts",
+    "size": 6175
+  },
+  {
+    "path": "/components/art/widget-style.ts",
+    "size": 6160
+  },
+  {
+    "path": "/components/art/widget.ts",
+    "size": 12745
+  },
+  {
     "path": "/components/bundle/babel-compile.ts",
-    "size": 22630
+    "size": 23919
   },
   {
     "path": "/components/bundle/controls.css",
-    "size": 7366
+    "size": 7839
   },
   {
     "path": "/components/bundle/frame-rater.ts",
@@ -1206,23 +1246,23 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/github-api.ts",
-    "size": 12492
+    "size": 12799
   },
   {
     "path": "/components/bundle/github-settings.ts",
-    "size": 10024
+    "size": 10032
   },
   {
     "path": "/components/bundle/github-tools.ts",
-    "size": 10590
+    "size": 10683
   },
   {
     "path": "/components/bundle/github-types.ts",
-    "size": 1821
+    "size": 1828
   },
   {
     "path": "/components/bundle/github-worker.ts",
-    "size": 3448
+    "size": 3574
   },
   {
     "path": "/components/bundle/github.d.ts",
@@ -1234,7 +1274,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/global.ts",
-    "size": 3992
+    "size": 4155
   },
   {
     "path": "/components/bundle/levenshtein.ts",
@@ -1246,7 +1286,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/local.ts",
-    "size": 16846
+    "size": 16854
   },
   {
     "path": "/components/bundle/logging.d.ts",
@@ -1262,7 +1302,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/lumino-resize.ts",
-    "size": 27144
+    "size": 27899
   },
   {
     "path": "/components/bundle/lumino-search.ts",
@@ -1270,35 +1310,43 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/lumino-widget.ts",
-    "size": 12833
+    "size": 12983
   },
   {
     "path": "/components/bundle/lumino.css",
-    "size": 3727
+    "size": 3987
   },
   {
     "path": "/components/bundle/lumino.d.ts",
-    "size": 3105
+    "size": 3344
   },
   {
     "path": "/components/bundle/lumino.ts",
-    "size": 11561
+    "size": 12003
   },
   {
     "path": "/components/bundle/make.d.ts",
-    "size": 4633
+    "size": 4676
   },
   {
     "path": "/components/bundle/menu-app.ts",
-    "size": 19761
+    "size": 4100
+  },
+  {
+    "path": "/components/bundle/menu-edit.ts",
+    "size": 4963
   },
   {
     "path": "/components/bundle/menu-file.ts",
-    "size": 13402
+    "size": 10335
   },
   {
     "path": "/components/bundle/menu-history.ts",
-    "size": 15250
+    "size": 15306
+  },
+  {
+    "path": "/components/bundle/menu-layout.ts",
+    "size": 18991
   },
   {
     "path": "/components/bundle/menu-manager.ts",
@@ -1310,11 +1358,15 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/menu-script.ts",
-    "size": 4237
+    "size": 4238
   },
   {
     "path": "/components/bundle/menu-settings.ts",
     "size": 13199
+  },
+  {
+    "path": "/components/bundle/menu-view.ts",
+    "size": 9793
   },
   {
     "path": "/components/bundle/menu.css",
@@ -1322,11 +1374,11 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/menu.d.ts",
-    "size": 4388
+    "size": 4732
   },
   {
     "path": "/components/bundle/menu.ts",
-    "size": 22990
+    "size": 24568
   },
   {
     "path": "/components/bundle/paint.css",
@@ -1338,7 +1390,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/settings-coalesced.ts",
-    "size": 6785
+    "size": 6793
   },
   {
     "path": "/components/bundle/settings-coalescer.ts",
@@ -1346,7 +1398,15 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/settings.ts",
-    "size": 12345
+    "size": 12598
+  },
+  {
+    "path": "/components/bundle/splash.css",
+    "size": 3251
+  },
+  {
+    "path": "/components/bundle/splash.ts",
+    "size": 2753
   },
   {
     "path": "/components/bundle/status.css",
@@ -1374,7 +1434,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/bundle/worker.ts",
-    "size": 7081
+    "size": 7451
   },
   {
     "path": "/components/editor/annotations.js",
@@ -1386,7 +1446,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/editor/events.ts",
-    "size": 13403
+    "size": 13884
   },
   {
     "path": "/components/editor/widget-menu.ts",
@@ -1450,31 +1510,71 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/filelist/widget-assets.ts",
-    "size": 7437
+    "size": 5988
   },
   {
     "path": "/components/filelist/widget-database.ts",
-    "size": 8254
+    "size": 8404
   },
   {
     "path": "/components/filelist/widget-github.ts",
-    "size": 12997
+    "size": 13487
+  },
+  {
+    "path": "/components/filelist/widget-google.ts",
+    "size": 14391
+  },
+  {
+    "path": "/components/filelist/widget-index.ts",
+    "size": 13528
   },
   {
     "path": "/components/filelist/widget-local.ts",
-    "size": 7815
+    "size": 8208
   },
   {
     "path": "/components/filelist/widget-search.ts",
-    "size": 11058
+    "size": 11542
   },
   {
     "path": "/components/filelist/widget.d.ts",
-    "size": 2398
+    "size": 4555
   },
   {
     "path": "/components/filelist/widget.ts",
-    "size": 17557
+    "size": 18938
+  },
+  {
+    "path": "/components/fileview/details.css",
+    "size": 7413
+  },
+  {
+    "path": "/components/fileview/fileview.css",
+    "size": 6534
+  },
+  {
+    "path": "/components/fileview/grid.css",
+    "size": 5518
+  },
+  {
+    "path": "/components/fileview/netflix.css",
+    "size": 6247
+  },
+  {
+    "path": "/components/fileview/widget-details.ts",
+    "size": 15185
+  },
+  {
+    "path": "/components/fileview/widget-grid.ts",
+    "size": 15299
+  },
+  {
+    "path": "/components/fileview/widget-netflix.ts",
+    "size": 10144
+  },
+  {
+    "path": "/components/fileview/widget.ts",
+    "size": 15999
   },
   {
     "path": "/components/graph/litegraph.css",
@@ -1490,7 +1590,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/graph/widget.ts",
-    "size": 13794
+    "size": 14276
   },
   {
     "path": "/components/layout/base.css",
@@ -1546,7 +1646,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/proxy/web.js",
-    "size": 17451
+    "size": 19189
   },
   {
     "path": "/components/rosetta/antlr-languages.bundle.js",
@@ -1554,7 +1654,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/rosetta/binary.mjs",
-    "size": 141389
+    "size": 141434
   },
   {
     "path": "/components/rosetta/parsers.js",
@@ -1571,6 +1671,30 @@ self.__assetsManifest = [
   {
     "path": "/components/rosetta/worker-language.js",
     "size": 23667
+  },
+  {
+    "path": "/components/status/d3.js",
+    "size": 587043
+  },
+  {
+    "path": "/components/status/d3.min.js",
+    "size": 290866
+  },
+  {
+    "path": "/components/status/generate.ts",
+    "size": 15273
+  },
+  {
+    "path": "/components/status/middleware.js",
+    "size": 2131
+  },
+  {
+    "path": "/components/status/status-data.json",
+    "size": 50130
+  },
+  {
+    "path": "/components/status/widget.ts",
+    "size": 34664
   },
   {
     "path": "/components/terminal/commands-build.js",
@@ -1598,7 +1722,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/terminal/events.ts",
-    "size": 21444
+    "size": 21442
   },
   {
     "path": "/components/terminal/history.ts",
@@ -1610,7 +1734,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/terminal/render.ts",
-    "size": 13362
+    "size": 13807
   },
   {
     "path": "/components/terminal/search.ts",
@@ -1643,6 +1767,26 @@ self.__assetsManifest = [
   {
     "path": "/components/terminal/xterm.js",
     "size": 977164
+  },
+  {
+    "path": "/components/theme/all.css",
+    "size": 130150
+  },
+  {
+    "path": "/components/theme/all.min.css",
+    "size": 90336
+  },
+  {
+    "path": "/components/theme/bootstrap-icons.min.css",
+    "size": 85835
+  },
+  {
+    "path": "/components/theme/bootstrap-icons.woff",
+    "size": 180288
+  },
+  {
+    "path": "/components/theme/bootstrap-icons.woff2",
+    "size": 134044
   },
   {
     "path": "/components/theme/boxicons-brands.min.css",
@@ -1681,6 +1825,22 @@ self.__assetsManifest = [
     "size": 114152
   },
   {
+    "path": "/components/theme/fa-brands-400.woff2",
+    "size": 115420
+  },
+  {
+    "path": "/components/theme/fa-regular-400.woff2",
+    "size": 19512
+  },
+  {
+    "path": "/components/theme/fa-solid-900.woff2",
+    "size": 119488
+  },
+  {
+    "path": "/components/theme/fa-v4compatibility.woff2",
+    "size": 4168
+  },
+  {
     "path": "/components/theme/theme-elements.css",
     "size": 12184
   },
@@ -1694,7 +1854,7 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/workers/github.js",
-    "size": 38298
+    "size": 38390
   },
   {
     "path": "/components/workers/lg2.js",
@@ -1742,43 +1902,75 @@ self.__assetsManifest = [
   },
   {
     "path": "/components/workers/local.js",
-    "size": 19706
+    "size": 19712
   },
   {
     "path": "/components/workers/search-worker.js",
-    "size": 5751
+    "size": 5752
   },
   {
     "path": "/components/workers/sys_fs.js",
     "size": 57369
   },
   {
+    "path": "/cors.json",
+    "size": 593
+  },
+  {
+    "path": "/dev.js",
+    "size": 2450
+  },
+  {
+    "path": "/favicon.ico",
+    "size": 15406
+  },
+  {
+    "path": "/ffmpeg.md",
+    "size": 3890
+  },
+  {
     "path": "/index.html",
-    "size": 2083
+    "size": 2292
   },
   {
     "path": "/jsconfig.json",
-    "size": 1154
+    "size": 1155
+  },
+  {
+    "path": "/logo-tiny.png",
+    "size": 163379
   },
   {
     "path": "/package-lock.json",
-    "size": 232945
+    "size": 288277
   },
   {
     "path": "/package.json",
-    "size": 1678
+    "size": 1945
+  },
+  {
+    "path": "/parrot-config.json",
+    "size": 230
+  },
+  {
+    "path": "/README.md",
+    "size": 13789
   },
   {
     "path": "/service-worker.js",
-    "size": 35060
+    "size": 37065
   },
   {
     "path": "/tsconfig.json",
-    "size": 911
+    "size": 912
+  },
+  {
+    "path": "/upnp.md",
+    "size": 3166
   },
   {
     "path": "/webpack.prod.js",
-    "size": 4494
+    "size": 4714
   },
   {
     "path": "/womp.LICENSE",

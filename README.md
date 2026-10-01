@@ -209,8 +209,8 @@ Coming up with too many TODOs:
 * any ROM that matches a binary expectation gets loaded in the proper emulator like opening files on desktop
 * download components from other githubs and use the rosetta to decode their dependencies to automatically build "Add-on" panel definitions. allow downloading components between clients also, not only github. index client capabilities with master server json sequence after rcon is working
 * turn the Github Key into a local key store and also supply a google drive key, or allow transferring keys between clients
-* rebuild foomail pgp browser client with socksv5, rebuild study sauce with lumino and atrium code, rebuild edit-anywhere with lumino, sheets exporter, discord bots and nodejs quake3/game server, rebuild github/docs/jupyter/linkedin/wikipedia/imdb (search artist connector features with parquet)/google whisk/chatgpt clones into combined lumino layout tools, rebuild grafana/apparently in lumino
-* option to automatically show the soft file handler instead of text based or stub in file tree.
+* rebuild foomail pgp browser client with socksv5 with tasks and contacts and nzbs/rss and journal, rebuild study sauce with lumino and atrium code, rebuild edit-anywhere with lumino, sheets exporter, discord bots and nodejs quake3/game server + wasm cheats, rebuild github/docs/jupyter/linkedin/wikipedia/imdb (search artist connector features with parquet)/google whisk/chatgpt clones into combined lumino layout tools, rebuild grafana/apparently in lumino/d3, rebuild phpBB forum in Lumino, rebuild language analysis tools as a separate toolset in lumino antlr + css style selectors + rearranging/extracting/rebuilding/converting between languages/void zero repl runner/decompilers/juyter clone, build another personal analytics set of data from earlier notebooks, build chat automation tools into a lumino tool/proxy like demonstrable and morpheus were going to be like
+* option to automatically show the soft file handler instead of text based or stub in file tree. database tool with wasm duck db?
 * options to dynamically enable downloaded middlewares.
 * options to monitor and enable "worker server" settings by sharing the computer the project is hosted from in the browser, also enables "watch directory" feature from browser under hosting service. alternatively downloads updated settings from github middleware, url or express state based triggers listed explicitly, dynamically rendered
 * options for cors middleware restrictions, not only dev values, i.e. allowed embed servers. proxy server specifically enabled ignoring cors -> browser, so options for that too
@@ -225,3 +225,5 @@ Coming up with too many TODOs:
 * TODO: add UPnP and airplay and chromecast streaming with UDP subnet broadcasting middleware
 * make point and click widget settings have parity with localStorage settings
 * make history toolbar an omnibox with history filter and directory navigation, clickable bread crumbs
+* folder views almost done, need slide show view, and playlist view, and movie/cinema/party views for video/music videos/movies, 3 different views all capable of playing audio video and images but in different contexts
+* web based USB forensics app
