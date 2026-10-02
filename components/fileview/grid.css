@@ -86,6 +86,8 @@
 	overflow: visible;
 	padding: 16px;
 	outline: none;
+	height: 100%;
+	width: 100%;
 }
 
 .egw-grid-container {
@@ -94,6 +96,7 @@
 	align-content: start;
 }
 
+.column-first .egw-grid-container,
 .egw-grid-container[data-flow="column-first"] {
 	display: flex;
 	flex-direction: column;
@@ -101,18 +104,27 @@
 }
 
 /* Default Row-First Wrap */
+.zoom-tiny .egw-grid-container,
+.egw-grid-container[data-flow="row-first"][data-icon-size="tiny"] {
+	grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+}
+
+.zoom-small .egw-grid-container,
 .egw-grid-container[data-flow="row-first"][data-icon-size="small"] {
 	grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
 }
 
+.zoom-medium .egw-grid-container,
 .egw-grid-container[data-flow="row-first"][data-icon-size="medium"] {
 	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 }
 
+.zoom-large .egw-grid-container,
 .egw-grid-container[data-flow="row-first"][data-icon-size="large"] {
 	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
+.zoom-huge .egw-grid-container,
 .egw-grid-container[data-flow="row-first"][data-icon-size="huge"] {
 	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
@@ -134,6 +146,10 @@
 	transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
+.column-first .egw-grid-item {
+	max-width: 33%;
+}
+
 .egw-grid-item:hover {
 	background: #252525;
 	border-color: #383838;
@@ -145,18 +161,27 @@
 }
 
 /* Icon Sizing Modes */
+.zoom-tiny .egw-grid-container .egw-item-thumbnail,
+.egw-grid-container[data-icon-size="tiny"] .egw-item-thumbnail {
+	font-size: 1rem;
+}
+
+.zoom-small .egw-grid-container .egw-item-thumbnail,
 .egw-grid-container[data-icon-size="small"] .egw-item-thumbnail {
 	font-size: 1.8rem;
 }
 
+.zoom-medium .egw-grid-container .egw-item-thumbnail,
 .egw-grid-container[data-icon-size="medium"] .egw-item-thumbnail {
 	font-size: 2.8rem;
 }
 
+.zoom-large .egw-grid-container .egw-item-thumbnail,
 .egw-grid-container[data-icon-size="large"] .egw-item-thumbnail {
 	font-size: 4rem;
 }
 
+.zoom-huge .egw-grid-container .egw-item-thumbnail,
 .egw-grid-container[data-icon-size="huge"] .egw-item-thumbnail {
 	font-size: 5.5rem;
 }
@@ -286,4 +311,21 @@
 
 .egw-empty-state i {
 	font-size: 3.5rem;
+}
+
+.column-first .lm-Widget,
+.column-first .view-pane {
+	max-height: 100%;
+	width: 100%;
+}
+
+.column-first .egw-viewport {
+	max-height: 100%;
+	overflow: hidden;
+	overflow-x: auto;
+}
+
+.column-first .egw-grid-container {
+	max-height: 100%;
+	overflow: visible;
 }

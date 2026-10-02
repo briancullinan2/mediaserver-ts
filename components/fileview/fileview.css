@@ -162,14 +162,6 @@
 	border-color: #0077ee;
 }
 
-/* Workspace Layout */
-.explorer-workspace {
-	flex: 1;
-	display: flex;
-	position: relative;
-	overflow: hidden;
-}
-
 .cloud-main-panel {
 	flex: 1;
 	display: flex;

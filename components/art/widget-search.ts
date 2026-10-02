@@ -1,3 +1,4 @@
+import { Widget } from "@lumino/widgets";
 
 export interface ISearchable
 {
@@ -9,6 +10,15 @@ export interface ISearchable
 	id?: string;
 	executeFindQuery?(pooledCtx: any, event?: KeyboardEvent | null): void;
 }
+
+export interface ITabButton
+{
+	id?: string;
+	node: HTMLElement;
+	parent?: Widget | null;
+	_toggleBtn?: HTMLElement | HTMLDivElement;
+}
+
 
 
 // TODO: replace terminal search attachment with this widget
@@ -55,7 +65,7 @@ export class WidgetSearchBar
 			//{
 			//const { width, height } = entry.contentRect;
 			//}
-			this.resizeSearchContainer(context);
+			WidgetSearchBar.resizeSearchContainer(context);
 		});
 		context.searchObserver.observe(context.node);
 	}
@@ -76,8 +86,6 @@ export class WidgetSearchBar
 	private static resizeSearchContainer = (context: ISearchable) =>
 	{
 		const parentTabBar = context.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${context.id})`) as HTMLElement;
-
-		//console.log('search bar: ', parentTabBar, this.searchContainer, this.searchContainer.style.display);
 
 		if(!parentTabBar || !context
 			|| !context.searchContainer
@@ -229,6 +237,62 @@ export class WidgetSearchBar
 			context.searchContainer.parentNode.removeChild(context.searchContainer);
 		}
 		context?.searchObserver?.disconnect();
+	}
+
+
+
+	public static attachToggleIcon(context: ITabButton, renderToggle?: (toggle: HTMLElement) => void, click?: (event: PointerEvent | Event) => void): void
+	{
+		// Locate the DOM node for the specific tab item
+		let tabNode: HTMLElement | undefined | null;
+		if(context.id)
+		{
+			tabNode = context.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${context.id})`) as HTMLElement;
+		}
+		if(!tabNode && context.node.parentElement?.id)
+		{
+			tabNode = context.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${context.node.parentElement.id})`) as HTMLElement;
+		}
+		if(!tabNode && context.node.parentElement?.parentElement?.id)
+		{
+			tabNode = context.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${context.node.parentElement.parentElement.id})`) as HTMLElement;
+		}
+		if(!tabNode && context.parent?.id)
+		{
+			tabNode = context.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${context.parent.id})`) as HTMLElement;
+		}
+		if(!tabNode)
+		{
+			const parentWidgetId = (context.parent?.node ?? context.node.parentElement?.closest('.lm-Widget'))?.id;
+			if(parentWidgetId)
+			{
+				tabNode = context.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${parentWidgetId})`) as HTMLElement;
+			}
+		}
+
+		if(!tabNode) return;
+
+		// Find Lumino's native close icon container
+		const closeIconNode = tabNode.querySelector('.lm-TabBar-tabCloseIcon');
+		if(!closeIconNode || tabNode.querySelector('.custom-toggle-btn')) return;
+
+		// Create custom toggle button
+		context._toggleBtn = document.createElement('div');
+		context._toggleBtn.className = 'lm-TabBar-tabIcon custom-toggle-btn';
+		renderToggle?.apply(context, [context._toggleBtn]);
+		context._toggleBtn.addEventListener('click', (event) =>
+		{
+			// TODO: toggle netflix view
+			event.stopPropagation(); // Stop event bubbling to tab selection
+			click?.apply(context, [event]);
+			if(context._toggleBtn)
+			{
+				renderToggle?.apply(context, [context._toggleBtn]);
+			}
+		});
+
+		// Insert toggle right before the close icon
+		closeIconNode.parentNode?.insertBefore(context._toggleBtn, closeIconNode);
 	}
 
 }

@@ -4,6 +4,7 @@ import type { NestedTreeNode } from '../bundle/github-tools';
 import type { IFileViewOptions } from './widget';
 import type { KnownFileViews } from '../art/widget';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
+import { WidgetSearchBar } from '../art/widget-search';
 
 
 const widgetSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
@@ -48,7 +49,7 @@ export class DetailsViewWidget extends Widget
 	private _scrubberNode!: HTMLElement;
 	private _groupsContainer!: HTMLElement;
 	private _resultCountNode!: HTMLElement;
-	private _toggleBtn?: HTMLDivElement;
+	public _toggleBtn?: HTMLDivElement;
 
 	constructor(title?: string | null, options: IDetailsOptions = {})
 	{
@@ -64,18 +65,33 @@ export class DetailsViewWidget extends Widget
 
 	protected onBeforeDetach(msg: Message): void
 	{
-		super.onBeforeDetach(msg);
 		if(this._toggleBtn)
 		{
 			this._toggleBtn?.remove();
 			this._toggleBtn = undefined;
 		}
+		super.onBeforeDetach(msg);
 	}
 
 	protected onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
-		this.attachToggleIcon();
+		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+	}
+
+	protected renderToggleBtn(toggle: HTMLElement)
+	{
+		toggle.innerHTML = `<i class="bx ${this._displayMode === 'details' ? 'bx-gallery-horizontal' : 'bx-list-ul'}"></i>`;
+		toggle.title = this._displayMode === 'details' ? 'Row View' : 'Table View';
+	}
+
+
+	protected clickToggleBtn()
+	{
+		this._displayMode = this._displayMode === 'details' ? 'carousel' : 'details';
+		this.renderGroupSections();
+		this.fit();
+		this.update();
 	}
 
 	public setFiles(files: NestedTreeNode[]): void
@@ -135,64 +151,6 @@ export class DetailsViewWidget extends Widget
 	}
 
 
-	private attachToggleIcon(): void
-	{
-		// Locate the DOM node for the specific tab item
-		let tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.id})`) as HTMLElement;
-		if(!tabNode && this.node.parentElement?.id)
-		{
-			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.node.parentElement.id})`) as HTMLElement;
-		}
-		if(!tabNode && this.node.parentElement?.parentElement?.id)
-		{
-			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.node.parentElement.parentElement.id})`) as HTMLElement;
-		}
-		if(!tabNode && this.parent?.id)
-		{
-			tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.parent.id})`) as HTMLElement;
-		}
-		if(!tabNode)
-		{
-			const parentWidgetId = (this.parent?.node ?? this.node.parentElement?.closest('.lm-Widget'))?.id;
-			if(parentWidgetId)
-			{
-				tabNode = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${parentWidgetId})`) as HTMLElement;
-			}
-		}
-
-		if(!tabNode) return;
-
-		// Find Lumino's native close icon container
-		const closeIconNode = tabNode.querySelector('.lm-TabBar-tabCloseIcon');
-		if(!closeIconNode || tabNode.querySelector('.custom-toggle-btn')) return;
-
-		const renderToggleBtn = (toggle: HTMLDivElement) =>
-		{
-			toggle.innerHTML = `<i class="bx ${this._displayMode === 'details' ? 'bx-gallery-horizontal' : 'bx-list-ul'}"></i>`;
-			toggle.title = this._displayMode === 'details' ? 'Row View' : 'Table View';
-
-		};
-
-		// Create custom toggle button
-		this._toggleBtn = document.createElement('div');
-		this._toggleBtn.className = 'lm-TabBar-tabIcon custom-toggle-btn';
-		renderToggleBtn(this._toggleBtn);
-		const that = this;
-		this._toggleBtn.addEventListener('click', (event) =>
-		{
-			// TODO: toggle netflix view
-			event.stopPropagation(); // Stop event bubbling to tab selection
-			this._displayMode = this._displayMode === 'details' ? 'carousel' : 'details';
-			if(this._toggleBtn)
-			{
-				renderToggleBtn(this._toggleBtn);
-			}
-			this.renderGroupSections();
-		});
-
-		// Insert toggle right before the close icon
-		closeIconNode.parentNode?.insertBefore(this._toggleBtn, closeIconNode);
-	}
 
 
 	private applyFilterAndSort(): void

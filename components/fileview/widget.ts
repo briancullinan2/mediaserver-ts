@@ -140,44 +140,10 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 		this.node.innerHTML = `
 			<div class="cloud-explorer-container ${this.isSplitView ? 'split-view-active' : ''}">
 
-				<!-- Navigation & Address Bar Header -->
-				<!--
-				<div class="explorer-address-bar-container">
-					<button class="nav-btn" id="btn-nav-up" title="Up"><i class="bx bx-folder-up-arrow"></i></button>
-
-					<div class="address-bar-wrapper">
-						<i class="bx bx-folder address-icon"></i>
-						<div class="breadcrumb-trail" id="breadcrumb-trail"></div>
-						<input type="text" class="address-input hidden" id="address-input" value="${this.sources[this.widgetIndex]}" />
-					</div>
-
-					<div class="search-bar-wrapper">
-						<i class="bx bx-search search-icon"></i>
-						<input type="text" class="search-input" id="search-input" placeholder="Search files..." value="${this.searchQuery}" />
-					</div>
-				</div>
-				-->
-
-				<!-- Main Content Workspace -->
-				<div class="explorer-workspace">
-					<main class="cloud-main-panel">
-					</main>
-
-					<!-- Slide-Out Inspector Panel -->
-					<aside class="cloud-inspector-panel hidden" id="cloud-inspector-panel">
-						<div class="inspector-header">
-							<h3>File Details</h3>
-							<button class="close-inspector-btn" id="close-inspector-btn">×</button>
-						</div>
-						<div class="inspector-body" id="inspector-body">
-							<div class="empty-selection">Select an item to preview properties</div>
-						</div>
-					</aside>
-				</div>
 			</div>
 		`;
 
-		this.viewContainer = this.node.querySelector('.cloud-main-panel') as HTMLElement;
+		this.viewContainer = this.node.querySelector('.cloud-explorer-container') as HTMLElement;
 		this.inspectorPanel = this.node.querySelector('#cloud-inspector-panel') as HTMLElement;
 		this.addressInput = this.node.querySelector('#address-input') as HTMLInputElement;
 	}

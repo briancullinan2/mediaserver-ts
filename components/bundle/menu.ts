@@ -59,9 +59,9 @@ export const MODULE_REGISTRY: Record<string, ComponentRoute> = {
 	'movies': { label: 'Movies', url: './components/movie/widget.ts', className: 'MovieWidget', iconClass: 'bx bx-movie' },
 	'games': { label: 'Games', url: './components/game/widget.ts', className: 'GameWidget', iconClass: 'bx bx-joystick' },
 
-	'database': { label: 'Local Database', url: './components/filelist/widget-database.ts', className: 'DatabaseListWidget', iconClass: 'bx bx-database' },
+	//'database': { label: 'Local Database', url: './components/filelist/widget-database.ts', className: 'DatabaseListWidget', iconClass: 'bx bx-database' },
 	'tools': { label: 'Tools', url: './components/tools/widget.ts', className: 'ToolsWidget', iconClass: 'bx bx-rename' },
-	'settings': { label: 'Edit Settings', url: './components/editor/widget-settings.ts', className: 'SettingsWidget', iconClass: 'bx bx-gear' },
+	//'settings': { label: 'Edit Settings', url: './components/editor/widget-settings.ts', className: 'SettingsWidget', iconClass: 'bx bx-gear' },
 };
 
 export const TOOLS_REGISTRY: Record<string, ComponentRoute> = {

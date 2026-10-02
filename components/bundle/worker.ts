@@ -167,66 +167,85 @@ export class ServiceWorkerManager
 		}
 	}
 
-	/**
-	 * Micro-function: Generic async postMessage / MessageChannel polling router interface
-	 */
-	private queryWorkerValue(worker: ServiceWorker, msgType: string, expectedAckType: string, dataKey?: string): Promise<any>
-	{
-		return new Promise((resolve) =>
-		{
-			let percent = 100;
-			let resolved = false;
-			const messageChannel = new MessageChannel();
 
-			messageChannel.port2.onmessage =
-				messageChannel.port1.onmessage = async (event) =>
+	/**
+	 * Micro-function: Generic async postMessage / MessageChannel router interface
+	 */
+	private queryWorkerValue(
+		worker: ServiceWorker,
+		msgType: string,
+		expectedAckType: string,
+		dataKey?: string
+	): Promise<any>
+	{
+		let resolved = false;
+		return Promise.race([
+			new Promise((_, reject) => setTimeout(() => reject(new Error('IDB_TIMEOUT')), 3000)),
+			new Promise((resolve) =>
+			{
+				const messageChannel = new MessageChannel();
+				const { port1, port2 } = messageChannel;
+
+				// Set up single timeout timer instead of 100ms interval polling
+				// const timeoutId = setTimeout(() =>
+				// {
+				// 	if(resolved) return;
+				// 	resolved = true;
+				// 	port1.close();
+				// 	console.warn(`SW transaction timeout reached for command: [${msgType}]`);
+				// 	resolve(null);
+				// }, 3000);
+
+				port1.onmessage = (event) =>
 				{
-					if(event.data?.type === expectedAckType)
+					if(resolved) return;
+
+					const data = event.data;
+
+					if(data?.type === expectedAckType)
 					{
 						resolved = true;
-						clearInterval(pollInterval);
+						// clearTimeout(timeoutId);
+						port1.close(); // Clean up port resource
 
-						if(dataKey && event.data[dataKey])
+						if(dataKey && data[dataKey] !== undefined)
 						{
-							try { resolve(new Date(event.data[dataKey])); } catch { resolve(null); }
+							try
+							{
+								resolve(new Date(data[dataKey]));
+							} catch
+							{
+								resolve(null);
+							}
 						} else
 						{
-							if(percent === 100)
-							{
-								resolve(true);
-							}
+							resolve(true);
 						}
+						return;
 					}
 
-					if(event.data?.type === 'PROGRESS')
+					if(data?.type === 'PROGRESS')
 					{
-						percent = event.data.percent;
-						if(event.data?.percent === 100)
+						// clearTimeout(timeoutId);
+						if(data.percent === 100)
 						{
 							workerSelf.splashScreen?.setProgress(100, 'Service Ready!');
 						} else
 						{
-							workerSelf.splashScreen?.setProgress(event.data.percent, `Fetching ${event.data.loaded}/${event.data.total} ${event.data.previous}...`);
+							workerSelf.splashScreen?.setProgress(
+								data.percent,
+								`Fetching ${data.loaded}/${data.total} ${data.previous}...`
+							);
 						}
 					}
 				};
 
-			worker.postMessage({ type: msgType, shutup: true }, [messageChannel.port2]);
-
-			const startTime = Date.now();
-			const pollInterval = setInterval(() =>
-			{
-				if(resolved) return;
-
-				if(Date.now() - startTime > 10000)
-				{
-					clearInterval(pollInterval);
-					console.warn(`SW transaction timeout reached for command: [${msgType}]`);
-					resolve(null);
-				}
-			}, 100);
-		});
+				// Transfer port2 to the Service Worker
+				worker.postMessage({ type: msgType, shutup: true }, [port2]);
+			})
+		]);
 	}
+
 
 	/**
 	 * Step 4: Registers a fresh Service Worker script file stream

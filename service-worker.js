@@ -619,7 +619,8 @@ serviceSelf.addEventListener('install', (event) =>
 	{
 		if(!localVersion || !serviceSelf.api?.environmentRepository)
 		{
-			await lookupLocalVersion();
+			alreadyVersioning = lookupLocalVersion('install');
+			await alreadyVersioning;
 		}
 
 		console.log('🚀 [SW-LIFECYCLE] Install waitUntil execution promise chain starting.');
@@ -646,7 +647,8 @@ function ensureInitialized()
 		{
 			if(!localVersion || !serviceSelf.api?.environmentRepository)
 			{
-				await lookupLocalVersion();
+				alreadyVersioning = lookupLocalVersion('init');
+				await alreadyVersioning;
 			}
 		})();
 	}
@@ -729,7 +731,8 @@ async function checkStatus()
 		{
 			if(!localVersion || !serviceSelf.api?.environmentRepository)
 			{
-				await lookupLocalVersion();
+				alreadyVersioning = lookupLocalVersion('status');
+				await alreadyVersioning;
 			}
 		})().catch(err =>
 		{
@@ -776,7 +779,7 @@ async function checkStatus()
 		{
 			console.warn('⚠️ [SW-OUT-OF-SYNC] Remote version changes detected on repository root branch! Initiating destructive workspace purge sequence.');
 
-			console.log(`🗑️ [SW-PURGE] Dropping local IndexedDB database blocks: "${serviceSelf.api?.environmentRepository}"`);
+			originalConsole.log(`🗑️ [SW-PURGE] Dropping local IndexedDB database blocks: "${serviceSelf.api?.environmentRepository}"`);
 			await serviceSelf.deleteOldDatabase?.(serviceSelf.api?.environmentRepository);
 			console.log(`🗑️ [SW-PURGE] Database wipe finished.`);
 
@@ -797,82 +800,110 @@ async function checkStatus()
 		console.warn('⚠️ [SW-HEARTBEAT] Connectivity or Version pipeline verification request check collapsed:', err);
 		if(!navigator.onLine || err instanceof TypeError)
 		{
-			console.warn('⚠️ [SW-STATUS] Network connection drop discovered via physical interface check flags.');
+			originalConsole.warn('⚠️ [SW-STATUS] Network connection drop discovered via physical interface check flags.');
 			isOffline = true;
 		}
 	}
 }
 
 
-async function lookupLocalVersion()
+/**
+ * @type {Promise<void> | undefined}
+ */
+let alreadyVersioning;
+
+/**
+ *
+ * @param {string | undefined} source
+ */
+async function lookupLocalVersion(source)
 {
-	const databases = await serviceSelf.getDatabaseMetadata?.();
-
-	originalConsole.log(`🔍 [SW-MESSAGE] Looking up version...`);
-
-	/** @type {import('./components/bundle/local.d').FileRecord | null} */
-	let newestVersionFile = null;
-	let chosenRepo = serviceSelf.api?.environmentRepository;
-
-	// 1. Concurrently query all databases for the settings file
-	const lookups = databases?.map(async (db) =>
+	if(alreadyVersioning)
 	{
-		try
-		{
-			// Assuming getRecord takes a database identifier or repository reference as the 3rd argument
-			const versionFile = await serviceSelf.getRecord?.(serviceSelf.DB_STORE_NAME ?? '', '/base/settings.json', db.key);
-			return { versionFile, repo: db.key };
-		} catch(e)
-		{
-			// Silently ignore individual database failures so one broken DB doesn't crash the loop
-			return null;
-		}
-	});
-
-	const results = await Promise.all(lookups ?? []);
-
-	// 2. Loop through the results to find the most recent copy based on timestamp
-	for(const result of results)
-	{
-		if(!result || !result.versionFile || !result.versionFile.timestamp) continue;
-
-		if(!newestVersionFile || (newestVersionFile?.timestamp && result.versionFile.timestamp > newestVersionFile.timestamp))
-		{
-			newestVersionFile = result.versionFile;
-			chosenRepo = result.repo ?? serviceSelf.DB_NAME ?? 'bjcullinan2/mediaserver-ts';
-		}
-	}
-
-	// 3. Process the newest file found (if any)
-	if(newestVersionFile && (newestVersionFile.contents instanceof ArrayBuffer || newestVersionFile.contents instanceof Uint8Array))
-	{
-		try
-		{
-			const settings = JSON.parse(new TextDecoder().decode(newestVersionFile.contents));
-			localVersion = settings.environment_version;
-			if(serviceSelf.api)
-			{
-				serviceSelf.api.environmentRepository = settings.environment_repository || chosenRepo;
-				serviceSelf.api.github_token = settings.github_token;
-			}
-		} catch(e)
-		{
-			originalConsole.log(`⚠️ [SW-MESSAGE] Version lookup failed, using fallback: ${localVersion}`);
-			originalConsole.error(e);
-			localVersion ||= newestVersionFile.timestamp || null;
-			if(serviceSelf.api)
-			{
-				serviceSelf.api.environmentRepository = chosenRepo;
-			}
-		}
+		originalConsole.log(`🔍 [SW-MESSAGE] Already versioning...`, source);
+		return alreadyVersioning;
 	} else
 	{
-		originalConsole.log(`⚠️ [SW-MESSAGE] No version file found across any databases. Fallback: ${localVersion}`);
+		originalConsole.log(`🔍 [SW-MESSAGE] Looking up version...`, source);
+		if(source === 'client')
+		{
+			//debugger;
+		}
 	}
-	if(!serviceSelf.api?.environmentRepository)
+
+	try
 	{
-		debugger;
-		originalConsole.log('You\'re a fucking idiot.');
+
+		const databases = await serviceSelf.getDatabaseMetadata?.();
+
+		/** @type {import('./components/bundle/local.d').FileRecord | null} */
+		let newestVersionFile = null;
+		let chosenRepo = serviceSelf.api?.environmentRepository;
+
+		// 1. Concurrently query all databases for the settings file
+		const lookups = databases?.map(async (db) =>
+		{
+			try
+			{
+				// Assuming getRecord takes a database identifier or repository reference as the 3rd argument
+				const versionFile = await serviceSelf.getRecord?.(serviceSelf.DB_STORE_NAME ?? '', '/base/settings.json', db.key);
+				return { versionFile, repo: db.key };
+			} catch(e)
+			{
+				// Silently ignore individual database failures so one broken DB doesn't crash the loop
+				return null;
+			}
+		});
+
+		const results = await Promise.all(lookups ?? []);
+
+		// 2. Loop through the results to find the most recent copy based on timestamp
+		for(const result of results)
+		{
+			if(!result || !result.versionFile || !result.versionFile.timestamp) continue;
+
+			if(!newestVersionFile || (newestVersionFile?.timestamp && result.versionFile.timestamp > newestVersionFile.timestamp))
+			{
+				newestVersionFile = result.versionFile;
+				chosenRepo = result.repo ?? serviceSelf.DB_NAME ?? 'bjcullinan2/mediaserver-ts';
+			}
+		}
+
+		// 3. Process the newest file found (if any)
+		if(newestVersionFile && (newestVersionFile.contents instanceof ArrayBuffer || newestVersionFile.contents instanceof Uint8Array))
+		{
+			try
+			{
+				const settings = JSON.parse(new TextDecoder().decode(newestVersionFile.contents));
+				localVersion = settings.environment_version;
+				if(serviceSelf.api)
+				{
+					serviceSelf.api.environmentRepository = settings.environment_repository || chosenRepo;
+					serviceSelf.api.github_token = settings.github_token;
+				}
+				originalConsole.log(`✅ [SW-MESSAGE] Version lookup succeeded, found: ${localVersion}`, source);
+			} catch(e)
+			{
+				originalConsole.log(`⚠️ [SW-MESSAGE] Version lookup failed, using fallback: ${localVersion}`, source);
+				originalConsole.error(e);
+				localVersion ||= newestVersionFile.timestamp || null;
+				if(serviceSelf.api)
+				{
+					serviceSelf.api.environmentRepository = chosenRepo;
+				}
+			}
+		} else
+		{
+			originalConsole.log(`⚠️ [SW-MESSAGE] No version file found across any databases. Fallback: ${localVersion}`);
+		}
+		if(!serviceSelf.api?.environmentRepository)
+		{
+			debugger;
+			originalConsole.log('You\'re a fucking idiot.');
+		}
+	} finally
+	{
+		alreadyVersioning = undefined;
 	}
 }
 
@@ -903,8 +934,13 @@ serviceSelf.addEventListener('message', async (event) =>
 		SHUTUP = !!event.data.shutup;
 
 		//if(!localVersion || !api.environmentRepository)
+		try
 		{
-			await lookupLocalVersion();
+			alreadyVersioning = lookupLocalVersion('client');
+			await alreadyVersioning;
+		} catch(e)
+		{
+			originalConsole.error(e);
 		}
 
 		if(event.ports && event.ports[0])
@@ -922,9 +958,12 @@ serviceSelf.addEventListener('message', async (event) =>
 					version: localVersion
 				});
 			}
+		} else
+		{
+			//originalConsole.log(`❌ [SW-MESSAGE] Not responding to ports: ${localVersion}`);
 		}
 
-		console.log('✉️ [SW-MESSAGE] Queueing secondary checkStatus validation task routine...');
+		originalConsole.log('✉️ [SW-MESSAGE] Queueing secondary checkStatus validation task routine...');
 		checkStatus();
 	} else if(event.data && event.data.type === 'CLAIM_CLIENTS')
 	{
@@ -1048,7 +1087,6 @@ serviceSelf.addEventListener('fetch', (event) =>
 
 			if(isGithubContents)
 			{
-				// ✅ FIX: Keep the raw path structural elements completely untouched!
 				// This preserves "contents/maps/q3dm7.bsp" so the network request pulls the real file
 				assetUrl = restOfRoute;
 			} else

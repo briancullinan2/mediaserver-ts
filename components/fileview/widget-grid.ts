@@ -4,6 +4,7 @@ import type { NestedTreeNode } from '../bundle/github-tools';
 import type { IFileViewOptions } from './widget';
 import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { KnownFileViews } from '../art/widget';
+import { WidgetSearchBar } from '../art/widget-search';
 
 const widgetSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
 
@@ -21,7 +22,7 @@ export class ExplorerGridWidget extends Widget
 {
 	private _files: NestedTreeNode[] = [];
 	private _selectedIds: Set<string> = new Set();
-	private _flow: GridFlow = 'row-first';
+	private _displayMode: GridFlow = 'row-first';
 	private _iconSize: IconSize = 'medium';
 
 	// Callbacks
@@ -29,7 +30,7 @@ export class ExplorerGridWidget extends Widget
 	private _onFileActivate?: (file: NestedTreeNode) => void;
 
 	// DOM Elements
-	private _toolbarNode!: HTMLElement;
+	//private _toolbarNode!: HTMLElement;
 	private _gridViewport!: HTMLElement;
 	private _gridContainer!: HTMLElement;
 	private _marqueeBox!: HTMLElement;
@@ -40,8 +41,7 @@ export class ExplorerGridWidget extends Widget
 	private _dragStartX: number = 0;
 	private _dragStartY: number = 0;
 
-	// ResizeObserver for Column-First Dynamic Calculations
-	//private _resizeObserver: ResizeObserver;
+	public _toggleBtn?: HTMLDivElement;
 
 	constructor(title?: string | null, options: IExplorerGridOptions = {})
 	{
@@ -49,32 +49,56 @@ export class ExplorerGridWidget extends Widget
 		this.addClass('explorer-grid-widget');
 		this._files = options?.files || [];
 		this._iconSize = options.iconSize || 'medium';
-		this._flow = options.flow || 'row-first';
+		this._displayMode = options.flow || 'row-first';
 		this._onSelectionChange = options.onSelectionChange;
 		this._onFileActivate = options.onFileSelect;
 
 		this.renderLayout();
-
-		//this._resizeObserver = new ResizeObserver(() =>
-		//{
-		//	if(this._flow === 'column-first')
-		//	{
-		//		this.recalculateColumnFlow();
-		//	}
-		//});
-
 		this.attachEvents();
 	}
 
 	protected onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
-		//this._resizeObserver.observe(this._gridViewport);
+		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+	}
+
+	protected renderToggleBtn(toggle: HTMLElement)
+	{
+		toggle.innerHTML = `<i class="bx ${this._displayMode === 'row-first' ? 'bx-gallery-horizontal' : 'bx-gallery-vertical'}"></i>`;
+		toggle.title = this._displayMode === 'row-first' ? 'Column View' : 'Row View';
+	}
+
+
+	protected clickToggleBtn()
+	{
+		this._displayMode = this._displayMode === 'row-first' ? 'column-first' : 'row-first';
+		this.setGridFlow(this._displayMode);
+		this.fit();
+		this.update();
 	}
 
 	protected onBeforeDetach(msg: Message): void
 	{
-		//this._resizeObserver.unobserve(this._gridViewport);
+		if(this._toggleBtn)
+		{
+			this._toggleBtn?.remove();
+			this._toggleBtn = undefined;
+		}
+		if(this.parent)
+		{
+			this.parent.removeClass('column-first');
+			this.parent.removeClass('row-first');
+		}
+		if(this.node.parentElement)
+		{
+			const parent = this.node.parentElement.closest('.lm-Widget');
+			if(parent)
+			{
+				parent.classList.remove('column-first');
+				parent.classList.remove('row-first');
+			}
+		}
 		super.onBeforeDetach(msg);
 	}
 
@@ -89,36 +113,33 @@ export class ExplorerGridWidget extends Widget
 	public setIconSize(size: IconSize): void
 	{
 		this._iconSize = size;
-		this._gridContainer.setAttribute('data-icon-size', size);
-		if(this._flow === 'column-first')
-		{
-			//this.recalculateColumnFlow();
-		}
+		//this._gridContainer.setAttribute('data-icon-size', size);
 	}
 
+	// TODO: set class on parent widget
 	public setGridFlow(flow: GridFlow): void
 	{
-		this._flow = flow;
-		this._gridContainer.setAttribute('data-flow', flow);
-		if(flow === 'column-first')
+		this._displayMode = flow;
+		//this._gridContainer.setAttribute('data-flow', flow);
+		if(this.parent)
 		{
-			//this.recalculateColumnFlow();
-		} else
+			this.parent.removeClass(flow === 'column-first' ? 'row-first' : 'column-first');
+			this.parent.addClass(flow === 'column-first' ? 'column-first' : 'row-first');
+		}
+		if(this.node.parentElement)
 		{
-			this._gridContainer.style.removeProperty('grid-template-rows');
-			this._gridContainer.style.removeProperty('grid-auto-flow');
-			this._gridContainer.style.removeProperty('grid-auto-columns');
+			const parent = this.node.parentElement.closest('.lm-Widget');
+			if(parent)
+			{
+				parent.classList.remove(flow === 'column-first' ? 'row-first' : 'column-first');
+				parent.classList.add(flow === 'column-first' ? 'column-first' : 'row-first');
+			}
 		}
 	}
 
 	private renderLayout(): void
 	{
 		this.node.replaceChildren();
-
-		// 1. Toolbar Controls
-		this._toolbarNode = document.createElement('div');
-		this._toolbarNode.className = 'egw-toolbar';
-		this.buildToolbar();
 
 		// 2. Viewport & Grid Container
 		this._gridViewport = document.createElement('div');
@@ -127,8 +148,8 @@ export class ExplorerGridWidget extends Widget
 
 		this._gridContainer = document.createElement('div');
 		this._gridContainer.className = 'egw-grid-container';
-		this._gridContainer.setAttribute('data-icon-size', this._iconSize);
-		this._gridContainer.setAttribute('data-flow', this._flow);
+		//this._gridContainer.setAttribute('data-icon-size', this._iconSize);
+		//this._gridContainer.setAttribute('data-flow', this._displayMode);
 
 		// 3. Marquee Drag Box
 		this._marqueeBox = document.createElement('div');
@@ -139,61 +160,9 @@ export class ExplorerGridWidget extends Widget
 		this._hoverCard.className = 'egw-hover-card';
 
 		this._gridViewport.append(this._gridContainer, this._marqueeBox, this._hoverCard);
-		this.node.append(this._toolbarNode, this._gridViewport);
+		this.node.append(this._gridViewport);
 
 		this.renderGridItems();
-	}
-
-	private buildToolbar(): void
-	{
-		this._toolbarNode.innerHTML = `
-      <div class="egw-toolbar-group">
-        <label><i class="bx bx-slider"></i> Icon Size</label>
-        <div class="egw-btn-group">
-          ${(['small', 'medium', 'large', 'huge'] as IconSize[])
-				.map(
-					(s) => `
-            <button class="egw-tool-btn ${this._iconSize === s ? 'active' : ''}" data-size="${s}">
-              ${s.charAt(0).toUpperCase() + s.slice(1)}
-            </button>
-          `
-				)
-				.join('')}
-        </div>
-      </div>
-      <div class="egw-toolbar-divider"></div>
-      <div class="egw-toolbar-group">
-        <label><i class="bx bx-layout"></i> Order Flow</label>
-        <div class="egw-btn-group">
-          <button class="egw-tool-btn ${this._flow === 'row-first' ? 'active' : ''}" data-flow="row-first" title="Standard Wrap (Horizontal Left-to-Right)">
-            <i class="bx bx-right-arrow-alt"></i> Row-First
-          </button>
-          <button class="egw-tool-btn ${this._flow === 'column-first' ? 'active' : ''}" data-flow="column-first" title="Alphabetical Column Wrap (Top-to-Bottom then Right)">
-            <i class="bx bx-down-arrow-alt"></i> Column-First
-          </button>
-        </div>
-      </div>
-    `;
-
-		this._toolbarNode.querySelectorAll('[data-size]').forEach((btn) =>
-		{
-			btn.addEventListener('click', (e) =>
-			{
-				const size = (e.currentTarget as HTMLElement).dataset.size as IconSize;
-				this.setIconSize(size);
-				this.buildToolbar();
-			});
-		});
-
-		this._toolbarNode.querySelectorAll('[data-flow]').forEach((btn) =>
-		{
-			btn.addEventListener('click', (e) =>
-			{
-				const flow = (e.currentTarget as HTMLElement).dataset.flow as GridFlow;
-				this.setGridFlow(flow);
-				this.buildToolbar();
-			});
-		});
 	}
 
 	private renderGridItems(): void
@@ -237,32 +206,10 @@ export class ExplorerGridWidget extends Widget
 			this._gridContainer.appendChild(item);
 		});
 
-		if(this._flow === 'column-first')
+		if(this._displayMode === 'column-first')
 		{
 			//this.recalculateColumnFlow();
 		}
-	}
-
-	/**
-	 * Forces alphabetical vertical overflow by measuring viewport height and computing fixed CSS rows.
-	 */
-	private recalculateColumnFlow(): void
-	{
-		if(this._flow !== 'column-first' || !this.isAttached) return;
-
-		const viewportHeight = this._gridViewport.clientHeight - 32; // minus viewport padding
-		let itemHeight = 100; // base default
-
-		if(this._iconSize === 'small') itemHeight = 70;
-		if(this._iconSize === 'medium') itemHeight = 100;
-		if(this._iconSize === 'large') itemHeight = 135;
-		if(this._iconSize === 'huge') itemHeight = 180;
-
-		const computedRows = Math.max(1, Math.floor(viewportHeight / (itemHeight + 12)));
-
-		this._gridContainer.style.gridTemplateRows = `repeat(${computedRows}, ${itemHeight}px)`;
-		this._gridContainer.style.gridAutoFlow = 'column';
-		this._gridContainer.style.gridAutoColumns = `minmax(${itemHeight}px, max-content)`;
 	}
 
 	/* ==========================================================================
