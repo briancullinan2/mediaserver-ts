@@ -119,8 +119,8 @@
 
 /* 3. Dynamic Grid Items */
 .egw-grid-item {
-	background: #1a1a1a;
-	border: 1px solid #282828;
+	background: var(--ace-bg, #1a1a1a);
+	border: 1px solid var(--ace-gutter-bg, #282828);
 	border-radius: 6px;
 	padding: 10px;
 	display: flex;

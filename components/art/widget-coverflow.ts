@@ -157,7 +157,8 @@ export class CoverflowWidget extends Widget
                 <button type="button" class="coverflow-btn prev" aria-label="Previous Item">❮</button>
                 <div class="coverflow-container">
                     ${this._items.map((item, idx) => `
-                        <div class="coverflow-card" data-icon="${(item.mode >> 12 === 4) ? 'bx bx-folder' : ''}" data-idx="${idx}" id="cf-card-${this.cid}-${idx}">
+                        <div class="coverflow-card" data-idx="${idx}" id="cf-card-${this.cid}-${idx}">
+							<i class="${(item.mode >> 12 === 4) ? 'bx bx-folder' : ''}"></i>
                             <div class="coverflow-card-label" title="${item.text}">${item.text}</div>
                         </div>
                     `).join('')}

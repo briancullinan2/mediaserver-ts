@@ -808,7 +808,7 @@ async function lookupLocalVersion()
 {
 	const databases = await serviceSelf.getDatabaseMetadata?.();
 
-	console.log(`🔍 [SW-MESSAGE] Variable placeholder empty. Fetching mapping timestamp fallback data from history.css tracking nodes...`);
+	originalConsole.log(`🔍 [SW-MESSAGE] Looking up version...`);
 
 	/** @type {import('./components/bundle/local.d').FileRecord | null} */
 	let newestVersionFile = null;

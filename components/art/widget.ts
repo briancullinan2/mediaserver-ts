@@ -542,7 +542,7 @@ export class ArtWidget extends Widget
 
 		const fetchPromise = (async () =>
 		{
-			const widget = ArtWidget.resolveSourceWidget(source);
+			const widget = await ArtWidget.resolveSourceWidget(source);
 			if(!widget) return [];
 
 			if('fetchFiles' in widget && typeof widget.fetchFiles === 'function')
@@ -592,7 +592,7 @@ export class ArtWidget extends Widget
 	{
 		super.onAfterAttach(msg);
 		this.openOutlineWidget(this.widgetIndex);
-		//this.refreshCurrentFolder();
+		this.refreshCurrentFolder();
 		requestAnimationFrame(() =>
 		{
 			this.setViewMode(this.activeViews);
@@ -608,13 +608,20 @@ export class ArtWidget extends Widget
 			{
 				try
 				{
-					const dp = ArtWidget.resolveSourceWidget(this.sources[this.widgetIndex]);
+					const dp = await ArtWidget.resolveSourceWidget(this.sources[this.widgetIndex]);
 					if(dp && 'fetchFiles' in dp && typeof dp.fetchFiles === 'function')
 					{
 						this.dataProvider = dp as IFileDataProvider;
 						this.rawFiles = await dp.fetchFiles(this.sources[this.widgetIndex]);
+						if(this.rawFiles)
+						{
+							this._filesSignal.emit({
+								items: this.rawFiles,
+								source: this.dataProvider
+							});
+						}
+						break;
 					}
-					break;
 				} catch(e)
 				{
 					console.error('Drive fetch failed: ', e);

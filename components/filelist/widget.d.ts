@@ -79,7 +79,7 @@ export interface WidgetErrorEventArgs
 
 export interface WidgetFilesEventArgs
 {
-	source: Widget;
+	source: Widget | IFileDataProvider;
 	items: NestedTreeNode[];
 }
 

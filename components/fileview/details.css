@@ -215,13 +215,13 @@
 }
 
 .ndw-table-row {
-	border-bottom: 1px solid #222222;
+	border-bottom: 1px solid rgb(from var(--ace-foreground, inherit, #222222) r g b / 20%);
 	cursor: pointer;
 	transition: background 0.15s ease;
 }
 
 .ndw-table-row:hover {
-	background: #252525;
+	background: var(--ace-selected-bg, #252525);
 }
 
 .ndw-table-row td {
@@ -297,14 +297,35 @@
 	gap: 16px;
 	scrollbar-width: none;
 	/* padding-bottom: 10px; */
-	min-height: 150px;
+	min-height: 100px;
 	max-height: 300px;
 	flex-wrap: wrap;
 	flex-direction: column;
 }
 
 .ndw-carousel-track:has(>*~*) {
+	min-height: 200px;
+}
+
+.ndw-carousel-track:has(>*~*~*) {
 	min-height: 300px;
+}
+
+.zoom-small .ndw-carousel-track {
+	min-height: 100px !important;
+	max-height: 250px;
+	gap: 8px;
+}
+
+.zoom-tiny .ndw-carousel-track {
+	min-height: 100px !important;
+	max-height: 250px;
+	gap: 8px;
+}
+
+.zoom-huge .ndw-carousel-track {
+	min-height: 200px !important;
+	max-height: 200px;
 }
 
 .ndw-carousel-track:not(:has(>*~*)) .ndw-carousel-card {
@@ -316,9 +337,31 @@
 	display: none;
 }
 
-.ndw-carousel-card {
+.zoom-tiny .ndw-carousel-card {
+	flex: 0 1 24.5%;
+	height: 24.5%;
+	padding: 4px;
+}
+
+.zoom-small .ndw-carousel-card {
+	flex: 1 0 24.5%;
+	height: 24.5%;
+	padding: 8px;
+}
+
+.zoom-large .ndw-carousel-card {
 	flex: 1 0 49%;
 	height: 49%;
+}
+
+.zoom-huge .ndw-carousel-card {
+	flex: 1 0 99%;
+	height: 99%;
+}
+
+.ndw-carousel-card {
+	flex: 1 0 33%;
+	height: 33%;
 	border-radius: 6px;
 	position: relative;
 	padding: 16px;
@@ -352,9 +395,66 @@
 	z-index: 2;
 }
 
+.parent-class .card-content {
+	display: revert;
+}
+
+.parent-class .card-icon,
+.parent-class .card-title,
+.parent-class .card-sub {
+	grid-column: unset;
+	grid-row: unset;
+}
+
+.zoom-tiny .card-content,
+.zoom-small .card-content,
+.zoom-medium .card-content {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	/* Left column fits icon width, right takes remaining space */
+	align-items: center;
+	/* Center items vertically */
+	gap: 0 12px;
+	/* Gap between icon column and text column */
+}
+
+.zoom-tiny .card-icon,
+.zoom-small .card-icon,
+.zoom-medium .card-icon {
+	grid-column: 1;
+	/* Explicitly put in column 1 */
+	grid-row: 2 / -2;
+	/* Span across all text rows from top to bottom */
+	align-self: center;
+	/* Ensure icon is vertically centered relative to text */
+}
+
+/* Optional: Target right column elements specifically */
+.card-title,
+.card-sub {
+	grid-column: 2;
+	/* Place text items in column 2 */
+}
+
 .card-icon {
-	font-size: 60px;
+	font-size: 40px;
 	margin-bottom: 6px;
+}
+
+.zoom-large .card-icon {
+	font-size: 60px;
+}
+
+.zoom-tiny .card-icon {
+	font-size: 16px;
+}
+
+.zoom-small .card-icon {
+	font-size: 24px;
+}
+
+.zoom-huge .card-icon {
+	font-size: 80px;
 }
 
 .card-title {

@@ -66,6 +66,8 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 		super(title ?? 'Explorer Workspace', sources);
 		this.addClass('cloud-drive-explorer-widget');
 		this.addClass(`${this.constructor.name.toLowerCase()}-frame`);
+		// TODO: save this value for every widget
+		this.addClass('zoom-' + this.zoom);
 		this.id = 'fileview';
 		this.title.className = this.id;
 
@@ -90,15 +92,15 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 	protected override onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
-		this.filesChanged.connect(() => this.refreshCurrentFolder());
+		//this.filesChanged.connect(() => this.refreshCurrentFolder());
 		this.errorOccurred.connect((sender) =>
 		{
-			if(this.dataProvider as any !== sender)
-			{
-				this.refreshCurrentFolder();
-			}
+			//if(this.dataProvider as any !== sender)
+			//{
+			//	this.refreshCurrentFolder();
+			//}
 		});
-		this.refreshCurrentFolder();
+		//this.refreshCurrentFolder();
 		this.parentTabBar = this.node.closest('.lm-DockPanel, .lm-TabPanel')?.querySelector(`.lm-TabBar:has(li.${this.id})`) as HTMLElement;
 		if(this.isVisible)
 		{
@@ -573,7 +575,13 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 	{
 		if(delta === -1)
 		{
-			if(this.zoom === 'medium')
+			if(this.zoom === 'tiny')
+			{
+
+			} else if(this.zoom === 'small')
+			{
+				this.zoom = 'tiny';
+			} else if(this.zoom === 'medium')
 			{
 				this.zoom = 'small';
 			} else if(this.zoom === 'large')
@@ -589,7 +597,10 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 		}
 		else if(delta === 1)
 		{
-			if(this.zoom === 'small')
+			if(this.zoom === 'tiny')
+			{
+				this.zoom = 'small';
+			} else if(this.zoom === 'small')
 			{
 				this.zoom = 'medium';
 			} else if(this.zoom === 'medium')
@@ -598,6 +609,9 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 			} else if(this.zoom === 'large')
 			{
 				this.zoom = 'huge';
+			} else if(this.zoom === 'huge')
+			{
+
 			} else
 			{
 				this.zoom = 'medium';
@@ -617,12 +631,12 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 
 		for(const c of this.node.classList)
 		{
-			if(c.startsWith('zoom-'))
+			if(c.startsWith('zoom-') && c !== this.zoom)
 			{
-				this.node.classList.remove(c);
+				this.removeClass(c);
 			}
 		}
-		this.node.classList.add('zoom-' + this.zoom);
+		this.addClass('zoom-' + this.zoom);
 	}
 
 	private zoom: IconSize = 'medium';
