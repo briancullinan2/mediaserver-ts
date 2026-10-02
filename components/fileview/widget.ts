@@ -11,6 +11,9 @@ import { IPillSelectedArgs, IPillViewOptions, PillSelectorWidget } from '../art/
 import type { IStyleViewOptions, StyleSelectorWidget } from '../art/widget-style';
 import type { IFileDataProvider, WidgetFilesEventArgs } from '../filelist/widget.d';
 import { WidgetSearchBar } from '../art/widget-search';
+import type { MenuModules } from '../bundle/menu-manager';
+import type { GlobalToolbarsWindow } from '../bundle/menu.d';
+import type { IconSize } from './widget-grid';
 
 
 export type ViewMode = 'netflix' | 'coverflow' | 'grid' | 'details' | 'tree' | 'pills' | 'styles';
@@ -18,7 +21,7 @@ export type SortOption = 'name-asc' | 'name-desc' | 'date-desc' | 'size-desc' | 
 export type GroupOption = 'none' | 'type' | 'date' | 'size';
 type Constructor<T = any, Args extends any[] = any[]> = new (...args: Args) => T;
 
-const fileviewSelf: LuminoLayoutWindow & KnownFileViews & {
+const fileviewSelf: LuminoLayoutWindow & KnownFileViews & GlobalToolbarsWindow & {
 	mime: typeof mime;
 } = self as unknown as any;
 
@@ -32,7 +35,7 @@ export interface IFileViewOptions
 }
 
 
-export class FileviewWidget extends ArtWidget
+export class FileviewWidget extends ArtWidget implements MenuModules
 {
 	// Active Display State
 	private isSplitView: boolean = false;
@@ -56,6 +59,7 @@ export class FileviewWidget extends ArtWidget
 	public searchInput?: HTMLInputElement;
 	public searchObserver?: ResizeObserver;
 
+	modules: Record<string, Record<string, Function>> = LOCAL_COMMANDS;
 
 	constructor(title?: string, sources?: string | string[])
 	{
@@ -565,4 +569,88 @@ export class FileviewWidget extends ArtWidget
 		return 'bx-file';
 	}
 
+	public setZoom(delta?: number)
+	{
+		if(delta === -1)
+		{
+			if(this.zoom === 'medium')
+			{
+				this.zoom = 'small';
+			} else if(this.zoom === 'large')
+			{
+				this.zoom = 'medium';
+			} else if(this.zoom === 'huge')
+			{
+				this.zoom = 'large';
+			} else
+			{
+				this.zoom = 'medium';
+			}
+		}
+		else if(delta === 1)
+		{
+			if(this.zoom === 'small')
+			{
+				this.zoom = 'medium';
+			} else if(this.zoom === 'medium')
+			{
+				this.zoom = 'large';
+			} else if(this.zoom === 'large')
+			{
+				this.zoom = 'huge';
+			} else
+			{
+				this.zoom = 'medium';
+			}
+		} else if(delta === 0)
+		{
+			this.zoom = 'medium';
+		}
+
+		for(const w of this.mountedSubWidgets)
+		{
+			if('setIconSize' in w && typeof w.setIconSize === 'function')
+			{
+				w.setIconSize(this.zoom);
+			}
+		}
+
+		for(const c of this.node.classList)
+		{
+			if(c.startsWith('zoom-'))
+			{
+				this.node.classList.remove(c);
+			}
+		}
+		this.node.classList.add('zoom-' + this.zoom);
+	}
+
+	private zoom: IconSize = 'medium';
 }
+
+
+const LOCAL_COMMANDS: Record<string, Record<string, Function>> = {};
+
+
+LOCAL_COMMANDS['view/zoom'] = {
+	in: function ()
+	{
+		//const toolbar = fileviewSelf.ViewToolbar?.getInstance();
+		//toolbar?.toggleHiddenFiles();
+		const activeWidget = fileviewSelf.lastInteractedWidget ?? fileviewSelf.previousInteractedWidget;
+		if(typeof (activeWidget as any)?.setZoom === 'function')
+		{
+			(activeWidget as any).setZoom(1);
+		}
+	},
+	out: function ()
+	{
+		//const toolbar = fileviewSelf.ViewToolbar?.getInstance();
+		//toolbar?.toggleHiddenFiles();
+		const activeWidget = fileviewSelf.lastInteractedWidget ?? fileviewSelf.previousInteractedWidget;
+		if(typeof (activeWidget as any)?.setZoom === 'function')
+		{
+			(activeWidget as any).setZoom(-1);
+		}
+	}
+};

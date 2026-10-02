@@ -48,6 +48,7 @@ export class DetailsViewWidget extends Widget
 	private _scrubberNode!: HTMLElement;
 	private _groupsContainer!: HTMLElement;
 	private _resultCountNode!: HTMLElement;
+	private _toggleBtn?: HTMLDivElement;
 
 	constructor(title?: string | null, options: IDetailsOptions = {})
 	{
@@ -59,6 +60,16 @@ export class DetailsViewWidget extends Widget
 
 		this.renderShell();
 		this.applyFilterAndSort();
+	}
+
+	protected onBeforeDetach(msg: Message): void
+	{
+		super.onBeforeDetach(msg);
+		if(this._toggleBtn)
+		{
+			this._toggleBtn?.remove();
+			this._toggleBtn = undefined;
+		}
 	}
 
 	protected onAfterAttach(msg: Message): void
@@ -163,21 +174,24 @@ export class DetailsViewWidget extends Widget
 		};
 
 		// Create custom toggle button
-		const toggleBtn = document.createElement('div');
-		toggleBtn.className = 'lm-TabBar-tabIcon custom-toggle-btn';
-		renderToggleBtn(toggleBtn);
+		this._toggleBtn = document.createElement('div');
+		this._toggleBtn.className = 'lm-TabBar-tabIcon custom-toggle-btn';
+		renderToggleBtn(this._toggleBtn);
 		const that = this;
-		toggleBtn.addEventListener('click', (event) =>
+		this._toggleBtn.addEventListener('click', (event) =>
 		{
 			// TODO: toggle netflix view
 			event.stopPropagation(); // Stop event bubbling to tab selection
 			this._displayMode = this._displayMode === 'details' ? 'carousel' : 'details';
-			renderToggleBtn(toggleBtn);
+			if(this._toggleBtn)
+			{
+				renderToggleBtn(this._toggleBtn);
+			}
 			this.renderGroupSections();
 		});
 
 		// Insert toggle right before the close icon
-		closeIconNode.parentNode?.insertBefore(toggleBtn, closeIconNode);
+		closeIconNode.parentNode?.insertBefore(this._toggleBtn, closeIconNode);
 	}
 
 

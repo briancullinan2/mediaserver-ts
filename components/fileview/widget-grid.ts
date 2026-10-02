@@ -8,7 +8,7 @@ import type { KnownFileViews } from '../art/widget';
 const widgetSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
 
 export type GridFlow = 'row-first' | 'column-first';
-export type IconSize = 'small' | 'medium' | 'large' | 'huge';
+export type IconSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge';
 
 export interface IExplorerGridOptions extends IFileViewOptions
 {

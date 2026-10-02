@@ -83,7 +83,7 @@
 .egw-viewport {
 	flex: 1;
 	position: relative;
-	overflow: auto;
+	overflow: visible;
 	padding: 16px;
 	outline: none;
 }

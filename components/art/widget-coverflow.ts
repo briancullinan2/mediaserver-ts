@@ -134,6 +134,7 @@ export class CoverflowWidget extends Widget
 		{
 			this.loadImagesLazy();
 		}
+
 	}
 
 	protected override onBeforeDetach(msg: Message): void
@@ -220,6 +221,24 @@ export class CoverflowWidget extends Widget
 			} else if(offset === 2)
 			{
 				card.classList.add('right-2');
+			} else if(offset === -3)
+			{
+				card.classList.add('left-3');
+			} else if(offset === 3)
+			{
+				card.classList.add('right-3');
+			} else if(offset === -4)
+			{
+				card.classList.add('left-4');
+			} else if(offset === 4)
+			{
+				card.classList.add('right-4');
+			} else if(offset === -5)
+			{
+				card.classList.add('left-5');
+			} else if(offset === 5)
+			{
+				card.classList.add('right-5');
 			} else
 			{
 				card.classList.add('hidden');
@@ -306,3 +325,10 @@ export class CoverflowWidget extends Widget
 }
 
 widgetSelf.CoverflowWidget = CoverflowWidget;
+
+
+const LOCAL_COMMANDS: Record<string, Record<string, Function>> = {};
+
+//LOCAL_COMMANDS['view/zoom.in'] = {
+
+//};

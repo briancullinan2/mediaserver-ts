@@ -51,7 +51,7 @@
 }
 
 .lm-Menu-itemShortcut {
-	padding: 0 4px;
+	padding: 0 4px 0 8px;
 }
 
 .lm-Menu-item[data-type="separator"] {

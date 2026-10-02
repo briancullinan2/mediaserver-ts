@@ -81,7 +81,7 @@ export function modeToWidgetURI(mode: string, source?: string): string | undefin
 			return '/components/fileview/widget-netflix.ts';
 			break;
 		case 'coverflow':
-			return '/components/art/widget-cover.ts';
+			return '/components/art/widget-coverflow.ts';
 			break;
 		case 'grid':
 			return '/components/fileview/widget-grid.ts';
