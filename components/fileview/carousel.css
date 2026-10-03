@@ -3,7 +3,8 @@
 	min-height: 100%;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	box-sizing: border-box;
-	padding: 20px 0;
+	padding: 0;
+	margin: 0;
 }
 
 /* Dynamic Ambient Backdrop */
@@ -104,7 +105,7 @@
 .carousel-hero-actions {
 	display: flex;
 	gap: 16px;
-	/* margin-bottom: 40px; */
+	padding-bottom: 40px;
 }
 
 .carousel-btn {
@@ -191,7 +192,7 @@
 
 /* Huge Movie Cards */
 .carousel-card {
-	flex: 0 0 320px;
+	flex: 0 0 auto;
 	height: 200px;
 	background-color: #2f2f2f;
 	border-radius: 6px;
@@ -199,6 +200,7 @@
 	position: relative;
 	cursor: pointer;
 	transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+	aspect-ratio: 0.75;
 }
 
 .carousel-card:hover {
@@ -265,6 +267,8 @@
 	pointer-events: none;
 }
 
+
+.carousel-episodes-grid-wrapper:hover .carousel-nav-arrow,
 .carousel-carousel-wrapper:hover .carousel-nav-arrow {
 	opacity: 1;
 	pointer-events: all;
@@ -293,40 +297,54 @@
 	font-style: italic;
 }
 
+.contain-height .cloud-main-panel {
+	overflow: hidden;
+}
+
+.contain-height .lm-Widget,
+.contain-height .view-pane {
+	max-height: 100%;
+	max-width: 100%;
+	width: 100%;
+	height: 100%;
+}
+
+.contain-height .carousel-hero-widget {
+	display: flex;
+}
 
 /* Container Layout */
 .carousel-episodes-container {
-	position: relative;
+	/* position: relative; */
 	width: 100%;
 	height: 100%;
+	max-height: 100%;
 	display: flex;
 	flex-direction: column;
-	background-color: #141414;
-	color: #ffffff;
-	overflow-y: auto;
-	padding: 32px 48px;
+	overflow: hidden;
 	box-sizing: border-box;
 }
 
 /* Dynamic Backdrop & Overlay */
 .carousel-episodes-backdrop {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 60vh;
+	height: 70%;
 	z-index: 0;
 	transition: background 0.5s ease-in-out;
-	opacity: 0.35;
-	filter: blur(20px);
+	/* opacity: 0.35; */
+	filter: blur(20px) brightness(0.6);
+	transform: scale(1.1);
 }
 
 .carousel-episodes-overlay {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 60vh;
+	height: 100%;
 	z-index: 1;
 	background: linear-gradient(180deg, rgba(20, 20, 20, 0.2) 0%, #141414 100%);
 	pointer-events: none;
@@ -334,11 +352,19 @@
 
 /* Show Header Section */
 .carousel-episodes-header {
-	position: relative;
+	position: fixed;
 	z-index: 2;
-	max-width: 800px;
-	margin-top: 24px;
-	margin-bottom: 32px;
+	width: 75%;
+	height: 100%;
+	margin: 0;
+	padding: 20px;
+	justify-content: space-between;
+	display: flex;
+	flex-direction: column;
+}
+
+.carousel-spacer {
+	flex-basis: 100%;
 }
 
 .carousel-episodes-title {
@@ -358,7 +384,7 @@
 
 /* Season Controls Bar */
 .carousel-episodes-controls {
-	position: relative;
+	position: fixed;
 	z-index: 2;
 	display: flex;
 	align-items: center;
@@ -366,6 +392,7 @@
 	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 	padding-bottom: 16px;
 	margin-bottom: 24px;
+	left: 75%;
 }
 
 .carousel-season-title {
@@ -381,6 +408,11 @@
 	position: relative;
 	z-index: 2;
 	flex: 1;
+	left: 75%;
+	width: 25%;
+	padding-top: 75px;
+	max-height: 100%;
+	height: 100%;
 }
 
 .carousel-episodes-grid-wrapper {
@@ -388,17 +420,34 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	max-height: 100%;
+	max-width: 100%;
+	height: 100%;
+	width: 100%;
+}
+
+.carousel-episodes-grid .carousel-card {
+	max-width: 100%;
 }
 
 .carousel-episodes-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
 	gap: 20px;
 	width: 100%;
-	max-height: 600px;
+	max-height: 100%;
+	height: 100%;
+	overflow: hidden;
 	overflow-y: auto;
 	scroll-behavior: smooth;
-	padding: 8px 4px;
+	padding: 20px 10px;
+	mask-image: linear-gradient(to top, transparent, black 15px, black calc(100% - 15px), transparent);
+	-webkit-mask-image: linear-gradient(to top, transparent, black 15px, black calc(100% - 15px), transparent);
+}
+
+.carousel-episodes-grid-wrapper:hover .carousel-episodes-grid {
+	mask-image: linear-gradient(to top, transparent 30px, black 80px, black calc(100% - 80px), transparent calc(100% - 30px));
+	-webkit-mask-image: linear-gradient(to top, transparent 30px, black 80px, black calc(100% - 80px), transparent calc(100% - 30px));
 }
 
 /* Vertical Scroll Arrow Styles */
@@ -414,8 +463,14 @@
 	align-items: center;
 	justify-content: center;
 	transition: background 0.2s ease;
+	left: 0;
 }
 
 .carousel-episodes-grid-wrapper .carousel-nav-arrow:hover {
 	background: rgba(255, 255, 255, 0.2);
+}
+
+.carousel-episodes-grid-wrapper .carousel-nav-arrow.carousel-nav-right {
+	bottom: 0;
+	top: auto;
 }

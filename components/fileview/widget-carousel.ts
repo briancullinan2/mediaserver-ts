@@ -112,6 +112,38 @@ export class CarouselViewWidget extends Widget
 		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
 	}
 
+	private setContainClass()
+	{
+		if(this.parent)
+		{
+			this.parent.addClass('contain-height');
+		}
+		if(this.node.parentElement)
+		{
+			const parent = this.node.parentElement.closest('.lm-Widget');
+			if(parent)
+			{
+				parent.classList.add('contain-height');
+			}
+		}
+	}
+
+	private removeContainClass()
+	{
+		if(this.parent)
+		{
+			this.parent.removeClass('contain-height');
+		}
+		if(this.node.parentElement)
+		{
+			const parent = this.node.parentElement.closest('.lm-Widget');
+			if(parent)
+			{
+				parent.classList.remove('contain-height');
+			}
+		}
+	}
+
 	protected renderToggleBtn(toggle: HTMLElement)
 	{
 		toggle.innerHTML = `<i class="bx ${this._displayMode === 'episodes' ? 'bx-gallery-horizontal' : 'bx-list-play'}"></i>`;
@@ -120,6 +152,7 @@ export class CarouselViewWidget extends Widget
 
 	protected override onBeforeDetach(msg: Message): void
 	{
+		this.removeContainClass();
 		if(this._toggleBtn)
 		{
 			this._toggleBtn?.remove();
@@ -169,13 +202,14 @@ export class CarouselViewWidget extends Widget
 	private renderShell(title: string, category: string): void
 	{
 		this.node.replaceChildren();
+		this.removeContainClass();
 
 		// Fullscreen Ambient Dynamic Backdrop
 		this._backdropNode = document.createElement('div');
 		this._backdropNode.className = 'carousel-backdrop';
 
-		const overlay = document.createElement('div');
-		overlay.className = 'animated-bg-layer';
+		// const overlay = document.createElement('div');
+		// overlay.className = 'animated-bg-layer';
 
 		// Hero Section
 		const heroContainer = document.createElement('div');
@@ -255,7 +289,7 @@ export class CarouselViewWidget extends Widget
 		this.pillsSection = document.createElement('div');
 		this.pillsSection.className = 'carousel-pill-section';
 
-		this.node.append(this._backdropNode, overlay, heroContainer, this.pillsSection, rowSection);
+		this.node.append(this._backdropNode, heroContainer, this.pillsSection, rowSection);
 
 		this.renderCarousel();
 	}
@@ -264,6 +298,7 @@ export class CarouselViewWidget extends Widget
 	private renderEpisodes(title: string, category: string): void
 	{
 		this.node.replaceChildren();
+		this.setContainClass();
 
 		// Episode Page Container
 		const epContainer = document.createElement('div');
@@ -273,8 +308,8 @@ export class CarouselViewWidget extends Widget
 		this._backdropNode = document.createElement('div');
 		this._backdropNode.className = 'carousel-episodes-backdrop';
 
-		const backdropOverlay = document.createElement('div');
-		backdropOverlay.className = 'carousel-episodes-overlay';
+		// const backdropOverlay = document.createElement('div');
+		// backdropOverlay.className = 'animated-bg-layer';
 
 		// Show Header / Details Section
 		const showHeader = document.createElement('div');
@@ -295,6 +330,9 @@ export class CarouselViewWidget extends Widget
 		this._heroDescNode.className = 'carousel-episodes-synopsis';
 		this._heroDescNode.textContent = 'Select a file to preview its media properties, metadata details, and streaming options.';
 
+		const heroSpacer = document.createElement('div');
+		heroSpacer.className = 'carousel-spacer';
+
 		const heroActions = document.createElement('div');
 		heroActions.className = 'carousel-hero-actions';
 
@@ -314,7 +352,7 @@ export class CarouselViewWidget extends Widget
 		infoBtn.innerHTML = `<span class="icon">ⓘ</span> Details`;
 
 		heroActions.append(playBtn, infoBtn);
-		showHeader.append(showBadge, this._heroTitleNode, this._heroMetaNode, this._heroDescNode, heroActions);
+		showHeader.append(showBadge, this._heroTitleNode, this._heroMetaNode, this._heroDescNode, heroSpacer, heroActions);
 
 		// Control Toolbar Section (Season Selector & Search/Pills)
 		const controlsBar = document.createElement('div');
@@ -361,7 +399,7 @@ export class CarouselViewWidget extends Widget
 		episodesSection.append(listWrapper);
 
 		// Assemble Episode Layout
-		epContainer.append(this._backdropNode, backdropOverlay, showHeader, controlsBar, episodesSection);
+		epContainer.append(this._backdropNode, showHeader, controlsBar, episodesSection);
 		this.node.append(epContainer);
 
 		this.renderCarousel();
