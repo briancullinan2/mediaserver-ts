@@ -175,10 +175,24 @@ html {
 	min-width: 0;
 }
 
+.lm-TabBar-tab>.lm-TabBar-tabIcon.bx {
+	margin-right: 8px;
+}
+
 .lm-TabBar-tabIcon:has(>*),
 .lm-TabBar-tabIcon:not(:empty) {
 	margin: 0 8px;
 	vertical-align: middle;
 	align-items: center;
 	display: flex;
+}
+
+.lm-Widget[data-type="outline"] {
+	width: 200px;
+	height: 100%;
+}
+
+.lm-Widget[data-type="editor"] {
+	width: 100%;
+	height: 100%;
 }

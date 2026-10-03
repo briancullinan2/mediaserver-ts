@@ -1,5 +1,9 @@
 import { Widget } from "@lumino/widgets";
 import type { PlaylistEntry } from "./widget";
+import type { LuminoLayoutWindow } from "../bundle/lumino.d";
+import { Message } from "@lumino/messaging";
+
+const playlistSelf: LuminoLayoutWindow = self as unknown as any;
 
 export class XRayPanelWidget extends Widget
 {
@@ -27,6 +31,20 @@ export class XRayPanelWidget extends Widget
 							<p id="xray-trivia-text" style="font-size: 12px; color: var(--text-muted); line-height: 1.5;"></p>
 						</div>
 					`;
+	}
+
+	public processMessage(msg: Message): void
+	{
+		if(msg.type === 'close-request')
+		{
+			console.log('Intercepted close request, hiding instead: ' + this.title.label);
+
+			this.hide();
+			playlistSelf.mainDock?.layout?.removeWidget(this);
+			return; // BAIL OUT: Avoid calling super.processMessage() to prevent disposal
+		}
+
+		super.processMessage(msg);
 	}
 
 	updateMetadata(track: PlaylistEntry)

@@ -1,5 +1,9 @@
 import { Widget } from "@lumino/widgets";
 import type { PlaylistEntry, TrackCallback } from "./widget";
+import { Message } from "@lumino/messaging";
+import type { LuminoLayoutWindow } from "../bundle/lumino.d";
+
+const playlistSelf: LuminoLayoutWindow = self as unknown as any;
 
 export class PlaylistPanelWidget extends Widget
 {
@@ -25,6 +29,21 @@ export class PlaylistPanelWidget extends Widget
 		this.onTrackSelect = onTrackSelect;
 		this.renderTracks();
 	}
+
+	public processMessage(msg: Message): void
+	{
+		if(msg.type === 'close-request')
+		{
+			console.log('Intercepted close request, hiding instead: ' + this.title.label);
+
+			this.hide();
+			playlistSelf.mainDock?.layout?.removeWidget(this);
+			return; // BAIL OUT: Avoid calling super.processMessage() to prevent disposal
+		}
+
+		super.processMessage(msg);
+	}
+
 
 	renderTracks(activeId = 'track-1')
 	{

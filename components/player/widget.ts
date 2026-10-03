@@ -4,6 +4,12 @@ import { TransportBarWidget } from "./controls";
 import { PLAYLIST_DATA, PlaylistPanelWidget } from "./playlist";
 import { XRayPanelWidget } from "./xray";
 import { Message } from "@lumino/messaging";
+import type { LuminoLayoutWindow } from '../bundle/lumino.d';
+import type { GlobalToolbarsWindow } from "../bundle/menu.d";
+
+
+const widgetSelf: LuminoLayoutWindow & GlobalToolbarsWindow = self as unknown as any;
+
 
 export type TransporterCommand = 'next' | 'ff' | 'rw' | 'prev' | 'setCrossfade' | 'toggleLayout' | 'togglePlay';
 export type TransporterCallback = (cmd: TransporterCommand, state?: any) => void;
@@ -45,6 +51,7 @@ export class PlayerWidget extends Widget
 		this.crossfadeTime = 3;
 		this.isCarouselHorizontal = false;
 		this.title.closable = true;
+		this.title.iconClass = 'bx bx-play';
 
 		// Ensure root widget container expands to fill viewport
 		this.addClass('player-outer-container');
@@ -54,8 +61,79 @@ export class PlayerWidget extends Widget
 	{
 		super.onAfterAttach(msg);
 		this.initUI();
+		this.openPlaylist();
 		this.loadTrack(PLAYLIST_DATA[0]);
 	}
+
+	protected override onAfterShow(msg: Message): void
+	{
+		super.onAfterShow(msg);
+		this.openPlaylist();
+	}
+
+	public processMessage(msg: Message): void
+	{
+		if(msg.type === 'close-request')
+		{
+			this.playlistPanel?.close();
+			this.xrayPanel?.close();
+		}
+
+		super.processMessage(msg);
+	}
+
+	protected override onBeforeHide(msg: Message): void
+	{
+		this.playlistPanel?.close();
+		this.xrayPanel?.close();
+		super.onBeforeHide(msg);
+	}
+
+
+	protected override onBeforeDetach(msg: Message): void
+	{
+		this.playlistPanel?.close();
+		this.xrayPanel?.close();
+		super.onBeforeDetach(msg);
+	}
+
+
+	private openPlaylist()
+	{
+		const that = this;
+		if(!this.playlistPanel)
+		{
+			this.playlistPanel = new PlaylistPanelWidget((track: PlaylistEntry | string) => this.loadTrack(track));
+		}
+		setTimeout(() =>
+		{
+			if(widgetSelf.mainDock && widgetSelf.LayoutAdjuster && that.playlistPanel)
+			{
+				widgetSelf.LayoutAdjuster?.addOptimalWidgetLayout(widgetSelf.mainDock, that.playlistPanel, {
+					type: 'outline',
+					projectId: that.playlistPanel?.constructor.name
+				});
+				widgetSelf.mainDock.activateWidget(that.playlistPanel);
+			}
+		}, 200);
+
+		if(!this.xrayPanel)
+		{
+			this.xrayPanel = new XRayPanelWidget();
+		}
+		setTimeout(() =>
+		{
+			if(widgetSelf.mainDock && widgetSelf.LayoutAdjuster && that.xrayPanel)
+			{
+				widgetSelf.LayoutAdjuster?.addOptimalWidgetLayout(widgetSelf.mainDock, that.xrayPanel, {
+					type: 'outline',
+					projectId: that.xrayPanel?.constructor.name
+				});
+			}
+		}, 100);
+
+	}
+
 
 	protected override onResize(msg: Widget.ResizeMessage): void
 	{
@@ -72,16 +150,6 @@ export class PlayerWidget extends Widget
 		// 1. App Header
 		const header = document.createElement('header');
 		this.title.label = 'Player';
-		// header.className = 'app-header';
-		// header.innerHTML = `
-		//     <div class="app-title">
-		//         <i class="fa-solid fa-compact-disc"></i> Lumino Media Suite
-		//     </div>
-		//     <div class="header-actions">
-		//         <button class="btn-glass active"><i class="fa-solid fa-layer-group"></i> Dock Layout</button>
-		//     </div>
-		// `;
-		// this.node.appendChild(header);
 
 		// 2. Center Stack Construction
 		this.mediaViewport = new MediaViewportWidget();
@@ -100,21 +168,13 @@ export class PlayerWidget extends Widget
 			centerBox.node.appendChild(this.transportBar.node);
 		}
 
-		// 3. Sidebar DockPanel
-		this.rightDockPanel = new DockPanel();
-		this.playlistPanel = new PlaylistPanelWidget((track: PlaylistEntry | string) => this.loadTrack(track));
-		this.xrayPanel = new XRayPanelWidget();
-
-		this.rightDockPanel.addWidget(this.playlistPanel);
-		this.rightDockPanel.addWidget(this.xrayPanel, { mode: 'tab-after', ref: this.playlistPanel });
-
 		// 4. Main Split Panel Assembly
 		this.mainSplitPanel = new SplitPanel({ orientation: 'horizontal' });
 		this.mainSplitPanel.id = 'lumino-main-split';
 
 		this.mainSplitPanel.addWidget(centerBox);
-		this.mainSplitPanel.addWidget(this.rightDockPanel);
-		this.mainSplitPanel.setRelativeSizes([0.72, 0.28]);
+		// this.mainSplitPanel.addWidget(this.rightDockPanel);
+		this.mainSplitPanel.setRelativeSizes([1]);
 
 		// Attach layout directly as a child Lumino widget instead of raw Widget.attach call
 		Widget.attach(this.mainSplitPanel, this.node);

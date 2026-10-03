@@ -680,7 +680,7 @@ export class ArtWidget extends Widget
 	protected override onActivateRequest(msg: Message): void
 	{
 		super.onActivateRequest(msg);
-		this.openOutlineWidget(this.widgetIndex);
+		//this.openOutlineWidget(this.widgetIndex);
 	}
 
 	protected override onAfterShow(msg: Message): void
