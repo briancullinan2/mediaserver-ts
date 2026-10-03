@@ -415,6 +415,20 @@ export class ArtWidget extends Widget
 		return undefined;
 	}
 
+	protected override onBeforeHide(msg: Message): void
+	{
+		this.activeWidget?.close();
+		super.onBeforeHide(msg);
+	}
+
+
+	protected override onBeforeDetach(msg: Message): void
+	{
+		this.activeWidget?.close();
+		super.onBeforeDetach(msg);
+	}
+
+
 	/**
 	 * Opens target widget or fallback widgets sequentially as outline panels
 	 */
