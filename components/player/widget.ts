@@ -1,7 +1,7 @@
 import { BoxPanel, DockPanel, SplitPanel, Widget } from "@lumino/widgets";
 import { MediaViewportWidget } from "./widget-viewport";
 import { TransportBarWidget } from "./controls";
-import { PLAYLIST_DATA, PlaylistPanelWidget } from "./platlist";
+import { PLAYLIST_DATA, PlaylistPanelWidget } from "./playlist";
 import { XRayPanelWidget } from "./xray";
 import { Message } from "@lumino/messaging";
 
@@ -26,18 +26,18 @@ export interface PlaylistEntry
 	photos?: string[];
 }
 
-
 export class PlayerWidget extends Widget
 {
 	currentTrackIndex: number;
 	crossfadeTime: number;
 	isCarouselHorizontal: boolean;
-	mainSplitPanel: any;
+	mainSplitPanel!: SplitPanel;
 	mediaViewport?: MediaViewportWidget;
 	transportBar?: TransportBarWidget;
-	rightDockPanel: any;
+	rightDockPanel!: DockPanel;
 	playlistPanel?: PlaylistPanelWidget;
 	xrayPanel?: XRayPanelWidget;
+
 	constructor()
 	{
 		super();
@@ -45,6 +45,8 @@ export class PlayerWidget extends Widget
 		this.crossfadeTime = 3;
 		this.isCarouselHorizontal = false;
 
+		// Ensure root widget container expands to fill viewport
+		this.addClass('player-outer-container');
 	}
 
 	protected override onAfterAttach(msg: Message): void
@@ -54,6 +56,16 @@ export class PlayerWidget extends Widget
 		this.loadTrack(PLAYLIST_DATA[0]);
 	}
 
+	protected override onResize(msg: Widget.ResizeMessage): void
+	{
+		super.onResize(msg);
+		// Force Lumino panels to recalculate dimensions on parent window resize
+		if(this.mainSplitPanel)
+		{
+			this.mainSplitPanel.update();
+		}
+	}
+
 	initUI()
 	{
 		// 1. App Header
@@ -61,33 +73,28 @@ export class PlayerWidget extends Widget
 		this.title.label = 'Player';
 		header.className = 'app-header';
 		header.innerHTML = `
-                        <div class="app-title">
-                            <i class="fa-solid fa-compact-disc"></i> Lumino Media Suite
-                        </div>
-                        <div class="header-actions">
-                            <button class="btn-glass active"><i class="fa-solid fa-layer-group"></i> Dock Layout</button>
-                        </div>
-                    `;
+            <div class="app-title">
+                <i class="fa-solid fa-compact-disc"></i> Lumino Media Suite
+            </div>
+            <div class="header-actions">
+                <button class="btn-glass active"><i class="fa-solid fa-layer-group"></i> Dock Layout</button>
+            </div>
+        `;
 		this.node.appendChild(header);
 
-		// 2. Lumino SplitPanel Container
-		this.mainSplitPanel = new SplitPanel({ orientation: 'horizontal' });
-		this.mainSplitPanel.id = 'lumino-main-split';
-
-		// Center Media Viewport Box
+		// 2. Center Stack Construction
 		this.mediaViewport = new MediaViewportWidget();
-
-		// Transport Control Bar
 		this.transportBar = new TransportBarWidget((cmd, val) => this.handleTransportCommand(cmd, val));
 
-		// Assemble Center Stack
 		const centerBox = new BoxPanel({ direction: 'top-to-bottom' });
 		BoxPanel.setStretch(this.mediaViewport, 1);
 		BoxPanel.setStretch(this.transportBar, 0);
+		BoxPanel.setSizeBasis(this.transportBar, 80); // Ensure non-zero explicit basis height for controls
+
 		centerBox.addWidget(this.mediaViewport);
 		centerBox.addWidget(this.transportBar);
 
-		// Sidebar DockPanel (Right Panel for Up Next + X-Ray Tabs)
+		// 3. Sidebar DockPanel
 		this.rightDockPanel = new DockPanel();
 		this.playlistPanel = new PlaylistPanelWidget((track: PlaylistEntry | string) => this.loadTrack(track));
 		this.xrayPanel = new XRayPanelWidget();
@@ -95,13 +102,19 @@ export class PlayerWidget extends Widget
 		this.rightDockPanel.addWidget(this.playlistPanel);
 		this.rightDockPanel.addWidget(this.xrayPanel, { mode: 'tab-after', ref: this.playlistPanel });
 
-		// Add to Main Split
+		// 4. Main Split Panel Assembly
+		this.mainSplitPanel = new SplitPanel({ orientation: 'horizontal' });
+		this.mainSplitPanel.id = 'lumino-main-split';
+
 		this.mainSplitPanel.addWidget(centerBox);
 		this.mainSplitPanel.addWidget(this.rightDockPanel);
 		this.mainSplitPanel.setRelativeSizes([0.72, 0.28]);
 
-		// Attach to DOM
+		// Attach layout directly as a child Lumino widget instead of raw Widget.attach call
 		Widget.attach(this.mainSplitPanel, this.node);
+
+		// Force layout pass
+		this.mainSplitPanel.update();
 	}
 
 	loadTrack(track: PlaylistEntry | string)

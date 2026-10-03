@@ -7,7 +7,7 @@ export class XRayPanelWidget extends Widget
 	{
 		super();
 		this.addClass('xray-panel-widget');
-		this.title.label = 'X-Ray & Scene Info';
+		this.title.label = 'Scene Info';
 		this.title.closable = false;
 
 		this.node.innerHTML = `

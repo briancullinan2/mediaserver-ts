@@ -9,7 +9,7 @@ export class PlaylistPanelWidget extends Widget
 	{
 		super();
 		this.addClass('playlist-panel-widget');
-		this.title.label = 'Up Next & Playlist';
+		this.title.label = 'Playlist';
 		this.title.closable = false;
 
 		this.node.innerHTML = `

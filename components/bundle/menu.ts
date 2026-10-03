@@ -164,7 +164,7 @@ export const TOOLS_REGISTRY: Record<string, ComponentRoute> = {
 		subtext: 'Depends on TLS/SSL NNTP socket transport, SABnzbd or NZBGet RPC endpoints, PAR2 repair utilities, and multi-part RAR decoding libraries.',
 		description: 'A multi-threaded Usenet client manager capable of parsing XML-based NZB index files, assembling split binary segments across high-bandwidth NNTP connections, and running automated file repairs.'
 	},
-	'movies': {
+	'ripper': {
 		label: 'Movie Finder',
 		url: './components/tools/widget-movies.ts',
 		className: 'MoviesWidget',

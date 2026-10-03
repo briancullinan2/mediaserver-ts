@@ -113,12 +113,14 @@
 	justify-content: center;
 	opacity: 0;
 	pointer-events: none;
-	transition: opacity 0.5s ease-in-out;
+	transition: max-width 0.5s ease-in-out, opacity 0.5s ease-in-out;
+	max-width: 0;
 }
 
 .renderer-subwidget.active {
 	opacity: 1;
 	pointer-events: auto;
+	max-width: 100%;
 }
 
 /* YouTube Container */
@@ -545,4 +547,20 @@ canvas.silkdrop-canvas {
 
 ::-webkit-scrollbar-thumb:hover {
 	background: rgba(255, 255, 255, 0.3);
+}
+
+.player-outer-container {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+}
+
+#lumino-main-split {
+	flex: 1 1 auto;
+	width: 100% !important;
+	height: calc(100% - 54px) !important;
+	/* Subtract header height */
+	position: relative !important;
 }
