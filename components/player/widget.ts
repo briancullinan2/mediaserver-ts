@@ -44,6 +44,7 @@ export class PlayerWidget extends Widget
 		this.currentTrackIndex = 0;
 		this.crossfadeTime = 3;
 		this.isCarouselHorizontal = false;
+		this.title.closable = true;
 
 		// Ensure root widget container expands to fill viewport
 		this.addClass('player-outer-container');
@@ -71,16 +72,16 @@ export class PlayerWidget extends Widget
 		// 1. App Header
 		const header = document.createElement('header');
 		this.title.label = 'Player';
-		header.className = 'app-header';
-		header.innerHTML = `
-            <div class="app-title">
-                <i class="fa-solid fa-compact-disc"></i> Lumino Media Suite
-            </div>
-            <div class="header-actions">
-                <button class="btn-glass active"><i class="fa-solid fa-layer-group"></i> Dock Layout</button>
-            </div>
-        `;
-		this.node.appendChild(header);
+		// header.className = 'app-header';
+		// header.innerHTML = `
+		//     <div class="app-title">
+		//         <i class="fa-solid fa-compact-disc"></i> Lumino Media Suite
+		//     </div>
+		//     <div class="header-actions">
+		//         <button class="btn-glass active"><i class="fa-solid fa-layer-group"></i> Dock Layout</button>
+		//     </div>
+		// `;
+		// this.node.appendChild(header);
 
 		// 2. Center Stack Construction
 		this.mediaViewport = new MediaViewportWidget();
@@ -89,10 +90,15 @@ export class PlayerWidget extends Widget
 		const centerBox = new BoxPanel({ direction: 'top-to-bottom' });
 		BoxPanel.setStretch(this.mediaViewport, 1);
 		BoxPanel.setStretch(this.transportBar, 0);
-		BoxPanel.setSizeBasis(this.transportBar, 80); // Ensure non-zero explicit basis height for controls
+		BoxPanel.setSizeBasis(this.transportBar, 100); // Ensure non-zero explicit basis height for controls
 
 		centerBox.addWidget(this.mediaViewport);
-		centerBox.addWidget(this.transportBar);
+		//centerBox.addWidget(this.transportBar);
+		// attach it unmanaged so it can collapse
+		if(centerBox.node)
+		{
+			centerBox.node.appendChild(this.transportBar.node);
+		}
 
 		// 3. Sidebar DockPanel
 		this.rightDockPanel = new DockPanel();

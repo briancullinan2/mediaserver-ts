@@ -3,31 +3,36 @@ import type { PlaylistEntry, TrackCallback } from "./widget";
 
 export class PlaylistPanelWidget extends Widget
 {
-	wrapper: any;
-	onTrackSelect: TrackCallback;
+	private wrapper: HTMLDivElement;
+	private onTrackSelect: TrackCallback;
+	private nowPlaying: HTMLDivElement;
+
 	constructor(onTrackSelect: TrackCallback)
 	{
 		super();
 		this.addClass('playlist-panel-widget');
 		this.title.label = 'Playlist';
 		this.title.closable = false;
+		this.title.closable = true;
 
-		this.node.innerHTML = `
-						<div class="playlist-header">
-							<h3><i class="fa-solid fa-list-ul"></i> Up Next</h3>
-							<span class="track-badge">${PLAYLIST_DATA.length} Tracks</span>
-						</div>
-						<div class="playlist-items-wrapper"></div>
-					`;
-
-		this.wrapper = this.node.querySelector('.playlist-items-wrapper');
+		this.nowPlaying = document.createElement('div') as HTMLDivElement;
+		this.nowPlaying.classList.add('now-playing-wrapper');
+		this.wrapper = document.createElement('div') as HTMLDivElement;
+		this.wrapper.classList.add('playlist-items-wrapper');
+		this.node.appendChild(this.nowPlaying);
+		this.node.appendChild(this.wrapper);
+		// this.wrapper = this.node.querySelector('.playlist-items-wrapper');
 		this.onTrackSelect = onTrackSelect;
 		this.renderTracks();
 	}
 
 	renderTracks(activeId = 'track-1')
 	{
-		this.wrapper.innerHTML = '';
+		this.wrapper.innerHTML = `
+			<div class="playlist-header">
+				<h3><i class="fa-solid fa-list-ul"></i> Up Next</h3>
+				<span class="track-badge">${PLAYLIST_DATA.length} Tracks</span>
+			</div>`;
 		PLAYLIST_DATA.forEach(track =>
 		{
 			const card = document.createElement('div');
@@ -43,6 +48,16 @@ export class PlaylistPanelWidget extends Widget
 			card.addEventListener('click', () => this.onTrackSelect(track));
 			this.wrapper.appendChild(card);
 		});
+		const card = document.createElement('div');
+		card.className = `track-card empty-track`;
+		card.innerHTML = `
+						<div class="track-info">
+							<div class="track-title">Your Playlist</div>
+							<div class="track-artist">Drag and drop files here or open more files to play.</div>
+						</div>
+						<span class="track-badge">Empty</span>
+					`;
+		this.wrapper.appendChild(card);
 	}
 }
 

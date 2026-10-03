@@ -1,20 +1,21 @@
-:root {
-	--bg-base: #0a0c10;
+.player-outer-container {
+	--bg-base: var(--ace-bg, #0a0c10);
 	--bg-surface: rgba(18, 22, 31, 0.75);
 	--bg-surface-elevated: rgba(28, 35, 49, 0.85);
-	--border-glass: rgba(255, 255, 255, 0.08);
+	--border-glass: rgb(from var(--ace-bg, rgba(255, 255, 255, 0.08)) r g b / 50%);
 	--border-glass-active: rgba(99, 102, 241, 0.5);
 
-	--accent-primary: #6366f1;
-	--accent-glow: #818cf8;
-	--accent-cyan: #06b6d4;
-	--accent-pink: #ec4899;
+	--accent-primary: var(--ace-purple, #6366f1);
+	--accent-glow: var(--ace--blue, #818cf8);
+	--accent-cyan: var(--ace-green, #06b6d4);
+	--accent-pink: var(--ace-pink, #ec4899);
 
-	--text-main: #f8fafc;
-	--text-muted: #94a3b8;
-	--text-dim: #64748b;
+	--text-main: var(--ace-foreground, #f8fafc);
+	--text-muted: var(--ace-comment, #94a3b8);
+	--text-dim: rgb(from var(--ace-foreground, #64748b) r g b / 50%);
 
-	--font-main: 'Inter', system-ui, -apple-system, sans-serif;
+	--font-main: inherit;
+	/*'Inter', system-ui, -apple-system, sans-serif;*/
 	--font-code: 'JetBrains Mono', monospace;
 
 	--radius-sm: 6px;
@@ -22,44 +23,7 @@
 	--radius-lg: 20px;
 
 	--glass-blur: blur(16px);
-	--shadow-glow: 0 0 25px rgba(99, 102, 241, 0.25);
-}
-
-/* Header Navigation */
-.app-header {
-	height: 54px;
-	padding: 0 20px;
-	background: rgba(10, 12, 16, 0.85);
-	backdrop-filter: var(--glass-blur);
-	border-bottom: 1px solid var(--border-glass);
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	z-index: 10;
-}
-
-.app-title {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	font-weight: 800;
-	font-size: 18px;
-	letter-spacing: -0.5px;
-	background: linear-gradient(135deg, #fff 0%, var(--accent-glow) 100%);
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-}
-
-.app-title i {
-	color: var(--accent-primary);
-	-webkit-text-fill-color: initial;
-	filter: drop-shadow(0 0 8px var(--accent-primary));
-}
-
-.header-actions {
-	display: flex;
-	align-items: center;
-	gap: 10px;
+	--shadow-glow: 0 0 25px rgb(from var(--ace-gutter-bg, rgba(99, 102, 241, 0.25)) r g b / 50%);
 }
 
 .btn-glass {
@@ -162,9 +126,9 @@ canvas.silkdrop-canvas {
 	backdrop-filter: var(--glass-blur);
 	padding: 30px 50px;
 	border-radius: var(--radius-lg);
-	background: rgba(10, 12, 16, 0.6);
+	background: rgb(from var(--ace-bg, rgba(10, 12, 16, 0.6)) r g b / 50%);
 	border: 1px solid var(--border-glass);
-	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+	box-shadow: 0 20px 50px rgb(from var(--ace-gutter-bg, rgba(0, 0, 0, 0.5)) r g b / 50%);
 }
 
 .album-art-disc {
@@ -240,9 +204,18 @@ canvas.silkdrop-canvas {
 	box-shadow: 0 0 10px var(--accent-primary);
 }
 
+.track-card.empty-track:hover,
+.track-card.empty-track {
+	height: 100%;
+	min-height: 100%;
+	border-color: transparent;
+	background-color: transparent;
+	translate: none;
+}
+
 /* Custom Unified Transport Control Bar */
 .transport-bar-widget {
-	background: rgba(10, 12, 16, 0.9);
+	background: rgb(from var(--ace-bg, rgba(10, 12, 16, 0.9)) r g b / 50%);
 	backdrop-filter: var(--glass-blur);
 	border-top: 1px solid var(--border-glass);
 	padding: 12px 24px;
@@ -367,8 +340,8 @@ canvas.silkdrop-canvas {
 /* Sidebar Playlist & Up Next Carousel */
 .playlist-panel-widget {
 	height: 100%;
-	background: var(--bg-surface);
-	backdrop-filter: var(--glass-blur);
+	/* background: var(--bg-surface);
+	backdrop-filter: var(--glass-blur); */
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -394,7 +367,7 @@ canvas.silkdrop-canvas {
 .playlist-items-wrapper {
 	flex: 1;
 	overflow-y: auto;
-	padding: 12px;
+	padding: 0 12px;
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
@@ -410,7 +383,7 @@ canvas.silkdrop-canvas {
 }
 
 .track-card {
-	background: rgba(255, 255, 255, 0.03);
+	background: rgb(from var(--ace-bg, rgba(255, 255, 255, 0.03)) r g b / 50%);
 	border: 1px solid var(--border-glass);
 	border-radius: var(--radius-md);
 	padding: 10px;
@@ -420,6 +393,7 @@ canvas.silkdrop-canvas {
 	cursor: pointer;
 	transition: all 0.25s ease;
 	position: relative;
+	flex-grow: 1;
 }
 
 .playlist-panel-widget.carousel-horizontal .track-card {
@@ -467,9 +441,14 @@ canvas.silkdrop-canvas {
 	font-size: 11px;
 	color: var(--text-muted);
 	margin-top: 2px;
-	white-space: nowrap;
+	/* white-space: nowrap; */
 	overflow: hidden;
 	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	line-clamp: 2;
+	box-orient: vertical;
 }
 
 .track-badge {
