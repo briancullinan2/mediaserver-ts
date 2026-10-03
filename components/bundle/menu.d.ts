@@ -104,6 +104,7 @@ export interface RepositorySettingsWindow
 	SETTINGS_CONTROLS?: ControlConfig[];
 	IMPORT_SETTINGS?: Record<string, Record<string, SettingConfig>>;
 	MODULE_REGISTRY?: Record<string, ComponentRoute>;
+	TOOLS_REGISTRY?: Record<string, ComponentRoute>;
 	TERMINAL_REGISTRY?: TerminalFilter[];
 
 	updateSelectOptions?: (

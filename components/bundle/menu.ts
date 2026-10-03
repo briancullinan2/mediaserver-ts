@@ -44,43 +44,194 @@ export interface ComponentRoute
 	className?: string;
 	iconClass: string; // The specific Boxicons layout string tokens
 	description?: string;
+	subtext?: string;
 }
 
 // 1. Unified metadata tree tracking every panel type and icon token
 export const MODULE_REGISTRY: Record<string, ComponentRoute> = {
-	'collapse': { label: 'Collapse', iconClass: 'bx bx-arrow-in-left-square-half' },
-	'searchlist': { label: 'Search Files', url: './components/filelist/widget-search.ts', className: 'SearchListWidget', iconClass: 'bx bx-search' },
-	'fileview': { label: 'Shared Files', url: './components/fileview/widget.ts', className: 'FileviewWidget', iconClass: 'bx bx-folder-code' },
+	'collapse': {
+		label: 'Collapse',
+		iconClass: 'bx bx-arrow-in-left-square-half',
+		subtext: 'Requires Lumino DockPanel container references and UI state layout persistence.',
+		description: 'Collapses active sidebars or secondary workspace panels to maximize primary viewing space across media and storage widgets.'
+	},
+	'searchlist': {
+		label: 'Search Files',
+		url: './components/filelist/widget-search.ts',
+		className: 'SearchListWidget',
+		iconClass: 'bx bx-search',
+		subtext: 'Depends on indexed search database endpoints, debounced input triggers, and query-parsing regex modules.',
+		description: 'An indexed filesystem search interface that queries local and remote metadata to rapidly retrieve shared media files, audio tracks, and archives.'
+	},
+	'fileview': {
+		label: 'Shared Files',
+		url: './components/fileview/widget.ts',
+		className: 'FileviewWidget',
+		iconClass: 'bx bx-folder-code',
+		subtext: 'Requires SOCKS5/WebSocket stream proxies, local directory access APIs, and virtualized tree rendering contexts.',
+		description: 'A browser-based remote filesystem explorer enabling secure browsing, directory sharing, and file operations across distributed network storage nodes.'
+	},
+	'music': {
+		label: 'Music',
+		url: './components/music/widget.ts',
+		className: 'MusicWidget',
+		iconClass: 'bx bx-music',
+		subtext: 'Depends on Web Audio API, dynamic audio element binding, visualizer engine hooks, and crossfade timing managers.',
+		description: 'A high-performance audio engine and playlist player supporting seamless track crossfading, audio visualization, and stream playback from remote storage.'
+	},
+	'photos': {
+		label: 'Photos',
+		url: './components/photo/widget.ts',
+		className: 'PhotoWidget',
+		iconClass: 'bx bx-camera-alt',
+		subtext: 'Requires HTML5 Image canvas decoders, EXIF metadata extraction modules, and client-side thumbnail caching stores.',
+		description: 'A photo collection browser equipped with EXIF inspection, high-resolution previewing, and slideshow controls for indexed photographic libraries.'
+	},
+	'images': {
+		label: 'Images',
+		url: './components/image/widget.ts',
+		className: 'ImageWidget',
+		iconClass: 'bx bx-image',
+		subtext: 'Operates via CSS carousel drivers, pan/zoom canvas handlers, and multi-format raster/vector image readers.',
+		description: 'A interactive image viewer supporting multi-directional carousel transitions, responsive image sliders, and deep-zoom inspection for remote asset stores.'
+	},
+	'videos': {
+		label: 'Videos',
+		url: './components/video/widget.ts',
+		className: 'VideoWidget',
+		iconClass: 'bx bx-video',
+		subtext: 'Depends on HTML5 Video API, Media Source Extensions (MSE), and WebSocket telemetry streams for adaptive playback.',
+		description: 'A versatile video streaming player capable of handling short clips, web-shared recordings, and adaptive stream sources with custom playback controls.'
+	},
+	'movies': {
+		label: 'Movies',
+		url: './components/movie/widget.ts',
+		className: 'MovieWidget',
+		iconClass: 'bx bx-movie',
+		subtext: 'Integrates with TMDB/IMDb scrapers, server-side FFmpeg transcode queues, and HTTP Range request handlers.',
+		description: 'A cinematic media library interface featuring automated metadata matching, real-time transcoding streams, and full movie playback controls.'
+	},
+	'games': {
+		label: 'Games',
+		url: './components/game/widget.ts',
+		className: 'GameWidget',
+		iconClass: 'bx bx-joystick',
+		subtext: 'Requires WebAssembly (WASM) emulator runtimes, WebGL render target canvases, and Gamepad API event listeners.',
+		description: 'An embedded web execution environment and browser-based emulator dashboard for launching, streaming, and interacting with remote game assets.'
+	},
 
-	'music': { label: 'Music', url: './components/music/widget.ts', className: 'MusicWidget', iconClass: 'bx bx-music' },
-	'photos': { label: 'Photos', url: './components/photo/widget.ts', className: 'PhotoWidget', iconClass: 'bx bx-camera-alt' },
-	'images': { label: 'Images', url: './components/image/widget.ts', className: 'ImageWidget', iconClass: 'bx bx-image' },
-	'videos': { label: 'Videos', url: './components/video/widget.ts', className: 'VideoWidget', iconClass: 'bx bx-video' },
-	'movies': { label: 'Movies', url: './components/movie/widget.ts', className: 'MovieWidget', iconClass: 'bx bx-movie' },
-	'games': { label: 'Games', url: './components/game/widget.ts', className: 'GameWidget', iconClass: 'bx bx-joystick' },
-
-	//'database': { label: 'Local Database', url: './components/filelist/widget-database.ts', className: 'DatabaseListWidget', iconClass: 'bx bx-database' },
-	'tools': { label: 'Tools', url: './components/tools/widget.ts', className: 'ToolsWidget', iconClass: 'bx bx-rename' },
-	//'settings': { label: 'Edit Settings', url: './components/editor/widget-settings.ts', className: 'SettingsWidget', iconClass: 'bx bx-gear' },
+	// 'database': {
+	//   label: 'Local Database',
+	//   url: './components/filelist/widget-database.ts',
+	//   className: 'DatabaseListWidget',
+	//   iconClass: 'bx bx-database',
+	//   subtext: 'Requires IndexedDB storage adapters, local SQLite WASM bindings, and automated schema migration scripts.',
+	//   description: 'A client-side persistent storage inspector for tracking local file indices, media caches, and offline synchronization states.'
+	// },
+	'tools': {
+		label: 'Tools',
+		url: './components/tools/widget.ts',
+		className: 'ToolsWidget',
+		iconClass: 'bx bx-rename',
+		subtext: 'Relies on system subprocess execution bridges, batch processing queues, and external automation service RPCs.',
+		description: 'A centralized utility hub housing torrent procurement engines, transcode queue monitors, file renamers, and automated background media tools.'
+	},
+	// 'settings': {
+	//   label: 'Edit Settings',
+	//   url: './components/editor/widget-settings.ts',
+	//   className: 'SettingsWidget',
+	//   iconClass: 'bx bx-gear',
+	//   subtext: 'Depends on local storage key-value stores, JSON configuration schemas, and live application theme managers.',
+	//   description: 'A application configuration panel for managing transcode presets, remote network bindings, storage paths, and UI preferences.'
+	// },
 };
+
 
 export const TOOLS_REGISTRY: Record<string, ComponentRoute> = {
-	'torrent': { label: 'Torrent Procurement', url: './components/tools/widget-torrent.ts', className: 'TorrentWidget', iconClass: 'bx bx-cloud-download' },
-	'nzb': { label: 'NZB & Usenet Engine', url: './components/tools/widget-nzb.ts', className: 'NzbWidget', iconClass: 'bx bx-news' },
-	'movies': { label: 'Movie Procurement & Matching', url: './components/tools/widget-movies.ts', className: 'MoviesWidget', iconClass: 'bx bx-film' },
-	'tv': { label: 'TV Shows & MyEpisodes Sync', url: './components/tools/widget-tv.ts', className: 'TvWidget', iconClass: 'bx bx-tv' },
-	'renamer': { label: 'Batch File & Path Renamer', url: './components/tools/widget-renamer.ts', className: 'RenamerWidget', iconClass: 'bx bx-rename' },
-	'tagger': { label: 'Metadata & ID3 Tag Editor', url: './components/tools/widget-tagger.ts', className: 'TaggerWidget', iconClass: 'bx bx-purchase-tag-alt' },
-	'status': { label: 'Transcode & Worker Queue', url: './components/status/widget.ts', className: 'WorkerStatusWidget', iconClass: 'bx bx-cog' },
-
-	'github': { label: 'Github Commit', url: './components/filelist/widget-github.ts', className: 'GithubListWidget', iconClass: 'bx bx-git-repo-forked' },
-	'terminal-container': { label: 'Show Console', url: './components/terminal/widget.ts', className: 'TerminalWidget', iconClass: 'bx bx-terminal' },
-	'graph': { label: 'Workflow Graph', url: './components/graph/widget.ts', className: 'LightGraphWidget', iconClass: 'bx bx-chart-stacked-rows' },
+	'torrent': {
+		label: 'Torrents',
+		url: './components/tools/widget-torrent.ts',
+		className: 'TorrentWidget',
+		iconClass: 'bx bx-archive-arrow-down',
+		subtext: 'Requires WebTorrent / libtorrent Node native binding, DHT/P2P Socket layer, active TCP/UDP ports 6881-6889, and Local Storage session persistence.',
+		description: 'An automated peer-to-peer file acquisition system designed to coordinate high-speed swarm downloads, parse magnet URIs, verify piece integrity, and orchestrate torrent lifecycle management.'
+	},
+	'nzb': {
+		label: 'NZB & Usenet',
+		url: './components/tools/widget-nzb.ts',
+		className: 'NzbWidget',
+		iconClass: 'bx bx-news',
+		subtext: 'Depends on TLS/SSL NNTP socket transport, SABnzbd or NZBGet RPC endpoints, PAR2 repair utilities, and multi-part RAR decoding libraries.',
+		description: 'A multi-threaded Usenet client manager capable of parsing XML-based NZB index files, assembling split binary segments across high-bandwidth NNTP connections, and running automated file repairs.'
+	},
+	'movies': {
+		label: 'Movie Finder',
+		url: './components/tools/widget-movies.ts',
+		className: 'MoviesWidget',
+		iconClass: 'bx bx-film',
+		subtext: 'Integrates with TMDB / IMDb REST APIs, Radarr API v3, OMDb metadata scrapers, and fuzzy string-matching regex modules.',
+		description: 'An intelligent cinematic media crawler that queries indexers for releases, analyzes metadata profiles against media quality rules, and automatically matches releases with high-accuracy IMDB metadata.'
+	},
+	'tv': {
+		label: 'TV Subscriptions',
+		url: './components/tools/widget-tv.ts',
+		className: 'TvWidget',
+		iconClass: 'bx bx-tv',
+		subtext: 'Relies on TVDB API v4, Sonarr GraphQL/REST interfaces, MyEpisodes RSS feed authentication, and cron scheduling daemons.',
+		description: 'A comprehensive episodic television management engine that tracks release schedules, orchestrates series monitoring, and synchronizes watch history across third-party tracking portals.'
+	},
+	'renamer': {
+		label: 'Batch Renamer',
+		url: './components/tools/widget-renamer.ts',
+		className: 'RenamerWidget',
+		iconClass: 'bx bx-rename',
+		subtext: 'Uses Node.js `fs-extra` module, cross-platform POSIX path utilities, custom template engine parsing, and dry-run diffing pipelines.',
+		description: 'A structural batch file organization tool that parses raw filenames into normalized naming schemas, handles multi-directory relocation, and executes instant filesystem renames.'
+	},
+	'tagger': {
+		label: 'ID3 Tag Editor',
+		url: './components/tools/widget-tagger.ts',
+		className: 'TaggerWidget',
+		iconClass: 'bx bx-price-tag-alt',
+		subtext: 'Requires `node-id3`, `music-metadata` parser engine, FFmpeg audio probe bindings, and embedded cover art buffer readers.',
+		description: 'An advanced audio metadata editor built to inspect, extract, and write ID3v2 tags, embedded album artwork, variable bitrate headers, and canonical track metadata directly into audio streams.'
+	},
+	'status': {
+		label: 'Transcoder Queue',
+		url: './components/status/widget.ts',
+		className: 'WorkerStatusWidget',
+		iconClass: 'bx bx-cog',
+		subtext: 'Operates via BullMQ / Redis message broker, WebWorker thread pool poolers, FFmpeg CLI subprocess runners, and WebSocket telemetry status frames.',
+		description: 'A dynamic background task monitor that provides real-time oversight for hardware-accelerated video transcoding, worker health metrics, queue priority distribution, and stream encoding pipelines.'
+	},
+	'github': {
+		label: 'Github Commit',
+		url: './components/filelist/widget-github.ts',
+		className: 'GithubListWidget',
+		iconClass: 'bx bx-git-repo-forked',
+		subtext: 'Requires GitHub REST/GraphQL API tokens, simple-git subprocess wrapper, SSH key agent credentials, and git-log JSON parsers.',
+		description: 'A repository history and version control dashboard that tracks commit trees, diff histories, remote pull requests, and automated sync events across local and remote repositories.'
+	},
+	'terminal-container': {
+		label: 'Show Console',
+		url: './components/terminal/widget.ts',
+		className: 'TerminalWidget',
+		iconClass: 'bx bx-terminal',
+		subtext: 'Powered by Xterm.js canvas rendering context, WebSocket pty gateway daemon, UTF-8 streaming codecs, and node-pty process forks.',
+		description: 'An embedded interactive terminal emulator offering full pseudo-terminal (PTY) capabilities, customizable color themes, shell execution, and live stdout/stderr stream monitoring.'
+	},
+	'graph': {
+		label: 'Workflow Graph',
+		url: './components/graph/widget.ts',
+		className: 'LightGraphWidget',
+		iconClass: 'bx bx-chart-stacked-rows',
+		subtext: 'Built on Canvas2D / WebGL rendering context, LightGraph.js node engine, DAG execution pipelines, and JSON graph serialization formats.',
+		description: 'A visual node-based execution canvas for orchestrating media pipelines, connecting step-by-step automation workflows, and visually inspecting event-driven data flow branches.'
+	}
 };
 
-
 menuSelf.MODULE_REGISTRY = MODULE_REGISTRY;
-
+menuSelf.TOOLS_REGISTRY = TOOLS_REGISTRY;
 
 export const TERMINAL_REGISTRY: TerminalFilter[] = [
 	// Log Levels & Diagnostics
