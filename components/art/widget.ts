@@ -168,6 +168,7 @@ export class ArtWidget extends Widget
 	 */
 	protected viewRenderers: Map<string, ViewRenderer> = new Map();
 	private errorHandlers: ((sender: Widget, args: WidgetErrorEventArgs) => void)[] = [];
+	private filesHandlers: ((sender: Widget, args: WidgetFilesEventArgs) => void)[] = [];
 
 	private _errorOccurred = new Signal<Widget, WidgetErrorEventArgs>(this);
 	protected widgetIndex: number = 0;
@@ -423,7 +424,11 @@ export class ArtWidget extends Widget
 
 		if(this.activeWidget)
 		{
-			this.showOutline();
+			// TODO: too early if something double calls it shows anyways?
+			if(this.rawFiles)
+			{
+				this.showOutline();
+			}
 			return;
 		}
 
@@ -450,6 +455,7 @@ export class ArtWidget extends Widget
 			return;
 		}
 
+		// used to gate this method
 		this.activeWidget = targetWidget;
 		this.widgetIndex = index;
 
@@ -476,15 +482,17 @@ export class ArtWidget extends Widget
 			{
 				this.filesSignals[index] = (targetWidget as IFilesEvent).filesChanged;
 			}
-			this.filesSignals[index]?.connect((sender: Widget, args: WidgetFilesEventArgs) =>
+			this.filesHandlers[index] = (sender: Widget, args: WidgetFilesEventArgs) =>
 			{
 				this._filesSignal.emit(args);
 				this.rawFiles = args.items;
+
+				this.showOutline();
 				this.refreshCurrentFolder();
-			}, this);
+			};
+			this.filesSignals[index]?.connect(this.filesHandlers[index], this);
 		}
 
-		this.showOutline();
 	}
 
 
@@ -520,6 +528,7 @@ export class ArtWidget extends Widget
 	{
 		console.warn(`Source failed [${(sender as any)._source}]:`, args.error);
 		(sender as unknown as IErrorEvent).errorOccurred?.disconnect(this.errorHandlers[index]);
+		(sender as unknown as IFilesEvent).filesChanged?.disconnect(this.filesHandlers[index]);
 		sender.close();
 		if(sender === this.activeWidget)
 		{

@@ -62,6 +62,10 @@ export class FileListWidget extends Widget implements IFileDataProvider
 			this._source = source;
 		}
 		this.treeContainerId = `tree-${Date.now()}`;
+		requestAnimationFrame(() =>
+		{
+			this.renderAndLoad();
+		});
 	}
 
 	public processMessage(msg: Message): void
@@ -147,26 +151,33 @@ export class FileListWidget extends Widget implements IFileDataProvider
 
 	protected override onAfterAttach(msg: Message): void
 	{
+		super.onAfterAttach(msg);
 		requestAnimationFrame(() =>
 		{
-			this.renderLayout().then(async () =>
-			{
-				this.bindDOMEvents();
-				const widgetHandle = getRegistryIdFromWidget(this);
-				const settingKey: string = getSettingFromRegistryId(widgetHandle);
-				const database = filelistSelf.settingsManager?.get('github', 'environmentRepository');
-				const handle = (await filelistSelf.getRecord?.(filelistSelf.DB_STORE_NAME ?? '', '/' + settingKey, database))?.contents;
-				if((handle instanceof FileSystemDirectoryHandle)
-					&& await verifyPermission(handle as FileSystemHandle))
-				{
-					this.handle = handle;
-					const settingsConfig = Object.values(LOCAL_SETTINGS.filelist).find(s => s.key === settingKey);
-					this.handleKey = configureFileHandle(this.handle, settingsConfig);
-				}
-
-				this.initializeFiletrees();
-			});
+			this.renderAndLoad();
 		});
+
+	}
+
+
+	private async renderAndLoad()
+	{
+		await this.renderLayout();
+
+		this.bindDOMEvents();
+		const widgetHandle = getRegistryIdFromWidget(this);
+		const settingKey: string = getSettingFromRegistryId(widgetHandle);
+		const database = filelistSelf.settingsManager?.get('github', 'environmentRepository');
+		const handle = (await filelistSelf.getRecord?.(filelistSelf.DB_STORE_NAME ?? '', '/' + settingKey, database))?.contents;
+		if((handle instanceof FileSystemDirectoryHandle)
+			&& await verifyPermission(handle as FileSystemHandle))
+		{
+			this.handle = handle;
+			const settingsConfig = Object.values(LOCAL_SETTINGS.filelist).find(s => s.key === settingKey);
+			this.handleKey = configureFileHandle(this.handle, settingsConfig);
+		}
+
+		this.initializeFiletrees();
 	}
 
 	private bindDOMEvents(): void
@@ -384,6 +395,11 @@ export class FileListWidget extends Widget implements IFileDataProvider
 			path: database,
 			children: nodes
 		};
+
+		if(!this.isAttached)
+		{
+			return;
+		}
 
 		const activeTree = filelistSelf.trees?.[this.selector];
 		if(!activeTree && filelistSelf.trees)
