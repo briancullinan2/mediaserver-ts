@@ -76,13 +76,19 @@ export class DetailsViewWidget extends Widget
 	protected onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
-		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+		setTimeout(() =>
+		{
+			WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+		}, 200);
 	}
 
 	protected override onAfterShow(msg: Message): void
 	{
 		super.onAfterShow(msg);
-		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+		setTimeout(() =>
+		{
+			WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+		}, 200);
 	}
 
 	protected renderToggleBtn(toggle: HTMLElement)
