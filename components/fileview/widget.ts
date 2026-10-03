@@ -6,7 +6,7 @@ import type { LuminoLayoutWindow } from '../bundle/lumino.d';
 import type { GoogleDriveFile } from '../filelist/widget-google';
 import type { FlatFileNode, NestedTreeNode } from '../bundle/github-tools';
 import type mime from 'mime';
-import type { NetflixViewWidget } from './widget-netflix';
+import type { CarouselViewWidget } from './widget-carousel';
 import { IPillSelectedArgs, IPillViewOptions, PillSelectorWidget } from '../art/widget-pill';
 import type { IStyleViewOptions, StyleSelectorWidget } from '../art/widget-style';
 import type { IFileDataProvider, WidgetFilesEventArgs } from '../filelist/widget.d';
@@ -16,7 +16,7 @@ import type { GlobalToolbarsWindow } from '../bundle/menu.d';
 import type { IconSize } from './widget-grid';
 
 
-export type ViewMode = 'netflix' | 'coverflow' | 'grid' | 'details' | 'tree' | 'pills' | 'styles';
+export type ViewMode = 'carousel' | 'coverflow' | 'grid' | 'details' | 'tree' | 'pills' | 'styles';
 export type SortOption = 'name-asc' | 'name-desc' | 'date-desc' | 'size-desc' | 'type';
 export type GroupOption = 'none' | 'type' | 'date' | 'size';
 type Constructor<T = any, Args extends any[] = any[]> = new (...args: Args) => T;
@@ -51,7 +51,7 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 	private addressInput!: HTMLInputElement;
 	protected pillsWidget!: PillSelectorWidget;
 
-	protected override activeViews: Set<ViewMode> = new Set(['netflix']);
+	protected override activeViews: Set<ViewMode> = new Set(['carousel']);
 	private styleWidget?: StyleSelectorWidget;
 
 	public parentTabBar?: HTMLElement;
@@ -334,8 +334,8 @@ export class FileviewWidget extends ArtWidget implements MenuModules
 
 			switch(mode)
 			{
-				case 'netflix':
-					this.categorySelected = (widgetInstance as NetflixViewWidget).categorySelected;
+				case 'carousel':
+					this.categorySelected = (widgetInstance as CarouselViewWidget).categorySelected;
 					break;
 				case 'coverflow':
 					break;

@@ -54,7 +54,7 @@ export class DetailsViewWidget extends Widget
 	constructor(title?: string | null, options: IDetailsOptions = {})
 	{
 		super();
-		this.addClass('netflix-details-widget');
+		this.addClass('carousel-details-widget');
 		this.id = 'details-widget-view';
 		this._files = options?.files || [];
 		this._onFileSelect = options.onFileSelect;
@@ -76,6 +76,12 @@ export class DetailsViewWidget extends Widget
 	protected onAfterAttach(msg: Message): void
 	{
 		super.onAfterAttach(msg);
+		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+	}
+
+	protected override onAfterShow(msg: Message): void
+	{
+		super.onAfterShow(msg);
 		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
 	}
 
@@ -108,36 +114,11 @@ export class DetailsViewWidget extends Widget
 		const topBar = document.createElement('div');
 		topBar.className = 'ndw-top-bar';
 
-		// const searchWrapper = document.createElement('div');
-		// searchWrapper.className = 'ndw-search-wrapper';
-		// searchWrapper.innerHTML = `<i class="bx bx-search search-icon"></i>`;
-
-		// this._searchInput = document.createElement('input');
-		// this._searchInput.type = 'text';
-		// this._searchInput.className = 'ndw-search-input';
-		// this._searchInput.placeholder = 'Filter cloud files...';
-		// this._searchInput.addEventListener('input', () =>
-		// {
-		// 	this._searchQuery = this._searchInput.value.trim().toLowerCase();
-		// 	this.applyFilterAndSort();
-		// });
-		// searchWrapper.appendChild(this._searchInput);
-
 		this._resultCountNode = document.createElement('span');
 		this._resultCountNode.className = 'ndw-result-count';
 
 		const controlsWrapper = document.createElement('div');
 		controlsWrapper.className = 'ndw-controls-wrapper';
-
-		// const modeToggleBtn = document.createElement('button');
-		// modeToggleBtn.className = 'ndw-btn ndw-mode-btn';
-		// modeToggleBtn.innerHTML = `<i class="bx ${this._displayMode === 'details' ? 'bx-carousel' : 'bx-list-ul'}"></i> Switch View`;
-		// modeToggleBtn.title = 'Toggle between Table Details and Netflix Row Carousels';
-		// modeToggleBtn.addEventListener('click', () =>
-		// {
-		// });
-
-		// topBar.append(searchWrapper, this._resultCountNode, controlsWrapper);
 
 		// 2. Season-Inspired Scrubber Toolbar
 		this._scrubberNode = document.createElement('div');
@@ -334,7 +315,7 @@ export class DetailsViewWidget extends Widget
 					bodyNode.appendChild(this.buildTableDetails(files));
 				} else
 				{
-					bodyNode.appendChild(this.buildNetflixCarousel(files));
+					bodyNode.appendChild(this.buildCarousel(files));
 				}
 
 				sectionNode.appendChild(bodyNode);
@@ -393,7 +374,7 @@ export class DetailsViewWidget extends Widget
 		return table;
 	}
 
-	private buildNetflixCarousel(files: NestedTreeNode[]): HTMLElement
+	private buildCarousel(files: NestedTreeNode[]): HTMLElement
 	{
 		const wrapper = document.createElement('div');
 		wrapper.className = 'ndw-carousel-wrapper';

@@ -8,16 +8,18 @@ import type { KnownFileViews } from '../art/widget';
 import { IPillSelectedArgs, PillSelectorWidget } from '../art/widget-pill';
 import { StyleSelectorWidget } from '../art/widget-style';
 import type { IFileViewOptions } from './widget';
+import { WidgetSearchBar } from '../art/widget-search';
 
-const netflixSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
+const carouselSelf: LuminoLayoutWindow & KnownFileViews = self as unknown as any;
 
+export type CarouselMode = 'episodes' | 'carousel';
 
-export interface INetflixViewOptions extends IFileViewOptions
+export interface ICarouselViewOptions extends IFileViewOptions
 {
 	categoryName?: string;
 }
 
-export class NetflixViewWidget extends Widget
+export class CarouselViewWidget extends Widget
 {
 	private _files: NestedTreeNode[] = [];
 	private _filesSignal?: ISignal<any, WidgetFilesEventArgs>;
@@ -38,16 +40,22 @@ export class NetflixViewWidget extends Widget
 	private pillsWidget?: PillSelectorWidget;
 	private styleWidget?: StyleSelectorWidget;
 	private pillsSection!: HTMLDivElement;
+	private _displayMode: CarouselMode = 'carousel';
+	private _category: string | undefined;
+	private _title: string | undefined;
+	public _toggleBtn?: HTMLDivElement;
 
-	constructor(title?: string, options: INetflixViewOptions = {})
+	constructor(title?: string, options: ICarouselViewOptions = {})
 	{
 		super();
-		this.addClass('netflix-hero-widget');
+		this.addClass('carousel-hero-widget');
 
 		this._files = options.files || [];
 		this._filesSignal = options.filesSignal;
 		this._onFileSelect = options.onFileSelect;
 
+		this._title = options.title;
+		this._category = options.categoryName;
 		this.renderShell(options.title || 'FEATURED COLLECTION', options.categoryName || 'TRENDING NOW');
 
 		if(this._filesSignal)
@@ -95,6 +103,43 @@ export class NetflixViewWidget extends Widget
 		{
 			Widget.attach(this.styleWidget, this.pillsSection);
 		}
+		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+	}
+
+	protected override onAfterShow(msg: Message): void
+	{
+		super.onAfterShow(msg);
+		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+	}
+
+	protected renderToggleBtn(toggle: HTMLElement)
+	{
+		toggle.innerHTML = `<i class="bx ${this._displayMode === 'episodes' ? 'bx-gallery-horizontal' : 'bx-list-play'}"></i>`;
+		toggle.title = this._displayMode === 'episodes' ? 'Carousel View' : 'Episode View';
+	}
+
+	protected override onBeforeDetach(msg: Message): void
+	{
+		if(this._toggleBtn)
+		{
+			this._toggleBtn?.remove();
+			this._toggleBtn = undefined;
+		}
+		super.onBeforeDetach(msg);
+	}
+
+	protected clickToggleBtn()
+	{
+		this._displayMode = this._displayMode === 'episodes' ? 'carousel' : 'episodes';
+		if(this._displayMode === 'episodes')
+		{
+			this.renderEpisodes(this._title || 'FEATURED COLLECTION', this._category || 'TRENDING NOW');
+		} else
+		{
+			this.renderShell(this._title || 'FEATURED COLLECTION', this._category || 'TRENDING NOW');
+		}
+		this.fit();
+		this.update();
 	}
 
 	public setFiles(files: NestedTreeNode[]): void
@@ -127,35 +172,35 @@ export class NetflixViewWidget extends Widget
 
 		// Fullscreen Ambient Dynamic Backdrop
 		this._backdropNode = document.createElement('div');
-		this._backdropNode.className = 'netflix-backdrop';
+		this._backdropNode.className = 'carousel-backdrop';
 
 		const overlay = document.createElement('div');
 		overlay.className = 'animated-bg-layer';
 
 		// Hero Section
 		const heroContainer = document.createElement('div');
-		heroContainer.className = 'netflix-hero-container';
+		heroContainer.className = 'carousel-hero-container';
 
 		const brandBadge = document.createElement('div');
-		brandBadge.className = 'netflix-brand-badge';
-		brandBadge.textContent = 'NETFLIX ORIGINAL';
+		brandBadge.className = 'carousel-brand-badge';
+		brandBadge.textContent = 'CAROUSEL ORIGINAL';
 
 		this._heroTitleNode = document.createElement('h1');
-		this._heroTitleNode.className = 'netflix-hero-title';
+		this._heroTitleNode.className = 'carousel-hero-title';
 		this._heroTitleNode.textContent = title;
 
 		this._heroMetaNode = document.createElement('div');
-		this._heroMetaNode.className = 'netflix-hero-meta';
+		this._heroMetaNode.className = 'carousel-hero-meta';
 
 		this._heroDescNode = document.createElement('p');
-		this._heroDescNode.className = 'netflix-hero-description';
+		this._heroDescNode.className = 'carousel-hero-description';
 		this._heroDescNode.textContent = 'Select a file to preview its media properties, metadata details, and streaming options.';
 
 		const heroActions = document.createElement('div');
-		heroActions.className = 'netflix-hero-actions';
+		heroActions.className = 'carousel-hero-actions';
 
 		const playBtn = document.createElement('button');
-		playBtn.className = 'netflix-btn netflix-btn-primary';
+		playBtn.className = 'carousel-btn carousel-btn-primary';
 		playBtn.innerHTML = `<span class="icon">▶</span> Play`;
 		playBtn.addEventListener('click', () =>
 		{
@@ -166,7 +211,7 @@ export class NetflixViewWidget extends Widget
 		});
 
 		const infoBtn = document.createElement('button');
-		infoBtn.className = 'netflix-btn netflix-btn-secondary';
+		infoBtn.className = 'carousel-btn carousel-btn-secondary';
 		infoBtn.innerHTML = `<span class="icon">ⓘ</span> More Info`;
 
 		heroActions.append(playBtn, infoBtn);
@@ -174,24 +219,24 @@ export class NetflixViewWidget extends Widget
 
 		// Carousel Row
 		const rowSection = document.createElement('div');
-		rowSection.className = 'netflix-row-section';
+		rowSection.className = 'carousel-row-section';
 
 		const rowHeader = document.createElement('h2');
-		rowHeader.className = 'netflix-row-header';
+		rowHeader.className = 'carousel-row-header';
 		rowHeader.textContent = category;
 
 		const carouselWrapper = document.createElement('div');
-		carouselWrapper.className = 'netflix-carousel-wrapper';
+		carouselWrapper.className = 'carousel-carousel-wrapper';
 
 		this._btnLeft = document.createElement('button');
-		this._btnLeft.className = 'netflix-nav-arrow netflix-nav-left';
+		this._btnLeft.className = 'carousel-nav-arrow carousel-nav-left';
 		this._btnLeft.innerHTML = '❮';
 
 		this._trackNode = document.createElement('div');
-		this._trackNode.className = 'netflix-carousel-track';
+		this._trackNode.className = 'carousel-carousel-track';
 
 		this._btnRight = document.createElement('button');
-		this._btnRight.className = 'netflix-nav-arrow netflix-nav-right';
+		this._btnRight.className = 'carousel-nav-arrow carousel-nav-right';
 		this._btnRight.innerHTML = '❯';
 
 		this._btnLeft.addEventListener('click', () =>
@@ -208,13 +253,120 @@ export class NetflixViewWidget extends Widget
 		rowSection.append(rowHeader, carouselWrapper);
 
 		this.pillsSection = document.createElement('div');
-		this.pillsSection.className = 'netflix-pill-section';
+		this.pillsSection.className = 'carousel-pill-section';
 
 		this.node.append(this._backdropNode, overlay, heroContainer, this.pillsSection, rowSection);
 
 		this.renderCarousel();
-
 	}
+
+
+	private renderEpisodes(title: string, category: string): void
+	{
+		this.node.replaceChildren();
+
+		// Episode Page Container
+		const epContainer = document.createElement('div');
+		epContainer.className = 'carousel-episodes-container';
+
+		// Background / Hero Poster Section
+		this._backdropNode = document.createElement('div');
+		this._backdropNode.className = 'carousel-episodes-backdrop';
+
+		const backdropOverlay = document.createElement('div');
+		backdropOverlay.className = 'carousel-episodes-overlay';
+
+		// Show Header / Details Section
+		const showHeader = document.createElement('div');
+		showHeader.className = 'carousel-episodes-header';
+
+		const showBadge = document.createElement('div');
+		showBadge.className = 'carousel-brand-badge';
+		showBadge.textContent = 'CAROUSEL SERIES';
+
+		this._heroTitleNode = document.createElement('h1');
+		this._heroTitleNode.className = 'carousel-episodes-title';
+		this._heroTitleNode.textContent = title;
+
+		this._heroMetaNode = document.createElement('div');
+		this._heroMetaNode.className = 'carousel-hero-meta';
+
+		this._heroDescNode = document.createElement('p');
+		this._heroDescNode.className = 'carousel-episodes-synopsis';
+		this._heroDescNode.textContent = 'Select a file to preview its media properties, metadata details, and streaming options.';
+
+		const heroActions = document.createElement('div');
+		heroActions.className = 'carousel-hero-actions';
+
+		const playBtn = document.createElement('button');
+		playBtn.className = 'carousel-btn carousel-btn-primary';
+		playBtn.innerHTML = `<span class="icon">▶</span> Play Episode`;
+		playBtn.addEventListener('click', () =>
+		{
+			if(this._activeFile && this._onFileSelect)
+			{
+				this._onFileSelect(this._activeFile);
+			}
+		});
+
+		const infoBtn = document.createElement('button');
+		infoBtn.className = 'carousel-btn carousel-btn-secondary';
+		infoBtn.innerHTML = `<span class="icon">ⓘ</span> Details`;
+
+		heroActions.append(playBtn, infoBtn);
+		showHeader.append(showBadge, this._heroTitleNode, this._heroMetaNode, this._heroDescNode, heroActions);
+
+		// Control Toolbar Section (Season Selector & Search/Pills)
+		const controlsBar = document.createElement('div');
+		controlsBar.className = 'carousel-episodes-controls';
+
+		const seasonHeader = document.createElement('h2');
+		seasonHeader.className = 'carousel-season-title';
+		seasonHeader.textContent = category;
+
+		this.pillsSection = document.createElement('div');
+		this.pillsSection.className = 'carousel-pill-section';
+
+		controlsBar.append(seasonHeader, this.pillsSection);
+
+		// Episodes Grid Section
+		const episodesSection = document.createElement('div');
+		episodesSection.className = 'carousel-episodes-list-section';
+
+		const listWrapper = document.createElement('div');
+		listWrapper.className = 'carousel-episodes-grid-wrapper';
+
+		this._btnLeft = document.createElement('button');
+		this._btnLeft.className = 'carousel-nav-arrow carousel-nav-left';
+		this._btnLeft.innerHTML = '▲';
+
+		this._trackNode = document.createElement('div');
+		this._trackNode.className = 'carousel-episodes-grid';
+
+		this._btnRight = document.createElement('button');
+		this._btnRight.className = 'carousel-nav-arrow carousel-nav-right';
+		this._btnRight.innerHTML = '▼';
+
+		this._btnLeft.addEventListener('click', () =>
+		{
+			this._trackNode.scrollBy({ top: -400, behavior: 'smooth' });
+		});
+
+		this._btnRight.addEventListener('click', () =>
+		{
+			this._trackNode.scrollBy({ top: 400, behavior: 'smooth' });
+		});
+
+		listWrapper.append(this._btnLeft, this._trackNode, this._btnRight);
+		episodesSection.append(listWrapper);
+
+		// Assemble Episode Layout
+		epContainer.append(this._backdropNode, backdropOverlay, showHeader, controlsBar, episodesSection);
+		this.node.append(epContainer);
+
+		this.renderCarousel();
+	}
+
 
 	private renderCarousel(): void
 	{
@@ -223,7 +375,7 @@ export class NetflixViewWidget extends Widget
 		if(this._files.length === 0)
 		{
 			const emptyState = document.createElement('div');
-			emptyState.className = 'netflix-empty-state';
+			emptyState.className = 'carousel-empty-state';
 			emptyState.textContent = 'No media titles available in workspace.';
 			this._trackNode.appendChild(emptyState);
 			return;
@@ -232,25 +384,25 @@ export class NetflixViewWidget extends Widget
 		this._files.forEach((file, index) =>
 		{
 			const card = document.createElement('div');
-			card.className = 'netflix-card';
+			card.className = 'carousel-card';
 			card.dataset.fileId = file.id;
 
 			const mediaFrame = document.createElement('div');
-			mediaFrame.className = 'netflix-card-media';
+			mediaFrame.className = 'carousel-card-media';
 
 			// Fallback visual generator based on name hash
 			const hue = Math.abs(this.hashCode(file.text)) % 360;
 			mediaFrame.style.background = `linear-gradient(135deg, hsl(${hue}, 70%, 20%), hsl(${(hue + 40) % 360}, 80%, 10%))`;
 
 			const cardBody = document.createElement('div');
-			cardBody.className = 'netflix-card-body';
+			cardBody.className = 'carousel-card-body';
 
 			const cardTitle = document.createElement('div');
-			cardTitle.className = 'netflix-card-title';
+			cardTitle.className = 'carousel-card-title';
 			cardTitle.textContent = file.text;
 
 			const cardBadge = document.createElement('span');
-			cardBadge.className = 'netflix-card-badge';
+			cardBadge.className = 'carousel-card-badge';
 			cardBadge.textContent = file.mimeType?.split('/')[1]?.toUpperCase() || 'FILE';
 
 			cardBody.append(cardTitle, cardBadge);
@@ -282,7 +434,7 @@ export class NetflixViewWidget extends Widget
 		this._heroMetaNode.innerHTML = `
       <span class="match-score">98% Match</span>
       <span class="cert-rating">4K Ultra HD</span>
-      <span class="duration">${file.mimeType ?? (typeof this.dataProvider?.constructor === 'function' ? netflixSelf.ArtWidget?.resolveDefaultMediaTitle(this.dataProvider.constructor) : undefined) ?? 'Media Source'}</span>
+      <span class="duration">${file.mimeType ?? (typeof this.dataProvider?.constructor === 'function' ? carouselSelf.ArtWidget?.resolveDefaultMediaTitle(this.dataProvider.constructor) : undefined) ?? 'Media Source'}</span>
       <span class="hd-badge">HDR</span>
     `;
 		this._heroDescNode.textContent = `File ID: ${file.id}. Streaming ready via active Cloud Data Provider.`;
@@ -313,4 +465,4 @@ export class NetflixViewWidget extends Widget
 	}
 }
 
-netflixSelf.NetflixViewWidget = NetflixViewWidget;
+carouselSelf.CarouselViewWidget = CarouselViewWidget;

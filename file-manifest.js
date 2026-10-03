@@ -1557,7 +1557,7 @@ self.__assetsManifest = [
     "size": 5518
   },
   {
-    "path": "/components/fileview/netflix.css",
+    "path": "/components/fileview/carousel.css",
     "size": 6247
   },
   {
@@ -1569,7 +1569,7 @@ self.__assetsManifest = [
     "size": 15299
   },
   {
-    "path": "/components/fileview/widget-netflix.ts",
+    "path": "/components/fileview/widget-carousel.ts",
     "size": 10144
   },
   {

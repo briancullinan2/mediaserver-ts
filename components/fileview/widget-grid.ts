@@ -63,6 +63,12 @@ export class ExplorerGridWidget extends Widget
 		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
 	}
 
+	protected override onAfterShow(msg: Message): void
+	{
+		super.onAfterShow(msg);
+		WidgetSearchBar.attachToggleIcon(this, this.renderToggleBtn, this.clickToggleBtn);
+	}
+
 	protected renderToggleBtn(toggle: HTMLElement)
 	{
 		toggle.innerHTML = `<i class="bx ${this._displayMode === 'row-first' ? 'bx-gallery-horizontal' : 'bx-gallery-vertical'}"></i>`;

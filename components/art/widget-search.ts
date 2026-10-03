@@ -282,7 +282,6 @@ export class WidgetSearchBar
 		renderToggle?.apply(context, [context._toggleBtn]);
 		context._toggleBtn.addEventListener('click', (event) =>
 		{
-			// TODO: toggle netflix view
 			event.stopPropagation(); // Stop event bubbling to tab selection
 			click?.apply(context, [event]);
 			if(context._toggleBtn)

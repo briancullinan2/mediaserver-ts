@@ -1,8 +1,4 @@
-/* ==========================================================================
-   NETFLIX HERO WIDGET STYLES
-   ========================================================================== */
-
-.netflix-hero-widget {
+.carousel-hero-widget {
 	width: 100%;
 	min-height: 100%;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -11,7 +7,7 @@
 }
 
 /* Dynamic Ambient Backdrop */
-.netflix-backdrop {
+.carousel-backdrop {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -23,7 +19,7 @@
 	transform: scale(1.1);
 }
 
-.netflix-backdrop-overlay {
+.carousel-backdrop-overlay {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -40,20 +36,20 @@
 			transparent 100%);
 }
 
-.netflix-hero-widget>*:not(.netflix-backdrop, .animated-bg-layer) {
+.carousel-hero-widget>*:not(.carousel-backdrop, .animated-bg-layer) {
 	z-index: 1;
 	position: relative;
 }
 
 /* Hero Content Area */
-.netflix-hero-container {
+.carousel-hero-container {
 	position: relative;
 	z-index: 3;
 	padding: 20px 4% 20px 4%;
 	max-width: 900px;
 }
 
-.netflix-brand-badge {
+.carousel-brand-badge {
 	color: #e50914;
 	font-size: 0.85rem;
 	font-weight: 800;
@@ -62,7 +58,7 @@
 	text-transform: uppercase;
 }
 
-.netflix-hero-title {
+.carousel-hero-title {
 	font-size: 4rem;
 	font-weight: 900;
 	margin: 0 0 16px 0;
@@ -74,7 +70,7 @@
 	overflow: hidden;
 }
 
-.netflix-hero-meta {
+.carousel-hero-meta {
 	display: flex;
 	align-items: center;
 	gap: 16px;
@@ -83,19 +79,19 @@
 	font-weight: 600;
 }
 
-.netflix-hero-meta .match-score {
+.carousel-hero-meta .match-score {
 	color: #46d369;
 }
 
-.netflix-hero-meta .cert-rating,
-.netflix-hero-meta .hd-badge {
+.carousel-hero-meta .cert-rating,
+.carousel-hero-meta .hd-badge {
 	border: 1px solid rgba(255, 255, 255, 0.4);
 	padding: 1px 6px;
 	font-size: 0.75rem;
 	border-radius: 2px;
 }
 
-.netflix-hero-description {
+.carousel-hero-description {
 	font-size: 1.2rem;
 	line-height: 1.5;
 	color: #e5e5e5;
@@ -105,13 +101,13 @@
 }
 
 /* Action Buttons */
-.netflix-hero-actions {
+.carousel-hero-actions {
 	display: flex;
 	gap: 16px;
 	/* margin-bottom: 40px; */
 }
 
-.netflix-btn {
+.carousel-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -125,45 +121,45 @@
 	transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-.netflix-btn-secondary.netflix-btn .icon {
+.carousel-btn-secondary.carousel-btn .icon {
 	font-size: 1.3rem;
 }
 
-.netflix-btn-primary {
+.carousel-btn-primary {
 	background-color: #ffffff;
 	color: #000000;
 }
 
-.netflix-btn-primary:hover {
+.carousel-btn-primary:hover {
 	background-color: rgba(255, 255, 255, 0.75);
 	transform: scale(1.03);
 }
 
-.netflix-btn-secondary {
+.carousel-btn-secondary {
 	background-color: rgba(109, 109, 110, 0.7);
 	color: #ffffff;
 }
 
-.netflix-btn-secondary:hover {
+.carousel-btn-secondary:hover {
 	background-color: rgba(109, 109, 110, 0.4);
 	transform: scale(1.03);
 }
 
 /* Carousel Section */
-.netflix-row-section {
+.carousel-row-section {
 	position: relative;
 	z-index: 3;
 	padding: 0 10px 20px 10px;
 }
 
-.netflix-row-header {
+.carousel-row-header {
 	font-size: 1.6rem;
 	font-weight: 700;
 	margin-bottom: 16px;
 	color: #e5e5e5;
 }
 
-.netflix-carousel-wrapper {
+.carousel-carousel-wrapper {
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -171,12 +167,12 @@
 }
 
 
-.netflix-carousel-wrapper:hover .netflix-carousel-track {
+.carousel-carousel-wrapper:hover .carousel-carousel-track {
 	mask-image: linear-gradient(to right, transparent 30px, black 80px, black calc(100% - 80px), transparent calc(100% - 30px));
 	-webkit-mask-image: linear-gradient(to right, transparent 30px, black 80px, black calc(100% - 80px), transparent calc(100% - 30px));
 }
 
-.netflix-carousel-track {
+.carousel-carousel-track {
 	display: flex;
 	gap: 16px;
 	overflow-x: auto;
@@ -188,13 +184,13 @@
 	-webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
 }
 
-.netflix-carousel-track::-webkit-scrollbar {
+.carousel-carousel-track::-webkit-scrollbar {
 	/* display: none; */
 	/* Chrome/Safari */
 }
 
 /* Huge Movie Cards */
-.netflix-card {
+.carousel-card {
 	flex: 0 0 320px;
 	height: 200px;
 	background-color: #2f2f2f;
@@ -205,20 +201,20 @@
 	transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
 }
 
-.netflix-card:hover {
+.carousel-card:hover {
 	transform: scale(1.15) translateY(-10px);
 	z-index: 10;
 	box-shadow: 5px 10px 15px rgba(0, 0, 0, 0.9);
 }
 
-.netflix-card-media {
+.carousel-card-media {
 	width: 100%;
 	height: 100%;
 	background-size: cover;
 	background-position: center;
 }
 
-.netflix-card-body {
+.carousel-card-body {
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -230,7 +226,7 @@
 	align-items: flex-end;
 }
 
-.netflix-card-title {
+.carousel-card-title {
 	font-size: 1rem;
 	font-weight: 700;
 	color: #ffffff;
@@ -240,7 +236,7 @@
 	max-width: 200px;
 }
 
-.netflix-card-badge {
+.carousel-card-badge {
 	font-size: 0.65rem;
 	font-weight: 800;
 	background-color: #e50914;
@@ -250,7 +246,7 @@
 }
 
 /* Carousel Navigation Arrows */
-.netflix-nav-arrow {
+.carousel-nav-arrow {
 	position: absolute;
 	top: 0;
 	bottom: 0;
@@ -269,30 +265,157 @@
 	pointer-events: none;
 }
 
-.netflix-carousel-wrapper:hover .netflix-nav-arrow {
+.carousel-carousel-wrapper:hover .carousel-nav-arrow {
 	opacity: 1;
 	pointer-events: all;
 }
 
-.netflix-nav-arrow:hover {
+.carousel-nav-arrow:hover {
 	background: rgba(0, 0, 0, 0.8);
 }
 
-.netflix-nav-left {
-	left: -4%;
+.carousel-nav-left {
+	left: -10px;
 	border-top-right-radius: 4px;
 	border-bottom-right-radius: 4px;
 }
 
-.netflix-nav-right {
-	right: -4%;
+.carousel-nav-right {
+	right: -10px;
 	border-top-left-radius: 4px;
 	border-bottom-left-radius: 4px;
 }
 
-.netflix-empty-state {
+.carousel-empty-state {
 	padding: 40px;
 	color: #808080;
 	font-size: 1.1rem;
 	font-style: italic;
+}
+
+
+/* Container Layout */
+.carousel-episodes-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	background-color: #141414;
+	color: #ffffff;
+	overflow-y: auto;
+	padding: 32px 48px;
+	box-sizing: border-box;
+}
+
+/* Dynamic Backdrop & Overlay */
+.carousel-episodes-backdrop {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 60vh;
+	z-index: 0;
+	transition: background 0.5s ease-in-out;
+	opacity: 0.35;
+	filter: blur(20px);
+}
+
+.carousel-episodes-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 60vh;
+	z-index: 1;
+	background: linear-gradient(180deg, rgba(20, 20, 20, 0.2) 0%, #141414 100%);
+	pointer-events: none;
+}
+
+/* Show Header Section */
+.carousel-episodes-header {
+	position: relative;
+	z-index: 2;
+	max-width: 800px;
+	margin-top: 24px;
+	margin-bottom: 32px;
+}
+
+.carousel-episodes-title {
+	font-size: 2.75rem;
+	font-weight: 800;
+	margin: 12px 0;
+	letter-spacing: -0.02em;
+	line-height: 1.1;
+}
+
+.carousel-episodes-synopsis {
+	font-size: 1.05rem;
+	line-height: 1.5;
+	color: #e5e5e5;
+	margin: 16px 0 24px 0;
+}
+
+/* Season Controls Bar */
+.carousel-episodes-controls {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+	padding-bottom: 16px;
+	margin-bottom: 24px;
+}
+
+.carousel-season-title {
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin: 0;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+/* Episodes Grid Section */
+.carousel-episodes-list-section {
+	position: relative;
+	z-index: 2;
+	flex: 1;
+}
+
+.carousel-episodes-grid-wrapper {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.carousel-episodes-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 20px;
+	width: 100%;
+	max-height: 600px;
+	overflow-y: auto;
+	scroll-behavior: smooth;
+	padding: 8px 4px;
+}
+
+/* Vertical Scroll Arrow Styles */
+.carousel-episodes-grid-wrapper .carousel-nav-arrow {
+	width: 100%;
+	height: 28px;
+	background: rgba(0, 0, 0, 0.5);
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.2s ease;
+}
+
+.carousel-episodes-grid-wrapper .carousel-nav-arrow:hover {
+	background: rgba(255, 255, 255, 0.2);
 }

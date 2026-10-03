@@ -7,7 +7,7 @@ import type { NestedTreeNode } from '../bundle/github-tools';
 import type { CoverflowWidget } from './widget-coverflow';
 import { IPillSelectedArgs, IPillViewOptions, PillSelectorWidget } from './widget-pill';
 import type { IStyleViewOptions, StyleSelectorWidget } from './widget-style';
-import type { NetflixViewWidget } from '../fileview/widget-netflix';
+import type { CarouselViewWidget } from '../fileview/widget-carousel';
 import type { ExplorerGridWidget } from '../fileview/widget-grid';
 import type { DetailsViewWidget } from '../fileview/widget-details';
 import { ISignal, Signal } from '@lumino/signaling';
@@ -15,7 +15,7 @@ import { index } from 'd3';
 import type mime from 'mime';
 import type { IFileViewOptions } from '../fileview/widget';
 
-export type ViewMode = 'netflix' | 'overflow' | 'grid' | 'details' | 'tree' | 'music' | string;
+export type ViewMode = 'carousel' | 'overflow' | 'grid' | 'details' | 'tree' | 'music' | string;
 
 export type ViewRenderer = (this: ArtWidget, files: NestedTreeNode[], container: HTMLElement) => void;
 
@@ -33,8 +33,8 @@ export interface KnownFileViews
 	StyleSelectorWidget?: typeof StyleSelectorWidget;
 	styleSelectorWidget?: StyleSelectorWidget;
 
-	NetflixViewWidget: typeof NetflixViewWidget;
-	netflixViewWidget: NetflixViewWidget;
+	CarouselViewWidget: typeof CarouselViewWidget;
+	carouselViewWidget: CarouselViewWidget;
 
 	ExplorerGridWidget: typeof ExplorerGridWidget;
 	explorerGridWidget: ExplorerGridWidget;
@@ -48,8 +48,8 @@ export function modeToWindowType(mode: string, source?: string): Constructor | u
 
 	switch(mode)
 	{
-		case 'netflix':
-			return widgetSelf.NetflixViewWidget;
+		case 'carousel':
+			return widgetSelf.CarouselViewWidget;
 			break;
 		case 'coverflow':
 			return widgetSelf.CoverflowWidget;
@@ -77,8 +77,8 @@ export function modeToWidgetURI(mode: string, source?: string): string | undefin
 
 	switch(mode)
 	{
-		case 'netflix':
-			return '/components/fileview/widget-netflix.ts';
+		case 'carousel':
+			return '/components/fileview/widget-carousel.ts';
 			break;
 		case 'coverflow':
 			return '/components/art/widget-coverflow.ts';

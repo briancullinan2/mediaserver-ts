@@ -1,4 +1,4 @@
-@import '/components/fileview/netflix.css';
+@import '/components/fileview/carousel.css';
 @import '/components/fileview/details.css';
 @import '/components/fileview/grid.css';
 
@@ -224,29 +224,29 @@
 	z-index: 10;
 }
 
-.view-pane-netflix {
+.view-pane-carousel {
 	z-index: 1;
 }
 
-/* Netflix View Layout */
-.netflix-row {
+
+.carousel-row {
 	margin-bottom: 18px;
 }
 
-.netflix-row-title {
+.carousel-row-title {
 	margin: 0 0 8px 0;
 	font-size: 14px;
 	color: #bbbbcc;
 }
 
-.netflix-row-slider {
+.carousel-row-slider {
 	display: flex;
 	gap: 12px;
 	overflow-x: auto;
 	padding-bottom: 8px;
 }
 
-.netflix-card {
+.carousel-card {
 	min-width: 130px;
 	max-width: 130px;
 	background: #22222c;
@@ -257,11 +257,11 @@
 	transition: transform 0.15s ease;
 }
 
-.netflix-card:hover {
+.carousel-card:hover {
 	transform: scale(1.04);
 }
 
-.netflix-card.selected {
+.carousel-card.selected {
 	border-color: #0077ee;
 }
 

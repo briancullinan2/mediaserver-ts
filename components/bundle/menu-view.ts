@@ -41,8 +41,8 @@ export const VIEW_MENU: MenuConfig = {
 			iconClass: "bx bx-slideshow",
 			children: [
 				{
-					name: "Netflix Rows",
-					target: "view/mode.netflix",
+					name: "Carousel Rows",
+					target: "view/mode.carousel",
 					iconClass: "bx bx-film"
 				},
 				{
@@ -193,19 +193,19 @@ export class ViewToolbar extends Widget
             </div>
 
 			<div class="view-switcher-buttons">
-				<button class="view-btn ${this.activeViews.has('netflix') ? 'active' : ''}" data-view="netflix" title="Netflix Rows">
-					<i class="bx bx-film"></i> Netflix
+				<button class="view-btn ${this.activeViews.has('carousel') ? 'active' : ''}" data-view="carousel">
+					<i class="bx bx-film"></i> Carousel
 				</button>
-				<button class="view-btn ${this.activeViews.has('coverflow') ? 'active' : ''}" data-view="coverflow" title="Coverflow">
+				<button class="view-btn ${this.activeViews.has('coverflow') ? 'active' : ''}" data-view="coverflow">
 					<i class="bx bx-album-covers"></i> Coverflow
 				</button>
-				<button class="view-btn ${this.activeViews.has('grid') ? 'active' : ''}" data-view="grid" title="Icon Grid">
+				<button class="view-btn ${this.activeViews.has('grid') ? 'active' : ''}" data-view="grid">
 					<i class="bx bx-grid"></i> Grid
 				</button>
-				<button class="view-btn ${this.activeViews.has('details') ? 'active' : ''}" data-view="details" title="Details List">
+				<button class="view-btn ${this.activeViews.has('details') ? 'active' : ''}" data-view="details">
 					<i class="bx bx-list-ul"></i> Details
 				</button>
-				<button class="view-btn ${this.activeViews.has('tree') ? 'active' : ''}" data-view="tree" title="Subtree Widget Instance">
+				<button class="view-btn ${this.activeViews.has('tree') ? 'active' : ''}" data-view="tree">
 					<i class="bx bx-git-repo-forked"></i> Subtree
 				</button>
 			</div>
@@ -312,7 +312,7 @@ menuSelf.globalModules['view/options'] = {
 	}
 };
 
-const viewModes = ['netflix', 'coverflow', 'grid', 'details', 'tree'];
+const viewModes = ['carousel', 'coverflow', 'grid', 'details', 'tree'];
 if(!menuSelf.globalModules['view/mode'])
 {
 	menuSelf.globalModules['view/mode'] = {};
