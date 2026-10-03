@@ -1,5 +1,9 @@
 import { Widget } from "@lumino/widgets";
 import type { PlaylistEntry } from "./widget";
+import type { LuminoLayoutWindow } from "../bundle/lumino.d";
+
+const visualSelf: LuminoLayoutWindow = self as unknown as any;
+
 
 export class SilkDropVisualizerWidget extends Widget
 {
@@ -25,6 +29,7 @@ export class SilkDropVisualizerWidget extends Widget
                     </div>
                 </div>
             </div>
+			<div id="root" class="silkdrop-visualizer-real"></div>
         `;
 
 		this.canvas = this.node.querySelector('.silkdrop-canvas');
@@ -35,6 +40,7 @@ export class SilkDropVisualizerWidget extends Widget
 	protected onAfterAttach(): void
 	{
 		this.resizeCanvas();
+		visualSelf.preloadDependencies?.(['/components/player/silkdrop.js']);
 	}
 
 	// Capture Lumino layout resize events instead of window resize alone

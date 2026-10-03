@@ -13910,7 +13910,7 @@ function _()
 }
 function v(e)
 {
-	return e.scriptSrc ? b(e.scriptSrc) : _() ? `https://va.vercel-scripts.com/v1/script.debug.js` : e.basePath ? b(`${e.basePath}/insights/script.js`) : `/_vercel/insights/script.js`;
+	//return e.scriptSrc ? b(e.scriptSrc) : _() ? `https://va.vercel-scripts.com/v1/script.debug.js` : e.basePath ? b(`${e.basePath}/insights/script.js`) : `/_vercel/insights/script.js`;
 }
 function y(e, t)
 {
@@ -13949,6 +13949,7 @@ function x(e = {
 	debug: !0
 }, t)
 {
+	return;
 	var n;
 	if(!p())
 		return;
@@ -14100,7 +14101,7 @@ var w = `modulepreload`
 	};
 async function ie()
 {
-	let e = new URL(`/wasm/projectm.js`, window.location.href).href;
+	let e = new URL(`/components/player/projectm.js`, window.location.href).href;
 	return (await re(() => import(e), [])).default;
 }
 var ae = class e
@@ -17300,7 +17301,7 @@ function Lt()
 							}
 							,
 							l.onLibraryChanged = () => m(e => e + 1);
-						let d = new Worker(new URL(`/assets/sync.worker-BRGnoAy-.js`, `` + import.meta.url), {
+						let d = new Worker(new URL(`/components/player/sync.worker.js`, `` + import.meta.url), {
 							type: `module`
 						});
 						l.onRequestShard = e => d.postMessage({
