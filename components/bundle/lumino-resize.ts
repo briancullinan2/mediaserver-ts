@@ -616,7 +616,7 @@ export class ResponsiveManager
 	 */
 	private _adjustDockPanelLayout(mainDock: DockPanel, currentWidgets: any[]): void
 	{
-		if(currentWidgets.length <= this._prevWidgetCount || this.alreadyResizing)
+		if(/*currentWidgets.length <= this._prevWidgetCount ||*/ this.alreadyResizing)
 		{
 			this._prevWidgetCount = currentWidgets.length;
 			return;

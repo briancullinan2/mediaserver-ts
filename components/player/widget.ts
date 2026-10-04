@@ -52,6 +52,7 @@ export class PlayerWidget extends Widget
 		this.isCarouselHorizontal = false;
 		this.title.closable = true;
 		this.title.iconClass = 'bx bx-play';
+		this.title.className = this.id = 'player-widget'
 
 		// Ensure root widget container expands to fill viewport
 		this.addClass('player-outer-container');
@@ -104,33 +105,41 @@ export class PlayerWidget extends Widget
 		if(!this.playlistPanel)
 		{
 			this.playlistPanel = new PlaylistPanelWidget((track: PlaylistEntry | string) => this.loadTrack(track));
+			this.playlistPanel.node.style.width = '200px';
 		}
 		setTimeout(() =>
 		{
 			if(widgetSelf.mainDock && widgetSelf.LayoutAdjuster && that.playlistPanel)
 			{
-				widgetSelf.LayoutAdjuster?.addOptimalWidgetLayout(widgetSelf.mainDock, that.playlistPanel, {
-					type: 'outline',
-					projectId: that.playlistPanel?.constructor.name
-				});
-				widgetSelf.mainDock.activateWidget(that.playlistPanel);
+				if(!this.playlistPanel?.isAttached)
+				{
+					widgetSelf.LayoutAdjuster?.addOptimalWidgetLayout(widgetSelf.mainDock, that.playlistPanel, {
+						type: 'outline',
+						projectId: that.playlistPanel?.constructor.name
+					});
+				}
 			}
-		}, 200);
+		}, 300);
 
 		if(!this.xrayPanel)
 		{
 			this.xrayPanel = new XRayPanelWidget();
+			this.xrayPanel.node.style.width = '200px';
 		}
 		setTimeout(() =>
 		{
 			if(widgetSelf.mainDock && widgetSelf.LayoutAdjuster && that.xrayPanel)
 			{
-				widgetSelf.LayoutAdjuster?.addOptimalWidgetLayout(widgetSelf.mainDock, that.xrayPanel, {
-					type: 'outline',
-					projectId: that.xrayPanel?.constructor.name
-				});
+				if(!this.xrayPanel?.isAttached)
+				{
+					widgetSelf.LayoutAdjuster?.addOptimalWidgetLayout(widgetSelf.mainDock, that.xrayPanel, {
+						type: 'outline',
+						activate: false,
+						projectId: that.xrayPanel?.constructor.name
+					});
+				}
 			}
-		}, 100);
+		}, 200);
 
 	}
 

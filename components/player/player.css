@@ -250,7 +250,7 @@ canvas.silkdrop-canvas {
 	width: 100%;
 	height: 6px;
 	border-radius: 3px;
-	background: rgba(255, 255, 255, 0.1);
+	background: rgb(from var(--ace-foreground, rgba(255, 255, 255, 0.1)) r g b / 50%);
 	outline: none;
 	cursor: pointer;
 	position: relative;
@@ -309,7 +309,7 @@ canvas.silkdrop-canvas {
 	width: 44px;
 	height: 44px;
 	background: var(--accent-primary);
-	color: #fff;
+	color: var(--ace-foreground, #fff);
 	box-shadow: var(--shadow-glow);
 	font-size: 18px;
 }
@@ -471,8 +471,8 @@ canvas.silkdrop-canvas {
 /* Prime X-Ray / Subtitles & Comments Panel */
 .xray-panel-widget {
 	height: 100%;
-	background: var(--bg-surface);
-	backdrop-filter: var(--glass-blur);
+	/* background: var(--bg-surface);
+	backdrop-filter: var(--glass-blur); */
 	padding: 20px;
 	overflow-y: auto;
 	display: flex;
