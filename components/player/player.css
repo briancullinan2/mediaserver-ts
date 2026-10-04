@@ -592,7 +592,7 @@ canvas.silkdrop-canvas {
 	max-width: calc(100% - 32px);
 	color: var(--hud-fg);
 	text-shadow: var(--hud-shadow);
-	opacity: 0;
+	/* opacity: 0; */
 	font-size: 16px;
 	font-weight: 500;
 	transition: opacity .6s;
